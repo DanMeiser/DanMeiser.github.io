@@ -1,0 +1,343 @@
+/**
+ * Main game loop and logic for Flappy Family
+ */
+
+// Game constants
+const GAME_STATE = {
+    MENU: 'menu',
+    CHARACTER_SELECT: 'characterSelect',
+    PLAYING: 'playing',
+    PAUSED: 'paused',
+    GAME_OVER: 'gameOver'
+};
+
+const GAME_SETTINGS = {
+    BIRD_START_X: 60,
+    BIRD_START_Y: 150,
+    GROUND_HEIGHT: 120,
+    PIPE_WIDTH: 52,
+    PIPE_GAP: 130,
+    PIPE_SPAWN_INTERVAL: 2500, // ms
+    SCROLL_SPEED: 5,
+    CANVAS_PADDING: 0
+};
+
+class Game {
+    constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.setCanvasSize();
+
+        this.state = GAME_STATE.MENU;
+        this.selectedCharacter = 'calvin';
+        this.bird = null;
+        this.pipes = [];
+        this.score = 0;
+        this.highScore = ScoreManager.getHighScore();
+        this.gameStartTime = 0;
+        this.lastPipeSpawnTime = 0;
+        this.isRunning = false;
+
+        this.setupEventListeners();
+        this.loadAssets();
+    }
+
+    setCanvasSize() {
+        // Use container dimensions
+        const container = this.canvas.parentElement;
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = container.clientHeight;
+    }
+
+    setupEventListeners() {
+        // Input handling
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+        this.canvas.addEventListener('click', () => this.handleCanvasClick());
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.handleCanvasClick();
+        });
+
+        // Button clicks
+        document.getElementById('startBtn').addEventListener('click', () => {
+            this.showCharacterSelect();
+        });
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            this.showMenu();
+        });
+
+        const characterBtns = document.querySelectorAll('.character-btn');
+        characterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.selectedCharacter = e.currentTarget.dataset.character;
+                this.startGame();
+            });
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            this.startGame();
+        });
+
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            this.showMenu();
+        });
+
+        document.getElementById('resumeBtn').addEventListener('click', () => {
+            this.togglePause();
+        });
+
+        document.getElementById('quitBtn').addEventListener('click', () => {
+            this.togglePause(); // Unpause first
+            this.showMenu();
+        });
+
+        // Window resize
+        window.addEventListener('resize', () => this.setCanvasSize());
+    }
+
+    async loadAssets() {
+        try {
+            // Load sounds (non-blocking errors)
+            await Promise.all([
+                AssetLoader.loadSound('flap', 'assets/sounds/flap.mp3'),
+                AssetLoader.loadSound('hit', 'assets/sounds/hit.mp3'),
+                AssetLoader.loadSound('point', 'assets/sounds/point.mp3')
+            ]).catch(e => console.log('Asset loading note:', e));
+        } catch (error) {
+            console.log('Assets may not be available:', error);
+        }
+    }
+
+    handleKeyDown(e) {
+        if (e.key === ' ') {
+            e.preventDefault();
+            this.handleCanvasClick();
+        } else if (e.key === 'p' || e.key === 'P') {
+            if (this.state === GAME_STATE.PLAYING || this.state === GAME_STATE.PAUSED) {
+                this.togglePause();
+            }
+        } else if (e.key === 'q' || e.key === 'Q') {
+            if (this.state === GAME_STATE.GAME_OVER) {
+                this.showMenu();
+            }
+        } else if (e.key === '1') {
+            if (this.state === GAME_STATE.MENU) {
+                this.selectedCharacter = 'calvin';
+                this.startGame();
+            }
+        } else if (e.key === '2') {
+            if (this.state === GAME_STATE.MENU) {
+                this.selectedCharacter = 'bailey';
+                this.startGame();
+            }
+        }
+    }
+
+    handleKeyUp(e) {
+        // Reserved for future use
+    }
+
+    handleCanvasClick() {
+        if (this.state === GAME_STATE.MENU) {
+            this.showCharacterSelect();
+        } else if (this.state === GAME_STATE.CHARACTER_SELECT) {
+            // Let buttons handle it
+        } else if (this.state === GAME_STATE.PLAYING) {
+            this.bird.flap();
+        } else if (this.state === GAME_STATE.GAME_OVER) {
+            this.startGame();
+        }
+    }
+
+    showMenu() {
+        this.state = GAME_STATE.MENU;
+        this.updateScreens();
+        this.isRunning = false;
+    }
+
+    showCharacterSelect() {
+        this.state = GAME_STATE.CHARACTER_SELECT;
+        this.updateScreens();
+    }
+
+    startGame() {
+        this.state = GAME_STATE.PLAYING;
+        this.score = 0;
+        this.pipes = [];
+        this.bird = new Bird(
+            GAME_SETTINGS.BIRD_START_X,
+            GAME_SETTINGS.BIRD_START_Y,
+            this.selectedCharacter
+        );
+        this.gameStartTime = Date.now();
+        this.lastPipeSpawnTime = this.gameStartTime;
+        this.isRunning = true;
+        this.updateScreens();
+        this.gameLoop();
+    }
+
+    togglePause() {
+        if (this.state === GAME_STATE.PLAYING) {
+            this.state = GAME_STATE.PAUSED;
+        } else if (this.state === GAME_STATE.PAUSED) {
+            this.state = GAME_STATE.PLAYING;
+        }
+        this.updateScreens();
+    }
+
+    endGame() {
+        this.state = GAME_STATE.GAME_OVER;
+        this.isRunning = false;
+
+        // Update high score
+        const isNewHighScore = ScoreManager.updateHighScore(this.score);
+        this.highScore = ScoreManager.getHighScore();
+
+        // Play hit sound
+        AssetLoader.playSound('hit');
+
+        // Update UI
+        document.getElementById('finalScore').textContent = this.score;
+        document.getElementById('finalHighScore').textContent = this.highScore;
+
+        this.updateScreens();
+    }
+
+    updateScreens() {
+        const screens = {
+            menu: document.getElementById('menu'),
+            characterSelect: document.getElementById('characterSelect'),
+            gameOverScreen: document.getElementById('gameOverScreen'),
+            pauseScreen: document.getElementById('pauseScreen'),
+            hud: document.getElementById('hud')
+        };
+
+        // Hide all screens
+        Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+
+        // Show appropriate screen
+        if (this.state === GAME_STATE.MENU) {
+            screens.menu.classList.remove('hidden');
+        } else if (this.state === GAME_STATE.CHARACTER_SELECT) {
+            screens.characterSelect.classList.remove('hidden');
+        } else if (this.state === GAME_STATE.PLAYING) {
+            screens.hud.classList.remove('hidden');
+        } else if (this.state === GAME_STATE.PAUSED) {
+            screens.pauseScreen.classList.remove('hidden');
+        } else if (this.state === GAME_STATE.GAME_OVER) {
+            screens.gameOverScreen.classList.remove('hidden');
+        }
+    }
+
+    updateScore(value = 1) {
+        this.score += value;
+        document.getElementById('score').textContent = this.score;
+        AssetLoader.playSound('point');
+    }
+
+    update() {
+        if (this.state !== GAME_STATE.PLAYING) {
+            return;
+        }
+
+        const currentTime = Date.now();
+
+        // Update bird
+        this.bird.update();
+
+        // Check ground/ceiling collision
+        if (!this.bird.isAlive(this.canvas.width, this.canvas.height, GAME_SETTINGS.GROUND_HEIGHT)) {
+            this.endGame();
+            return;
+        }
+
+        // Spawn pipes
+        if (currentTime - this.lastPipeSpawnTime > GAME_SETTINGS.PIPE_SPAWN_INTERVAL) {
+            this.pipes.push(new Pipe(
+                this.canvas.width,
+                this.canvas.height,
+                GAME_SETTINGS.GROUND_HEIGHT,
+                GAME_SETTINGS.PIPE_GAP
+            ));
+            this.lastPipeSpawnTime = currentTime;
+        }
+
+        // Update pipes and check collisions
+        this.pipes = this.pipes.filter(pipe => !pipe.isOffScreen());
+
+        for (let pipe of this.pipes) {
+            pipe.update(GAME_SETTINGS.SCROLL_SPEED);
+
+            // Check pipe collision
+            if (pipe.checkCollision(this.bird)) {
+                this.endGame();
+                return;
+            }
+
+            // Check scoring
+            if (pipe.canScore(this.bird)) {
+                pipe.scored = true;
+                this.updateScore();
+            }
+        }
+    }
+
+    draw() {
+        // Clear canvas
+        this.ctx.fillStyle = '#87CEEB';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw scrolling background gradient
+        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        gradient.addColorStop(0, '#87CEEB');
+        gradient.addColorStop(1, '#e0f6ff');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (this.state === GAME_STATE.PLAYING || this.state === GAME_STATE.PAUSED) {
+            // Draw pipes
+            for (let pipe of this.pipes) {
+                pipe.draw(this.ctx);
+            }
+
+            // Draw ground
+            this.ctx.fillStyle = '#8B7355';
+            this.ctx.fillRect(0, this.canvas.height - GAME_SETTINGS.GROUND_HEIGHT, this.canvas.width, GAME_SETTINGS.GROUND_HEIGHT);
+
+            // Draw ground pattern
+            this.ctx.fillStyle = '#A0826D';
+            for (let i = 0; i < this.canvas.width; i += 30) {
+                this.ctx.fillRect(i, this.canvas.height - GAME_SETTINGS.GROUND_HEIGHT, 15, 10);
+            }
+
+            // Draw bird
+            if (this.bird) {
+                this.bird.draw(this.ctx);
+            }
+
+            // Draw pause overlay if paused
+            if (this.state === GAME_STATE.PAUSED) {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+    }
+
+    gameLoop = () => {
+        this.update();
+        this.draw();
+
+        if (this.isRunning) {
+            requestAnimationFrame(this.gameLoop);
+        }
+    }
+}
+
+// Initialize game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const game = new Game();
+    // Show initial menu
+    game.showMenu();
+});

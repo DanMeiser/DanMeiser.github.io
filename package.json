@@ -1,0 +1,24 @@
+{
+  "name": "flappyFamily",
+  "version": "1.0.0",
+  "description": "A fun family-friendly Flappy Bird-style game built with vanilla JavaScript and Canvas API",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "http-server",
+    "deploy": "git push origin main"
+  },
+  "keywords": [
+    "game",
+    "flappy-bird",
+    "javascript",
+    "canvas",
+    "github-pages"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/flappyFamily"
+  }
+}
