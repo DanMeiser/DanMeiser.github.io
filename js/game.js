@@ -99,11 +99,23 @@ class Game {
 
     async loadAssets() {
         try {
+            // Load character sprites
+            await Promise.all([
+                AssetLoader.loadImage('calvin1', 'assets/calvin1.png'),
+                AssetLoader.loadImage('calvin2', 'assets/calvin2.png'),
+                AssetLoader.loadImage('calvin3', 'assets/calvin3.png'),
+                AssetLoader.loadImage('bailey1', 'assets/bailey1.png'),
+                AssetLoader.loadImage('bailey2', 'assets/bailey2.png'),
+                AssetLoader.loadImage('bailey3', 'assets/bailey3.png'),
+                AssetLoader.loadImage('bg', 'assets/bg.png'),
+                AssetLoader.loadImage('ground', 'assets/ground.png')
+            ]);
+            
             // Load sounds (non-blocking errors)
             await Promise.all([
-                AssetLoader.loadSound('flap', 'assets/sounds/flap.mp3'),
-                AssetLoader.loadSound('hit', 'assets/sounds/hit.mp3'),
-                AssetLoader.loadSound('point', 'assets/sounds/point.mp3')
+                AssetLoader.loadSound('flap', 'assets/flap.mp3'),
+                AssetLoader.loadSound('hit', 'assets/hit.mp3'),
+                AssetLoader.loadSound('point', 'assets/point.mp3')
             ]).catch(e => console.log('Asset loading note:', e));
         } catch (error) {
             console.log('Assets may not be available:', error);
@@ -337,7 +349,7 @@ class Game {
 
 // Initialize game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const game = new Game();
+    window.game = new Game();
     // Show initial menu
     game.showMenu();
 });

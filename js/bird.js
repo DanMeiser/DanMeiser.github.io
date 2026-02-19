@@ -21,12 +21,20 @@ class Bird {
     }
 
     getCharacterFrames() {
-        // Character-specific emoji or Unicode representations
+        // Load sprite images for each character
         const characters = {
-            calvin: ['🦁'],
-            bailey: ['🦊']
+            calvin: [
+                AssetLoader.getImage('calvin1'),
+                AssetLoader.getImage('calvin2'),
+                AssetLoader.getImage('calvin3')
+            ],
+            bailey: [
+                AssetLoader.getImage('bailey1'),
+                AssetLoader.getImage('bailey2'),
+                AssetLoader.getImage('bailey3')
+            ]
         };
-        return characters[this.character] || ['🦁'];
+        return characters[this.character] || [AssetLoader.getImage('calvin1')];
     }
 
     update() {
@@ -52,16 +60,19 @@ class Bird {
         ctx.save();
 
         // Translate to bird position
-        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.translate(this.x, this.y);
         
         // Rotate based on velocity
         ctx.rotate(this.angle);
         
-        // Draw character (emoji/unicode)
-        ctx.font = 'bold 48px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(this.frames[0], 0, 0);
+        // Get current animation frame
+        const currentFrame = Math.floor(this.frameIndex) % this.frames.length;
+        const frame = this.frames[currentFrame];
+
+        // Draw the sprite if available
+        if (frame) {
+            ctx.drawImage(frame, -this.width / 2, -this.height / 2, this.width, this.height);
+        }
 
         ctx.restore();
     }

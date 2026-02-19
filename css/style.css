@@ -14,7 +14,7 @@ body {
     overflow: hidden;
 }
 
-#game-container {
+#gameContainer {
     position: relative;
     width: 100%;
     max-width: 600px;
@@ -238,7 +238,7 @@ canvas {
 
 /* Responsive */
 @media (max-width: 600px) {
-    #game-container {
+    #gameContainer {
         width: 100vw;
         height: 100vh;
         max-width: none;
