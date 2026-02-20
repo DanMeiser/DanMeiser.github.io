@@ -72,13 +72,17 @@ const AssetLoader = {
     }
 };
 
-// Local storage for high score
+// Local storage for per-character high scores
 const ScoreManager = {
-    STORAGE_KEY: 'flappyFamily_highScore',
+    STORAGE_KEY_PREFIX: 'flappyFamily_highScore_',
 
-    getHighScore() {
+    _key(character) {
+        return this.STORAGE_KEY_PREFIX + (character || 'default');
+    },
+
+    getHighScore(character) {
         try {
-            const score = localStorage.getItem(this.STORAGE_KEY);
+            const score = localStorage.getItem(this._key(character));
             return score ? parseInt(score, 10) : 0;
         } catch (error) {
             console.warn('LocalStorage error:', error);
@@ -86,18 +90,18 @@ const ScoreManager = {
         }
     },
 
-    setHighScore(score) {
+    setHighScore(score, character) {
         try {
-            localStorage.setItem(this.STORAGE_KEY, score.toString());
+            localStorage.setItem(this._key(character), score.toString());
         } catch (error) {
             console.warn('LocalStorage error:', error);
         }
     },
 
-    updateHighScore(currentScore) {
-        const high = this.getHighScore();
+    updateHighScore(currentScore, character) {
+        const high = this.getHighScore(character);
         if (currentScore > high) {
-            this.setHighScore(currentScore);
+            this.setHighScore(currentScore, character);
             return true;
         }
         return false;

@@ -16,9 +16,12 @@ const GAME_SETTINGS = {
     BIRD_START_Y: 150,
     GROUND_HEIGHT: 120,
     PIPE_WIDTH: 52,
-    PIPE_GAP: 180,
+    PIPE_GAP_START: 200,      // Starting gap (easy)
+    PIPE_GAP_MIN: 140,        // Minimum gap (hardest)
     PIPE_SPAWN_INTERVAL: 2500, // ms
-    SCROLL_SPEED: 5,
+    SCROLL_SPEED_START: 3,    // Starting speed (easy)
+    SCROLL_SPEED_MAX: 6,      // Max speed (hardest)
+    DIFFICULTY_RAMP_SCORE: 30, // Score at which difficulty is fully ramped
     CANVAS_PADDING: 0
 };
 
@@ -33,7 +36,7 @@ class Game {
         this.bird = null;
         this.pipes = [];
         this.score = 0;
-        this.highScore = ScoreManager.getHighScore();
+        this.highScore = ScoreManager.getHighScore('calvin');
         this.gameStartTime = 0;
         this.lastPipeSpawnTime = 0;
         this.isRunning = false;
@@ -177,6 +180,7 @@ class Game {
     startGame() {
         this.state = GAME_STATE.PLAYING;
         this.score = 0;
+        this.highScore = ScoreManager.getHighScore(this.selectedCharacter);
         this.pipes = [];
         this.bird = new Bird(
             GAME_SETTINGS.BIRD_START_X,
@@ -199,13 +203,28 @@ class Game {
         this.updateScreens();
     }
 
+    getDifficulty() {
+        // Returns 0 (easiest) to 1 (hardest) based on current score
+        return Math.min(this.score / GAME_SETTINGS.DIFFICULTY_RAMP_SCORE, 1);
+    }
+
+    getCurrentGap() {
+        const d = this.getDifficulty();
+        return GAME_SETTINGS.PIPE_GAP_START - d * (GAME_SETTINGS.PIPE_GAP_START - GAME_SETTINGS.PIPE_GAP_MIN);
+    }
+
+    getCurrentSpeed() {
+        const d = this.getDifficulty();
+        return GAME_SETTINGS.SCROLL_SPEED_START + d * (GAME_SETTINGS.SCROLL_SPEED_MAX - GAME_SETTINGS.SCROLL_SPEED_START);
+    }
+
     endGame() {
         this.state = GAME_STATE.GAME_OVER;
         this.isRunning = false;
 
-        // Update high score
-        const isNewHighScore = ScoreManager.updateHighScore(this.score);
-        this.highScore = ScoreManager.getHighScore();
+        // Update high score for selected character
+        const isNewHighScore = ScoreManager.updateHighScore(this.score, this.selectedCharacter);
+        this.highScore = ScoreManager.getHighScore(this.selectedCharacter);
 
         // Play hit sound
         AssetLoader.playSound('hit');
@@ -265,22 +284,23 @@ class Game {
             return;
         }
 
-        // Spawn pipes
+        // Spawn pipes with current difficulty gap
         if (currentTime - this.lastPipeSpawnTime > GAME_SETTINGS.PIPE_SPAWN_INTERVAL) {
             this.pipes.push(new Pipe(
                 this.canvas.width,
                 this.canvas.height,
                 GAME_SETTINGS.GROUND_HEIGHT,
-                GAME_SETTINGS.PIPE_GAP
+                this.getCurrentGap()
             ));
             this.lastPipeSpawnTime = currentTime;
         }
 
         // Update pipes and check collisions
+        const currentSpeed = this.getCurrentSpeed();
         this.pipes = this.pipes.filter(pipe => !pipe.isOffScreen());
 
         for (let pipe of this.pipes) {
-            pipe.update(GAME_SETTINGS.SCROLL_SPEED);
+            pipe.update(currentSpeed);
 
             // Check pipe collision
             if (pipe.checkCollision(this.bird)) {
