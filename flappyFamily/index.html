@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Family</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Menu Screen -->
+        <div id="menu" class="screen">
+            <div class="menu-content">
+                <h1>🎮 Flappy Family</h1>
+                <p>Choose your character to start!</p>
+                <div class="menu-characters">
+                    <button class="menu-character-btn" data-character="calvin">
+                        <img src="../assets/calvin_preview.png" alt="Calvin">
+                        <span>Calvin</span>
+                        <span class="high-score-label">Best: <span id="calvinHighScore">0</span></span>
+                    </button>
+                    <button class="menu-character-btn" data-character="bailey">
+                        <img src="../assets/bailey_preview.png" alt="Bailey">
+                        <span>Bailey</span>
+                        <span class="high-score-label">Best: <span id="baileyHighScore">0</span></span>
+                    </button>
+                </div>
+                <div class="menu-info">
+                    <strong>How to Play:</strong>
+                    <p>• Click or press SPACE to flap</p>
+                    <p>• Avoid the pipes</p>
+                    <p>• Try to get the highest score!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Select Screen -->
+        <div id="characterSelect" class="screen hidden">
+            <div class="character-select-content">
+                <h2>Choose Your Character</h2>
+                <div class="character-options">
+                    <button class="character-btn" data-character="calvin">
+                        <div class="character-preview">🦁</div>
+                        <p>Calvin</p>
+                    </button>
+                    <button class="character-btn" data-character="bailey">
+                        <div class="character-preview">🦊</div>
+                        <p>Bailey</p>
+                    </button>
+                </div>
+                <button id="backBtn" class="btn btn-secondary">Back</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="screen hidden">
+            <div class="game-over-content">
+                <h2>Game Over!</h2>
+                <p class="character-label">Playing as: <span id="gameOverCharacter">Calvin</span></p>
+                <p>Your Score: <span id="finalScore">0</span></p>
+                <p>Best (<span id="gameOverCharName">Calvin</span>): <span id="finalHighScore">0</span></p>
+                <div class="all-high-scores">
+                    <p>🦁 Calvin Best: <span id="gameOverCalvinHigh">0</span></p>
+                    <p>🦊 Bailey Best: <span id="gameOverBaileyHigh">0</span></p>
+                </div>
+                <button id="restartBtn" class="btn btn-primary">Play Again</button>
+                <button id="menuBtn" class="btn btn-secondary">Main Menu</button>
+            </div>
+        </div>
+
+        <!-- Pause Screen -->
+        <div id="pauseScreen" class="screen hidden">
+            <div class="pause-content">
+                <h2>Paused</h2>
+                <button id="resumeBtn" class="btn btn-primary">Resume (P)</button>
+                <button id="quitBtn" class="btn btn-secondary">Quit to Menu (Q)</button>
+            </div>
+        </div>
+
+        <!-- HUD (Heads-Up Display) -->
+        <div id="hud" class="hud hidden">
+            <div class="score-display">
+                Score: <span id="score">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/utils.js?v=4"></script>
+    <script src="../js/bird.js?v=4"></script>
+    <script src="../js/pipe.js?v=4"></script>
+    <script src="../js/game.js?v=4"></script>
+    <script>
+        // Helper function for character selection
+        function selectCharacter(character) {
+            if (window.game) {
+                game.selectedCharacter = character;
+                game.startGame();
+            }
+        }
+    </script>
+</body>
+</html>

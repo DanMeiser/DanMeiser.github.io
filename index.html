@@ -3,103 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Family</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Dan Meiser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            margin-bottom: 2.5rem;
+        }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            padding: 1.2rem 2rem;
+            width: 100%;
+            max-width: 400px;
+            text-decoration: none;
+            color: #fff;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .link-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .link-card .icon {
+            font-size: 2rem;
+        }
+
+        .link-card .label {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .link-card .desc {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
+    <div class="container">
+        <h1>Dan Meiser</h1>
+        <p class="subtitle">Welcome to my site</p>
 
-        <!-- Menu Screen -->
-        <div id="menu" class="screen">
-            <div class="menu-content">
-                <h1>🎮 Flappy Family</h1>
-                <p>Choose your character to start!</p>
-                <div class="menu-characters">
-                    <button class="menu-character-btn" data-character="calvin">
-                        <img src="assets/calvin_preview.png" alt="Calvin">
-                        <span>Calvin</span>
-                        <span class="high-score-label">Best: <span id="calvinHighScore">0</span></span>
-                    </button>
-                    <button class="menu-character-btn" data-character="bailey">
-                        <img src="assets/bailey_preview.png" alt="Bailey">
-                        <span>Bailey</span>
-                        <span class="high-score-label">Best: <span id="baileyHighScore">0</span></span>
-                    </button>
+        <div class="links">
+            <a href="flappyFamily/" class="link-card">
+                <span class="icon">🎮</span>
+                <div>
+                    <div class="label">Flappy Family</div>
+                    <div class="desc">Play the game with Calvin &amp; Bailey</div>
                 </div>
-                <div class="menu-info">
-                    <strong>How to Play:</strong>
-                    <p>• Click or press SPACE to flap</p>
-                    <p>• Avoid the pipes</p>
-                    <p>• Try to get the highest score!</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Character Select Screen -->
-        <div id="characterSelect" class="screen hidden">
-            <div class="character-select-content">
-                <h2>Choose Your Character</h2>
-                <div class="character-options">
-                    <button class="character-btn" data-character="calvin">
-                        <div class="character-preview">🦁</div>
-                        <p>Calvin</p>
-                    </button>
-                    <button class="character-btn" data-character="bailey">
-                        <div class="character-preview">🦊</div>
-                        <p>Bailey</p>
-                    </button>
-                </div>
-                <button id="backBtn" class="btn btn-secondary">Back</button>
-            </div>
-        </div>
-
-        <!-- Game Over Screen -->
-        <div id="gameOverScreen" class="screen hidden">
-            <div class="game-over-content">
-                <h2>Game Over!</h2>
-                <p class="character-label">Playing as: <span id="gameOverCharacter">Calvin</span></p>
-                <p>Your Score: <span id="finalScore">0</span></p>
-                <p>Best (<span id="gameOverCharName">Calvin</span>): <span id="finalHighScore">0</span></p>
-                <div class="all-high-scores">
-                    <p>🦁 Calvin Best: <span id="gameOverCalvinHigh">0</span></p>
-                    <p>🦊 Bailey Best: <span id="gameOverBaileyHigh">0</span></p>
-                </div>
-                <button id="restartBtn" class="btn btn-primary">Play Again</button>
-                <button id="menuBtn" class="btn btn-secondary">Main Menu</button>
-            </div>
-        </div>
-
-        <!-- Pause Screen -->
-        <div id="pauseScreen" class="screen hidden">
-            <div class="pause-content">
-                <h2>Paused</h2>
-                <button id="resumeBtn" class="btn btn-primary">Resume (P)</button>
-                <button id="quitBtn" class="btn btn-secondary">Quit to Menu (Q)</button>
-            </div>
-        </div>
-
-        <!-- HUD (Heads-Up Display) -->
-        <div id="hud" class="hud hidden">
-            <div class="score-display">
-                Score: <span id="score">0</span>
-            </div>
+            </a>
         </div>
     </div>
-
-    <!-- Scripts -->
-    <script src="js/utils.js?v=3"></script>
-    <script src="js/bird.js?v=3"></script>
-    <script src="js/pipe.js?v=3"></script>
-    <script src="js/game.js?v=3"></script>
-    <script>
-        // Helper function for character selection
-        function selectCharacter(character) {
-            if (window.game) {
-                game.selectedCharacter = character;
-                game.startGame();
-            }
-        }
-    </script>
 </body>
 </html>

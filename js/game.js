@@ -119,23 +119,26 @@ class Game {
 
     async loadAssets() {
         try {
+            // Determine base path for assets (support game running from subdirectory)
+            const basePath = window.location.pathname.includes('/flappyFamily') ? '../assets/' : 'assets/';
+            
             // Load character sprites
             await Promise.all([
-                AssetLoader.loadImage('calvin1', 'assets/calvin1.png'),
-                AssetLoader.loadImage('calvin2', 'assets/calvin2.png'),
-                AssetLoader.loadImage('calvin3', 'assets/calvin3.png'),
-                AssetLoader.loadImage('bailey1', 'assets/bailey1.png'),
-                AssetLoader.loadImage('bailey2', 'assets/bailey2.png'),
-                AssetLoader.loadImage('bailey3', 'assets/bailey3.png'),
-                AssetLoader.loadImage('bg', 'assets/bg.png'),
-                AssetLoader.loadImage('ground', 'assets/ground.png')
+                AssetLoader.loadImage('calvin1', basePath + 'calvin1.png'),
+                AssetLoader.loadImage('calvin2', basePath + 'calvin2.png'),
+                AssetLoader.loadImage('calvin3', basePath + 'calvin3.png'),
+                AssetLoader.loadImage('bailey1', basePath + 'bailey1.png'),
+                AssetLoader.loadImage('bailey2', basePath + 'bailey2.png'),
+                AssetLoader.loadImage('bailey3', basePath + 'bailey3.png'),
+                AssetLoader.loadImage('bg', basePath + 'bg.png'),
+                AssetLoader.loadImage('ground', basePath + 'ground.png')
             ]);
             
             // Load sounds (non-blocking errors)
             await Promise.all([
-                AssetLoader.loadSound('flap', 'assets/flap.mp3'),
-                AssetLoader.loadSound('hit', 'assets/hit.mp3'),
-                AssetLoader.loadSound('point', 'assets/point.mp3')
+                AssetLoader.loadSound('flap', basePath + 'flap.mp3'),
+                AssetLoader.loadSound('hit', basePath + 'hit.mp3'),
+                AssetLoader.loadSound('point', basePath + 'point.mp3')
             ]).catch(e => console.log('Asset loading note:', e));
         } catch (error) {
             console.log('Assets may not be available:', error);
