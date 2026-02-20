@@ -1,55 +1,62 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CactoCrash</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
     <div id="gameWrapper">
         <!-- Menu Screen -->
-        <div id="menu" class="overlay">
-            <h1>� CactoCrash</h1>
-            <p>Choose your runner!</p>
-            <div class="char-select">
-                <button class="char-btn" data-character="calvin">
-                    <img src="../assets/calvin_preview.png" alt="Calvin">
-                    <span>Calvin</span>
-                    <span class="best-label">Best: <span id="calvinBest">0</span></span>
-                </button>
-                <button class="char-btn" data-character="bailey">
-                    <img src="../assets/bailey_preview.png" alt="Bailey">
-                    <span>Bailey</span>
-                    <span class="best-label">Best: <span id="baileyBest">0</span></span>
-                </button>
+        <div id="menu" class="screen">
+            <div class="menu-content">
+                <h1>&#127797; CactoCrash</h1>
+                <p>Choose your runner!</p>
+                <div class="menu-characters">
+                    <button class="menu-character-btn" data-character="calvin">
+                        <img src="../assets/calvin_preview.png" alt="Calvin">
+                        <span>Calvin</span>
+                        <span class="high-score-label">Best: <span id="calvinBest">0</span></span>
+                    </button>
+                    <button class="menu-character-btn" data-character="bailey">
+                        <img src="../assets/bailey_preview.png" alt="Bailey">
+                        <span>Bailey</span>
+                        <span class="high-score-label">Best: <span id="baileyBest">0</span></span>
+                    </button>
+                </div>
+                <div class="menu-info">
+                    <strong>How to Play:</strong>
+                    <p>&#8226; SPACE / Tap to jump</p>
+                    <p>&#8226; DOWN / Swipe down to duck</p>
+                    <p>&#8226; Avoid the obstacles!</p>
+                </div>
+                <a href="https://danmeiser.github.io/" class="btn btn-secondary" style="display:inline-block;margin-top:12px;text-decoration:none;">&#127968; Home</a>
             </div>
-            <div class="instructions">
-                <strong>How to Play:</strong>
-                <p>SPACE / Tap to jump</p>
-                <p>DOWN / Swipe down to duck</p>
-                <p>Avoid the obstacles!</p>
-            </div>
-            <a href="https://danmeiser.github.io/" class="btn btn-secondary" style="display:inline-block;margin-top:10px;text-decoration:none;color:white;">🏠 Home</a>
         </div>
 
-        <!-- Game Over Overlay -->
-        <div id="gameOver" class="overlay hidden">
-            <h2>Game Over!</h2>
-            <p>Score: <span id="finalScore">0</span></p>
-            <p>Best: <span id="finalBest">0</span></p>
-            <button id="restartBtn" class="btn">Play Again</button>
-            <button id="menuBtn" class="btn btn-secondary">Main Menu</button>
+        <!-- Game Over Screen -->
+        <div id="gameOver" class="screen hidden">
+            <div class="game-over-content">
+                <h2>Game Over!</h2>
+                <p>Score: <span id="finalScore">0</span></p>
+                <p>Best: <span id="finalBest">0</span></p>
+                <button id="restartBtn" class="btn btn-primary">Play Again</button>
+                <button id="menuBtn" class="btn btn-secondary">Main Menu</button>
+            </div>
         </div>
 
         <!-- HUD -->
-        <div id="hud" class="hidden">
-            <span id="score">0</span>
+        <div id="hud" class="hud hidden">
+            <div class="score-display">
+                Score: <span id="score">0</span>
+            </div>
         </div>
 
         <canvas id="gameCanvas"></canvas>
     </div>
 
-    <script src="runner.js?v=1"></script>
+    <script src="runner.js?v=2"></script>
 </body>
 </html>

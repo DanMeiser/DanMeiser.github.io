@@ -384,7 +384,7 @@ class DinoRunGame {
         this.canvas.addEventListener('click', () => this.handleAction('jump'));
 
         // UI buttons
-        document.querySelectorAll('.char-btn').forEach(btn => {
+        document.querySelectorAll('.menu-character-btn').forEach(btn => {
             btn.addEventListener('click', e => {
                 this.character = e.currentTarget.dataset.character;
                 this.startGame();

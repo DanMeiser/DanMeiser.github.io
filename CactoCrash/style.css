@@ -1,19 +1,6 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+﻿/* CactoCrash - local overrides (shared styles come from ../css/style.css) */
 
-body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
-}
-
+/* Game wrapper is landscape, not portrait like Flappy Family */
 #gameWrapper {
     position: relative;
     width: 100%;
@@ -26,207 +13,83 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-/* ─── Overlays ─────────────────────────────── */
-.overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    padding: 0.6rem 1rem;
-    text-align: center;
-    backdrop-filter: blur(4px);
-    color: white;
+/* Treat .screen same as Flappy Family but inside the shorter wrapper */
+#gameWrapper .screen {
     overflow-y: auto;
 }
 
-.overlay.hidden {
-    display: none !important;
+#gameWrapper .menu-content {
+    padding: 12px 20px;
 }
 
-.overlay h1 {
-    font-size: 2rem;
-    color: white;
-    margin-bottom: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    animation: bounce 0.6s ease-out;
+#gameWrapper .menu-content h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
 }
 
-.overlay h2 {
-    font-size: 1.6rem;
-    color: white;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+#gameWrapper .menu-characters {
+    margin: 10px 0;
+    gap: 20px;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+#gameWrapper .menu-character-btn {
+    padding: 10px 16px;
+    gap: 4px;
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.tagline {
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-}
-
-.overlay p {
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 0.15rem;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-/* ─── Character Select ─────────────────────── */
-.char-select {
-    display: flex;
-    gap: 1.5rem;
-    margin: 0.4rem 0;
-    animation: slideIn 0.5s ease-out;
-}
-
-.char-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 16px;
-    padding: 0.5rem 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: white;
-    animation: bounce 0.6s ease-out;
-}
-
-.char-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: white;
-    transform: scale(1.07);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-.char-btn img {
+#gameWrapper .menu-character-btn img {
     width: 48px;
     height: 48px;
-    object-fit: contain;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 6px;
 }
 
-.char-btn span {
-    font-weight: bold;
+#gameWrapper .menu-content p {
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+#gameWrapper .menu-info {
+    margin-top: 10px;
+    padding: 10px 16px;
+    margin-bottom: 10px;
+}
+
+#gameWrapper .menu-info strong {
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+#gameWrapper .game-over-content {
+    text-align: center;
     color: white;
-    font-size: 0.95rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    padding: 12px;
 }
 
-.best-label {
-    font-size: 0.8rem !important;
-    font-weight: normal !important;
-    color: #ffeb3b !important;
+#gameWrapper .game-over-content h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* ─── Instructions ─────────────────────────── */
-.instructions {
-    margin-top: 0.3rem;
-    padding: 0.4rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.instructions strong {
-    display: block;
-    margin-bottom: 0.3rem;
+#gameWrapper .game-over-content p {
+    font-size: 16px;
     color: white;
-    font-size: 0.95rem;
+    margin: 4px 0;
 }
 
-.instructions p {
-    font-size: 0.85rem !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-    margin: 0.15rem 0 !important;
-}
-
-/* ─── Buttons ──────────────────────────────── */
-.btn {
-    padding: 12px 28px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 0.5rem;
-    margin-left: 5px;
-    margin-right: 5px;
-    transition: all 0.3s ease;
-    font-weight: bold;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid white;
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-}
-
-/* ─── HUD ──────────────────────────────────── */
+/* HUD */
 #hud {
     position: absolute;
     top: 8px;
     right: 12px;
-    z-index: 5;
+    z-index: 10;
     font-size: 1.2rem;
     font-weight: 700;
     color: #555;
     font-family: 'Courier New', monospace;
 }
 
-#hud.hidden {
-    display: none;
-}
-
-/* ─── Responsive ───────────────────────────── */
+/* Responsive */
 @media (max-width: 600px) {
     #gameWrapper {
         height: 250px;
@@ -235,21 +98,12 @@ canvas {
         border-right: none;
     }
 
-    .overlay h1 {
-        font-size: 1.8rem;
+    #gameWrapper .menu-content h1 {
+        font-size: 24px;
     }
 
-    .char-btn {
-        padding: 0.5rem 0.8rem;
-    }
-
-    .char-btn img {
-        width: 48px;
-        height: 48px;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
+    #gameWrapper .menu-character-btn img {
+        width: 40px;
+        height: 40px;
     }
 }
