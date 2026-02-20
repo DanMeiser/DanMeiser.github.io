@@ -101,7 +101,7 @@ class Game {
         });
 
         document.getElementById('menuBtn').addEventListener('click', () => {
-            this.showMenu();
+            window.location.href = '../';
         });
 
         document.getElementById('resumeBtn').addEventListener('click', () => {
@@ -109,8 +109,7 @@ class Game {
         });
 
         document.getElementById('quitBtn').addEventListener('click', () => {
-            this.togglePause(); // Unpause first
-            this.showMenu();
+            window.location.href = '../';
         });
 
         // Window resize

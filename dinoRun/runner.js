@@ -382,7 +382,7 @@ class DinoRunGame {
             });
         });
         document.getElementById('restartBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('menuBtn').addEventListener('click', () => this.showMenu());
+        document.getElementById('menuBtn').addEventListener('click', () => window.location.href = '../');
     }
 
     handleAction(action) {
