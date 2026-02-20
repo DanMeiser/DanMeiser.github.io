@@ -9,9 +9,9 @@ class Bird {
         this.width = 34;
         this.height = 24;
         this.velocity = 0;
-        this.gravity = 0.6;
-        this.jumpPower = -12;
-        this.maxVelocity = 10;
+        this.gravity = 0.4;
+        this.jumpPower = -10;
+        this.maxVelocity = 8;
         
         // Animation
         this.angle = 0;
