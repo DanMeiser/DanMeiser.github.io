@@ -101,7 +101,7 @@ class Game {
         });
 
         document.getElementById('menuBtn').addEventListener('click', () => {
-            window.location.href = '../';
+            window.location.href = 'https://danmeiser.github.io/';
         });
 
         document.getElementById('resumeBtn').addEventListener('click', () => {
@@ -109,7 +109,7 @@ class Game {
         });
 
         document.getElementById('quitBtn').addEventListener('click', () => {
-            window.location.href = '../';
+            window.location.href = 'https://danmeiser.github.io/';
         });
 
         // Window resize
@@ -154,7 +154,7 @@ class Game {
             }
         } else if (e.key === 'q' || e.key === 'Q') {
             if (this.state === GAME_STATE.GAME_OVER) {
-                this.showMenu();
+                window.location.href = 'https://danmeiser.github.io/';
             }
         } else if (e.key === '1') {
             if (this.state === GAME_STATE.MENU) {

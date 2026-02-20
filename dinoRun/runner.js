@@ -7,10 +7,10 @@
 const GROUND_Y_RATIO = 0.85;
 const GRAVITY = 0.6;
 const JUMP_POWER = -12;
-const INITIAL_SPEED = 2.5;
+const INITIAL_SPEED = 1.5;
 const MAX_SPEED = 14;
 const SPEED_INCREMENT = 0.001;
-const OBSTACLE_MIN_GAP = 900;
+const OBSTACLE_MIN_GAP = 1200;
 const OBSTACLE_MAX_GAP = 1600;
 const DUCK_HEIGHT_RATIO = 0.5;
 
@@ -391,7 +391,7 @@ class DinoRunGame {
             });
         });
         document.getElementById('restartBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('menuBtn').addEventListener('click', () => window.location.href = '../');
+        document.getElementById('menuBtn').addEventListener('click', () => window.location.href = 'https://danmeiser.github.io/');
     }
 
     handleAction(action) {
