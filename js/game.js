@@ -230,8 +230,13 @@ class Game {
         AssetLoader.playSound('hit');
 
         // Update UI
+        const charName = this.selectedCharacter === 'calvin' ? 'Calvin' : 'Bailey';
         document.getElementById('finalScore').textContent = this.score;
         document.getElementById('finalHighScore').textContent = this.highScore;
+        document.getElementById('gameOverCharacter').textContent = charName;
+        document.getElementById('gameOverCharName').textContent = charName;
+        document.getElementById('gameOverCalvinHigh').textContent = ScoreManager.getHighScore('calvin');
+        document.getElementById('gameOverBaileyHigh').textContent = ScoreManager.getHighScore('bailey');
 
         this.updateScreens();
     }
@@ -251,6 +256,9 @@ class Game {
         // Show appropriate screen
         if (this.state === GAME_STATE.MENU) {
             screens.menu.classList.remove('hidden');
+            // Update menu high scores
+            document.getElementById('calvinHighScore').textContent = ScoreManager.getHighScore('calvin');
+            document.getElementById('baileyHighScore').textContent = ScoreManager.getHighScore('bailey');
         } else if (this.state === GAME_STATE.CHARACTER_SELECT) {
             screens.characterSelect.classList.remove('hidden');
         } else if (this.state === GAME_STATE.PLAYING) {
