@@ -1,0 +1,7 @@
+# Git modules
+
+# Please remove 'flappyFamily' entry
+
+[submodule "flappyFamily"]
+	path = flappyFamily
+	url = <repository_url_of_flappyFamily>
