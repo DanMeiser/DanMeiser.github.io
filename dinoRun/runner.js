@@ -104,11 +104,9 @@ class Runner {
     }
 
     loadFrames() {
-        this.frames = [
-            Assets.getImage(this.character + '1'),
-            Assets.getImage(this.character + '2'),
-            Assets.getImage(this.character + '3')
-        ].filter(Boolean);
+        // Use only the first frame (no animation) to avoid spinning look
+        const img = Assets.getImage(this.character + '1');
+        this.frames = img ? [img] : [];
     }
 
     jump() {
