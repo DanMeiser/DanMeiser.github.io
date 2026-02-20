@@ -36,13 +36,14 @@ class Game {
         this.bird = null;
         this.pipes = [];
         this.score = 0;
-        this.highScore = ScoreManager.getHighScore('calvin');
+        this.highScore = 0;
         this.gameStartTime = 0;
         this.lastPipeSpawnTime = 0;
         this.isRunning = false;
 
         this.setupEventListeners();
         this.loadAssets();
+        this.loadScores();
     }
 
     setCanvasSize() {
@@ -185,6 +186,10 @@ class Game {
         }
     }
 
+    async loadScores() {
+        this.highScore = await GitHubScores.getHighScore('flappyFamily', this.selectedCharacter);
+    }
+
     showMenu() {
         this.state = GAME_STATE.MENU;
         this.updateScreens();
@@ -196,10 +201,10 @@ class Game {
         this.updateScreens();
     }
 
-    startGame() {
+    async startGame() {
         this.state = GAME_STATE.PLAYING;
         this.score = 0;
-        this.highScore = ScoreManager.getHighScore(this.selectedCharacter);
+        this.highScore = await GitHubScores.getHighScore('flappyFamily', this.selectedCharacter);
         this.pipes = [];
         this.bird = new Bird(
             GAME_SETTINGS.BIRD_START_X,
@@ -237,13 +242,13 @@ class Game {
         return GAME_SETTINGS.SCROLL_SPEED_START + d * (GAME_SETTINGS.SCROLL_SPEED_MAX - GAME_SETTINGS.SCROLL_SPEED_START);
     }
 
-    endGame() {
+    async endGame() {
         this.state = GAME_STATE.GAME_OVER;
         this.isRunning = false;
 
         // Update high score for selected character
-        const isNewHighScore = ScoreManager.updateHighScore(this.score, this.selectedCharacter);
-        this.highScore = ScoreManager.getHighScore(this.selectedCharacter);
+        const isNewHighScore = await GitHubScores.updateHighScore('flappyFamily', this.selectedCharacter, this.score);
+        this.highScore = await GitHubScores.getHighScore('flappyFamily', this.selectedCharacter);
 
         // Play hit sound
         AssetLoader.playSound('hit');
@@ -254,8 +259,8 @@ class Game {
         document.getElementById('finalHighScore').textContent = this.highScore;
         document.getElementById('gameOverCharacter').textContent = charName;
         document.getElementById('gameOverCharName').textContent = charName;
-        document.getElementById('gameOverCalvinHigh').textContent = ScoreManager.getHighScore('calvin');
-        document.getElementById('gameOverBaileyHigh').textContent = ScoreManager.getHighScore('bailey');
+        document.getElementById('gameOverCalvinHigh').textContent = await GitHubScores.getHighScore('flappyFamily', 'calvin');
+        document.getElementById('gameOverBaileyHigh').textContent = await GitHubScores.getHighScore('flappyFamily', 'bailey');
 
         this.updateScreens();
     }
@@ -275,9 +280,13 @@ class Game {
         // Show appropriate screen
         if (this.state === GAME_STATE.MENU) {
             screens.menu.classList.remove('hidden');
-            // Update menu high scores
-            document.getElementById('calvinHighScore').textContent = ScoreManager.getHighScore('calvin');
-            document.getElementById('baileyHighScore').textContent = ScoreManager.getHighScore('bailey');
+            // Update menu high scores (async)
+            GitHubScores.getHighScore('flappyFamily', 'calvin').then(s => {
+                document.getElementById('calvinHighScore').textContent = s;
+            });
+            GitHubScores.getHighScore('flappyFamily', 'bailey').then(s => {
+                document.getElementById('baileyHighScore').textContent = s;
+            });
         } else if (this.state === GAME_STATE.CHARACTER_SELECT) {
             screens.characterSelect.classList.remove('hidden');
         } else if (this.state === GAME_STATE.PLAYING) {
