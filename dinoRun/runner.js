@@ -7,11 +7,11 @@
 const GROUND_Y_RATIO = 0.85;
 const GRAVITY = 0.6;
 const JUMP_POWER = -12;
-const INITIAL_SPEED = 5;
+const INITIAL_SPEED = 2.5;
 const MAX_SPEED = 14;
-const SPEED_INCREMENT = 0.002;
-const OBSTACLE_MIN_GAP = 600;
-const OBSTACLE_MAX_GAP = 1200;
+const SPEED_INCREMENT = 0.001;
+const OBSTACLE_MIN_GAP = 900;
+const OBSTACLE_MAX_GAP = 1600;
 const DUCK_HEIGHT_RATIO = 0.5;
 
 const STATE = { MENU: 0, PLAYING: 1, GAME_OVER: 2 };
@@ -175,8 +175,17 @@ class Obstacle {
             { w: 40, h: 25, color: '#555',    type: 'bird', flying: true }
         ];
 
-        // Birds only appear at higher speeds
-        const available = speed > 8 ? types : types.slice(0, 3);
+        // Birds only appear at higher speeds; start with only small cacti at low speed
+        let available;
+        if (speed < 4) {
+            available = [types[0]]; // Only small cacti at the start
+        } else if (speed < 7) {
+            available = types.slice(0, 2); // Small + large cacti
+        } else if (speed < 10) {
+            available = types.slice(0, 3); // All cacti, no birds
+        } else {
+            available = types; // Everything
+        }
         const t = available[Math.floor(Math.random() * available.length)];
 
         this.x = x;
