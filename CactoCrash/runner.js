@@ -1,5 +1,5 @@
 /**
- * Dino Run - Family Edition
+ * CactoCrash
  * A Chrome Dino-style endless runner with Calvin & Bailey
  */
 
