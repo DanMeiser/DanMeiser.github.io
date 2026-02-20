@@ -68,8 +68,22 @@ const Assets = {
     }
 };
 
-// ─── Score Manager (uses shared GitHubScores from scores.js) ─────────────────
-// Kept as async wrappers
+// ─── Score Manager ──────────────────────────────────────
+const Scores = {
+    KEY: 'dinoRun_best_',
+    get(char) {
+        try { return parseInt(localStorage.getItem(this.KEY + char), 10) || 0; }
+        catch { return 0; }
+    },
+    set(char, val) {
+        try { localStorage.setItem(this.KEY + char, val); } catch {}
+    },
+    update(char, val) {
+        const best = this.get(char);
+        if (val > best) { this.set(char, val); return true; }
+        return false;
+    }
+};
 
 // ─── Runner (Player) ───────────────────────────────────
 class Runner {
@@ -394,9 +408,9 @@ class DinoRunGame {
         document.getElementById('hud').classList.add('hidden');
     }
 
-    async updateBestLabels() {
-        document.getElementById('calvinBest').textContent = await GitHubScores.getHighScore('dinoRun', 'calvin');
-        document.getElementById('baileyBest').textContent = await GitHubScores.getHighScore('dinoRun', 'bailey');
+    updateBestLabels() {
+        document.getElementById('calvinBest').textContent = Scores.get('calvin');
+        document.getElementById('baileyBest').textContent = Scores.get('bailey');
     }
 
     startGame() {
@@ -424,16 +438,16 @@ class DinoRunGame {
         document.getElementById('score').textContent = '0';
     }
 
-    async gameOver() {
+    gameOver() {
         this.state = STATE.GAME_OVER;
         Assets.playSound('hit');
         const finalScore = Math.floor(this.score);
-        await GitHubScores.updateHighScore('dinoRun', this.character, finalScore);
+        Scores.update(this.character, finalScore);
 
         document.getElementById('hud').classList.add('hidden');
         document.getElementById('gameOver').classList.remove('hidden');
         document.getElementById('finalScore').textContent = finalScore;
-        document.getElementById('finalBest').textContent = await GitHubScores.getHighScore('dinoRun', this.character);
+        document.getElementById('finalBest').textContent = Scores.get(this.character);
     }
 
     // ─── Collision ──────────────────────────────────────
