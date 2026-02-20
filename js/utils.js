@@ -6,6 +6,31 @@
 const AssetLoader = {
     images: {},
     sounds: {},
+    audioContext: null,
+    audioUnlocked: false,
+
+    _getAudioContext() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this.audioContext;
+    },
+
+    // Call this on the first user interaction (touch/click) to unlock audio on mobile
+    unlockAudio() {
+        if (this.audioUnlocked) return;
+        const ctx = this._getAudioContext();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        // Create and play a short silent buffer to unlock on iOS
+        const buffer = ctx.createBuffer(1, 1, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start(0);
+        this.audioUnlocked = true;
+    },
 
     loadImage(name, path) {
         return new Promise((resolve, reject) => {
@@ -36,16 +61,18 @@ const AssetLoader = {
     loadSound(name, path) {
         return new Promise((resolve) => {
             try {
-                const audio = new Audio(path);
-                audio.addEventListener('canplaythrough', () => {
-                    this.sounds[name] = audio;
-                    resolve(audio);
-                }, { once: true });
-                audio.addEventListener('error', () => {
-                    console.warn(`Failed to load sound: ${path}`);
-                    resolve(null);
-                }, { once: true });
-                audio.preload = 'auto';
+                const ctx = this._getAudioContext();
+                fetch(path)
+                    .then(response => response.arrayBuffer())
+                    .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
+                    .then(audioBuffer => {
+                        this.sounds[name] = audioBuffer;
+                        resolve(audioBuffer);
+                    })
+                    .catch(error => {
+                        console.warn(`Failed to load sound: ${path}`, error);
+                        resolve(null);
+                    });
             } catch (error) {
                 console.warn(`Sound error: ${error}`);
                 resolve(null);
@@ -62,12 +89,19 @@ const AssetLoader = {
     },
 
     playSound(name) {
-        const sound = this.sounds[name];
-        if (sound && !sound.paused) {
-            sound.currentTime = 0;
-        }
-        if (sound) {
-            sound.play().catch(e => console.log('Sound play blocked:', e));
+        const buffer = this.sounds[name];
+        if (buffer && this.audioContext) {
+            try {
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                const source = this.audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(this.audioContext.destination);
+                source.start(0);
+            } catch (e) {
+                console.log('Sound play error:', e);
+            }
         }
     }
 };

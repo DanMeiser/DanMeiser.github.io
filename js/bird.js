@@ -6,8 +6,8 @@ class Bird {
         this.x = x;
         this.y = y;
         this.character = character;
-        this.width = 34;
-        this.height = 24;
+        this.width = 50;
+        this.height = 36;
         this.velocity = 0;
         this.gravity = 0.4;
         this.jumpPower = -10;
@@ -44,7 +44,7 @@ class Bird {
         this.y += this.velocity;
 
         // Update rotation based on velocity
-        this.angle = Math.min(this.velocity * 2, Math.PI / 2.5);
+        this.angle = Math.min(this.velocity * 0.8, Math.PI / 2.5);
 
         // Update animation frame
         this.frameIndex += this.animationSpeed;

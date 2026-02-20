@@ -53,6 +53,19 @@ class Game {
     }
 
     setupEventListeners() {
+        // Unlock audio on first user interaction (required for mobile)
+        const unlockHandler = () => {
+            AssetLoader.unlockAudio();
+            document.removeEventListener('touchstart', unlockHandler);
+            document.removeEventListener('touchend', unlockHandler);
+            document.removeEventListener('click', unlockHandler);
+            document.removeEventListener('keydown', unlockHandler);
+        };
+        document.addEventListener('touchstart', unlockHandler);
+        document.addEventListener('touchend', unlockHandler);
+        document.addEventListener('click', unlockHandler);
+        document.addEventListener('keydown', unlockHandler);
+
         // Input handling
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         document.addEventListener('keyup', (e) => this.handleKeyUp(e));
@@ -329,16 +342,15 @@ class Game {
     }
 
     draw() {
-        // Clear canvas
-        this.ctx.fillStyle = '#87CEEB';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Draw scrolling background gradient
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(1, '#e0f6ff');
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Draw background image
+        const bgImage = AssetLoader.getImage('bg');
+        if (bgImage) {
+            this.ctx.drawImage(bgImage, 0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            // Fallback if image not loaded
+            this.ctx.fillStyle = '#87CEEB';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
 
         if (this.state === GAME_STATE.PLAYING || this.state === GAME_STATE.PAUSED) {
             // Draw pipes

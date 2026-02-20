@@ -11,25 +11,26 @@ Flappy Family is a JavaScript-based Flappy Bird-style game deployable on GitHub 
 
 ### Core Gameplay
 - [ ] Bird character with gravity and flap mechanics
-- [ ] Randomly generated pipe obstacles
+- [ ] Randomly generated pipe obstacles that start easy and increase in difficulty slowly
 - [ ] Collision detection (pipes, ground, ceiling)
-- [ ] Score tracking and high score persistence
+- [ ] Score tracking and high score persistence per character that store for each character separately
 - [ ] Game over state and restart functionality
 - [ ] Pause/resume gameplay
+- [ ] Responsive design for desktop and mobile browsers
+- [ ] high scores should be saved in a file and displayed separately for each character (Calvin and Bailey) on the main menu and game over screen
 
 ### User Interface
-- [ ] Main menu with start option
-- [ ] Character selection screen with preview
+- [ ] Main menu with Character selection (Calvin and Bailey) from main page
 - [ ] In-game HUD (score, high score display)
 - [ ] Pause menu with resume/quit options
 - [ ] Game over screen with final scores
 - [ ] Responsive design for desktop browsers
 
 ### Characters
-- [ ] Calvin (Lion) character
-- [ ] Bailey (Fox) character
-- [ ] Character selection before gameplay
-- [ ] Visual differentiation between characters
+- [ ] Calvin character
+- [ ] Bailey character
+- [ ] Character selection on the main menu that allows players to choose between Calvin and Bailey before starting the game. Each character should have its own high score tracking.
+
 
 ### Controls
 - [ ] SPACE to flap/confirm
