@@ -5,13 +5,13 @@
 
 // ─── Constants ──────────────────────────────────────────
 const GROUND_Y_RATIO = 0.85;
-const GRAVITY = 0.6;
-const JUMP_POWER = -12;
+const GRAVITY = 0.5;
+const JUMP_POWER = -11;
 const INITIAL_SPEED = 1.5;
-const MAX_SPEED = 14;
-const SPEED_INCREMENT = 0.001;
-const OBSTACLE_MIN_GAP = 1200;
-const OBSTACLE_MAX_GAP = 1600;
+const MAX_SPEED = 10;
+const SPEED_INCREMENT = 0.0005;
+const OBSTACLE_MIN_GAP = 1500;
+const OBSTACLE_MAX_GAP = 2200;
 const DUCK_HEIGHT_RATIO = 0.5;
 
 const STATE = { MENU: 0, PLAYING: 1, GAME_OVER: 2 };
@@ -158,8 +158,8 @@ class Runner {
     getBounds() {
         const effectiveH = this.isDucking ? this.duckHeight : this.height;
         const drawY = this.isDucking ? this.groundY - this.duckHeight : this.y;
-        // Slightly inset hitbox for fairness
-        const pad = 6;
+        // Generous hitbox padding for fairness
+        const pad = 10;
         return { x: this.x + pad, y: drawY + pad, w: this.width - pad * 2, h: effectiveH - pad * 2 };
     }
 }
@@ -169,10 +169,10 @@ class Obstacle {
     constructor(x, groundY, speed) {
         // Randomly choose obstacle type
         const types = [
-            { w: 20, h: 40, color: '#2d5a27', type: 'cactusSmall' },
-            { w: 30, h: 55, color: '#1e4d2b', type: 'cactusLarge' },
-            { w: 50, h: 35, color: '#1e4d2b', type: 'cactusDouble' },
-            { w: 40, h: 25, color: '#555',    type: 'bird', flying: true }
+            { w: 15, h: 30, color: '#2d5a27', type: 'cactusSmall' },
+            { w: 22, h: 42, color: '#1e4d2b', type: 'cactusLarge' },
+            { w: 38, h: 28, color: '#1e4d2b', type: 'cactusDouble' },
+            { w: 35, h: 20, color: '#555',    type: 'bird', flying: true }
         ];
 
         // Birds only appear at higher speeds; start with only small cacti at low speed
@@ -484,8 +484,8 @@ class DinoRunGame {
         if (this.nextObstacleIn <= 0) {
             this.obstacles.push(new Obstacle(this.canvas.width + 20, this.groundY, this.speed));
             this.nextObstacleIn = OBSTACLE_MIN_GAP + Math.random() * (OBSTACLE_MAX_GAP - OBSTACLE_MIN_GAP);
-            // Tighten gap as speed increases
-            this.nextObstacleIn *= (INITIAL_SPEED / this.speed);
+            // Gently tighten gap as speed increases (never below 60% of original)
+            this.nextObstacleIn *= Math.max(0.6, INITIAL_SPEED / this.speed);
         }
 
         for (let i = this.obstacles.length - 1; i >= 0; i--) {
