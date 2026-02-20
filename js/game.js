@@ -16,8 +16,8 @@ const GAME_SETTINGS = {
     BIRD_START_Y: 150,
     GROUND_HEIGHT: 120,
     PIPE_WIDTH: 52,
-    PIPE_GAP_START: 200,      // Starting gap (easy)
-    PIPE_GAP_MIN: 140,        // Minimum gap (hardest)
+    PIPE_GAP_START: 240,      // Starting gap (easy)
+    PIPE_GAP_MIN: 160,        // Minimum gap (hardest)
     PIPE_SPAWN_INTERVAL: 2500, // ms
     SCROLL_SPEED_START: 3,    // Starting speed (easy)
     SCROLL_SPEED_MAX: 6,      // Max speed (hardest)
