@@ -63,8 +63,12 @@ class Game {
         });
 
         // Button clicks
-        document.getElementById('startBtn').addEventListener('click', () => {
-            this.showCharacterSelect();
+        const menuCharBtns = document.querySelectorAll('.menu-character-btn');
+        menuCharBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.selectedCharacter = e.currentTarget.dataset.character;
+                this.startGame();
+            });
         });
 
         document.getElementById('backBtn').addEventListener('click', () => {
@@ -156,7 +160,7 @@ class Game {
 
     handleCanvasClick() {
         if (this.state === GAME_STATE.MENU) {
-            this.showCharacterSelect();
+            // Character buttons handle starting — canvas click does nothing on menu
         } else if (this.state === GAME_STATE.CHARACTER_SELECT) {
             // Let buttons handle it
         } else if (this.state === GAME_STATE.PLAYING) {

@@ -87,15 +87,29 @@ canvas {
     margin: 20px 0;
 }
 
-.menu-character {
+.menu-character-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
     animation: bounce 0.6s ease-out;
 }
 
-.menu-character img {
+.menu-character-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: white;
+    transform: scale(1.07);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+.menu-character-btn img {
     width: 80px;
     height: 80px;
     object-fit: contain;
@@ -106,7 +120,7 @@ canvas {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.menu-character span {
+.menu-character-btn span {
     font-size: 16px;
     font-weight: bold;
     color: white;
