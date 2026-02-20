@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Run - Family Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameWrapper">
+        <!-- Menu Screen -->
+        <div id="menu" class="overlay">
+            <h1>🏃 Dino Run</h1>
+            <p class="tagline">Family Edition</p>
+            <p>Choose your runner!</p>
+            <div class="char-select">
+                <button class="char-btn" data-character="calvin">
+                    <img src="../assets/calvin_preview.png" alt="Calvin">
+                    <span>Calvin</span>
+                    <span class="best-label">Best: <span id="calvinBest">0</span></span>
+                </button>
+                <button class="char-btn" data-character="bailey">
+                    <img src="../assets/bailey_preview.png" alt="Bailey">
+                    <span>Bailey</span>
+                    <span class="best-label">Best: <span id="baileyBest">0</span></span>
+                </button>
+            </div>
+            <div class="instructions">
+                <strong>How to Play:</strong>
+                <p>SPACE / Tap to jump</p>
+                <p>DOWN / Swipe down to duck</p>
+                <p>Avoid the obstacles!</p>
+            </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div id="gameOver" class="overlay hidden">
+            <h2>Game Over!</h2>
+            <p>Score: <span id="finalScore">0</span></p>
+            <p>Best: <span id="finalBest">0</span></p>
+            <button id="restartBtn" class="btn">Play Again</button>
+            <button id="menuBtn" class="btn btn-secondary">Main Menu</button>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud" class="hidden">
+            <span id="score">0</span>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <script src="runner.js?v=1"></script>
+</body>
+</html>

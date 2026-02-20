@@ -1,0 +1,204 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+#gameWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    height: 300px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ─── Overlays ─────────────────────────────── */
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    padding: 1rem;
+    text-align: center;
+}
+
+.overlay.hidden {
+    display: none !important;
+}
+
+.overlay h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.1rem;
+}
+
+.overlay h2 {
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.tagline {
+    color: #888;
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.overlay p {
+    color: #555;
+    margin-bottom: 0.3rem;
+}
+
+/* ─── Character Select ─────────────────────── */
+.char-select {
+    display: flex;
+    gap: 1rem;
+    margin: 0.8rem 0;
+}
+
+.char-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    background: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 0.8rem 1.4rem;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.char-btn:hover {
+    transform: translateY(-2px);
+    border-color: #667eea;
+}
+
+.char-btn img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.char-btn span {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.best-label {
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+    color: #888 !important;
+}
+
+.instructions {
+    margin-top: 0.6rem;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.instructions strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #666;
+}
+
+.instructions p {
+    font-size: 0.8rem;
+    color: #999;
+    margin: 0.1rem 0;
+}
+
+/* ─── Buttons ──────────────────────────────── */
+.btn {
+    background: #667eea;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.btn:hover {
+    background: #5a6fd6;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.btn-secondary:hover {
+    background: #667eea;
+    color: #fff;
+}
+
+/* ─── HUD ──────────────────────────────────── */
+#hud {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    z-index: 5;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #555;
+    font-family: 'Courier New', monospace;
+}
+
+#hud.hidden {
+    display: none;
+}
+
+/* ─── Responsive ───────────────────────────── */
+@media (max-width: 600px) {
+    #gameWrapper {
+        height: 250px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .overlay h1 {
+        font-size: 1.5rem;
+    }
+
+    .char-btn {
+        padding: 0.5rem 0.8rem;
+    }
+
+    .char-btn img {
+        width: 40px;
+        height: 40px;
+    }
+}
