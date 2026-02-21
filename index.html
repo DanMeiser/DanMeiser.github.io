@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meiser's Market</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,88 +14,296 @@
         }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
+            background: #07071a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden;
             color: #fff;
+        }
+
+        /* Star canvas sits behind everything */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        /* Subtle radial glow in the center */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background: radial-gradient(ellipse 80% 60% at 50% 50%,
+                rgba(102, 60, 200, 0.18) 0%,
+                transparent 70%);
+            pointer-events: none;
         }
 
         .container {
+            position: relative;
+            z-index: 2;
             text-align: center;
             padding: 2rem;
-            max-width: 600px;
+            max-width: 640px;
+            width: 100%;
+            animation: fadeUp 1s ease-out both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Title ── */
+        .title-wrap {
+            margin-bottom: 0.6rem;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+            font-weight: 900;
+            font-size: clamp(2.2rem, 8vw, 4rem);
+            letter-spacing: 0.04em;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #e0aaff 0%, #c77dff 35%, #9d4edd 65%, #7b2ff7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 18px rgba(180, 100, 255, 0.55));
+            animation: titlePulse 4s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { filter: drop-shadow(0 0 18px rgba(180, 100, 255, 0.55)); }
+            50%       { filter: drop-shadow(0 0 32px rgba(180, 100, 255, 0.85)); }
+        }
+
+        /* Decorative rule under the title */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0.9rem auto 1.6rem;
+            max-width: 360px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(180, 100, 255, 0.6), transparent);
+        }
+
+        .divider-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #c77dff;
+            box-shadow: 0 0 8px #c77dff;
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.85;
-            margin-bottom: 2.5rem;
+            font-size: clamp(0.95rem, 3vw, 1.15rem);
+            color: rgba(220, 200, 255, 0.7);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 2.8rem;
         }
 
-        .links {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+        /* ── Play button ── */
+        .play-btn {
+            display: inline-flex;
             align-items: center;
-        }
-
-        .link-card {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 12px;
-            padding: 1.2rem 2rem;
-            width: 100%;
-            max-width: 400px;
+            gap: 14px;
             text-decoration: none;
             color: #fff;
-            transition: transform 0.2s, background 0.2s;
+            padding: 1.1rem 3rem;
+            border-radius: 60px;
+            font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            position: relative;
+            background: linear-gradient(135deg, #7b2ff7 0%, #9d4edd 50%, #c77dff 100%);
+            box-shadow:
+                0 0 0 1px rgba(200, 130, 255, 0.4),
+                0 0 24px rgba(155, 70, 220, 0.6),
+                0 8px 32px rgba(0, 0, 0, 0.45);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            overflow: hidden;
         }
 
-        .link-card:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.25);
+        /* Glossy top-shine */
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            border-radius: 60px 60px 0 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.18), transparent);
+            pointer-events: none;
         }
 
-        .link-card .icon {
-            font-size: 2rem;
+        /* Animated shimmer sweep */
+        .play-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg,
+                transparent 30%,
+                rgba(255,255,255,0.18) 50%,
+                transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0s;
         }
 
-        .link-card .label {
-            font-size: 1.2rem;
-            font-weight: 600;
+        .play-btn:hover::after {
+            transform: translateX(100%);
+            transition: transform 0.5s ease;
         }
 
-        .link-card .desc {
-            font-size: 0.85rem;
-            opacity: 0.8;
+        .play-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow:
+                0 0 0 1px rgba(200, 130, 255, 0.6),
+                0 0 40px rgba(155, 70, 220, 0.85),
+                0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .play-btn:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+
+        .play-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        /* ── Floating pixel decorations ── */
+        .pixels {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .pixel {
+            position: absolute;
+            border-radius: 2px;
+            opacity: 0;
+            animation: floatPixel linear infinite;
+        }
+
+        @keyframes floatPixel {
+            0%   { opacity: 0;   transform: translateY(0) rotate(0deg); }
+            10%  { opacity: 0.6; }
+            90%  { opacity: 0.6; }
+            100% { opacity: 0;   transform: translateY(-100vh) rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Meiser's Market</h1>
-        <p class="subtitle">Welcome to my site, a collection of fun games!</p>
+    <canvas id="starCanvas"></canvas>
 
-        <div class="links">
-            <a href="games/" class="link-card">
-                <span class="icon">🎮</span>
-                <div>
-                    <div class="label">Play Games</div>
-                </div>
-            </a>
+    <!-- Floating pixel shapes -->
+    <div class="pixels" id="pixels"></div>
+
+    <div class="container">
+        <div class="title-wrap">
+            <h1>Meiser's Market</h1>
         </div>
+
+        <div class="divider">
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+        </div>
+
+        <p class="subtitle">A collection of fun games</p>
+
+        <a href="games/" class="play-btn">
+            <span class="play-icon">&#127918;</span>
+            Play Games
+        </a>
     </div>
+
+    <script>
+        // ── Starfield ──
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resize() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function initStars(n) {
+            stars = [];
+            for (let i = 0; i < n; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.4 + 0.2,
+                    a: Math.random(),
+                    speed: Math.random() * 0.004 + 0.001,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function drawStars(t) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const s of stars) {
+                const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * s.speed * 60 + s.phase));
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(210, 180, 255, ${alpha * s.a})`;
+                ctx.fill();
+            }
+        }
+
+        let raf;
+        function loop(t) {
+            drawStars(t * 0.001);
+            raf = requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('resize', () => { resize(); initStars(220); });
+        resize();
+        initStars(220);
+        requestAnimationFrame(loop);
+
+        // ── Floating pixel decorations ──
+        const pixelContainer = document.getElementById('pixels');
+        const COLORS = ['#c77dff', '#9d4edd', '#7b2ff7', '#ff9ef5', '#a78bfa'];
+
+        function spawnPixel() {
+            const el = document.createElement('div');
+            el.className = 'pixel';
+            const size = Math.random() * 8 + 4;
+            el.style.cssText = [
+                `width:${size}px`,
+                `height:${size}px`,
+                `left:${Math.random() * 100}vw`,
+                `bottom:-${size}px`,
+                `background:${COLORS[Math.floor(Math.random() * COLORS.length)]}`,
+                `animation-duration:${Math.random() * 8 + 6}s`,
+                `animation-delay:${Math.random() * 4}s`,
+                `box-shadow:0 0 ${size}px ${COLORS[Math.floor(Math.random() * COLORS.length)]}`
+            ].join(';');
+            pixelContainer.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+        }
+
+        for (let i = 0; i < 18; i++) spawnPixel();
+        setInterval(spawnPixel, 800);
+    </script>
 </body>
 </html>
