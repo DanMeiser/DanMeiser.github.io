@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meiser's Market</title>
+    <title>Games - Meiser's Market</title>
     <style>
         * {
             margin: 0;
@@ -75,25 +75,53 @@
             font-weight: 600;
         }
 
-        .link-card .desc {
-            font-size: 0.85rem;
-            opacity: 0.8;
+        .back-link {
+            margin-top: 2rem;
+            display: inline-block;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #fff;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Meiser's Market</h1>
-        <p class="subtitle">Welcome to my site, a collection of fun games!</p>
+        <h1>&#127918; Games</h1>
+        <p class="subtitle">Pick a game and start playing!</p>
 
         <div class="links">
-            <a href="games/" class="link-card">
-                <span class="icon">🎮</span>
+            <a href="../flappyFamily/" class="link-card">
+                <span class="icon">&#127918;</span>
                 <div>
-                    <div class="label">Play Games</div>
+                    <div class="label">Flappy Family</div>
+                </div>
+            </a>
+            <a href="../CactoCrash/" class="link-card">
+                <span class="icon">&#127797;</span>
+                <div>
+                    <div class="label">CactoCrash</div>
+                </div>
+            </a>
+            <a href="../CannonBall/" class="link-card">
+                <span class="icon">&#129521;</span>
+                <div>
+                    <div class="label">Cannon Ball</div>
+                </div>
+            </a>
+            <a href="../Minefield/" class="link-card">
+                <span class="icon">&#128163;</span>
+                <div>
+                    <div class="label">Minefield</div>
                 </div>
             </a>
         </div>
+
+        <a href="https://danmeiser.github.io/" class="back-link">&#8592; danmeiser.github.io</a>
     </div>
 </body>
 </html>

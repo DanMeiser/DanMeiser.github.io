@@ -5,10 +5,11 @@ agent: speckit.specify
 # Project Specification - Meiser's Market
 
 ## Project Overview
-Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based games. It features a central homepage with links to each game, and each game features playable characters (Calvin and Bailey) with persistent high score tracking via localStorage.
+Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based games. It features a central homepage with a link to the games page and that page serves as a hub with links to each game, and each game features playable characters (Calvin and Bailey) with persistent high score tracking via localStorage.
 
 ## Site Structure
-- **Homepage** (`index.html`): Central hub linking to all games
+- **Homepage** (`index.html`): Landing page with a single "Play Games" card linking to the games hub
+- **Games Hub** (`games/index.html`): Lists all games as card links; includes a back link to `https://danmeiser.github.io/`
 - **Flappy Family** (`flappyFamily/`): Flappy Bird-style game
 - **CactoCrash** (`CactoCrash/`): Chrome Dino-style endless runner
 - **Cannon Ball** (`CannonBall/`): Block-breaking paddle game
@@ -17,9 +18,15 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - **Shared CSS** (`css/style.css`): Unified menu/UI styling used by all games
 
 ## Homepage Requirements
-- [ ] Card-style links to each game with icons and labels
+- [ ] Single "Play Games" card linking to `games/`
 - [ ] Purple gradient background matching game menus
 - [ ] Glass-morphism card design with hover effects
+- [ ] Responsive layout
+
+## Games Hub Requirements (`games/index.html`)
+- [ ] Card-style links to each game with icons and labels
+- [ ] Same purple gradient background and glass-morphism card style as homepage
+- [ ] "← danmeiser.github.io" back link at the bottom
 - [ ] Responsive layout
 
 ## Shared UI/Menu Requirements (applies to ALL games)
@@ -27,7 +34,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Character selection with Calvin and Bailey avatar buttons
 - [ ] High score display per character on main menu (yellow text, #ffeb3b)
 - [ ] How to Play instructions section with rounded background
-- [ ] Home button linking back to https://danmeiser.github.io/
+- [ ] Home button linking to https://danmeiser.github.io/games/ (the games hub)
 - [ ] Gradient primary buttons, white-bordered secondary buttons
 - [ ] Bounce animation on title, slide-in animation on character cards
 - [ ] Consistent styling via shared css/style.css
@@ -187,7 +194,9 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 
 ## File Structure
 
-    index.html                  # Homepage with game links
+    index.html                  # Landing page — single "Play Games" card
+    games/
+      index.html                # Games hub — all game card links + back to danmeiser.github.io
     css/style.css               # Shared menu/UI styles
     assets/                     # Shared character sprites, backgrounds, sounds
       calvin1-3.png, calvin_preview.png

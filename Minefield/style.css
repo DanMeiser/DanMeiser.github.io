@@ -3,11 +3,12 @@
 /* Slightly squarer container than 1:1.5 to fit the 15x15 grid nicely */
 #gameWrapper {
     position: relative;
+    /* width is capped so that height (1.2x width) never exceeds the viewport */
     width: min(600px, 83.33vh);
     aspect-ratio: 1 / 1.2;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: #1a1a2e;
     border: 3px solid #333;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     overflow: hidden;
 }
 

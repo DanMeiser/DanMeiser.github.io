@@ -391,7 +391,7 @@ class DinoRunGame {
             });
         });
         document.getElementById('restartBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('menuBtn').addEventListener('click', () => window.location.href = 'https://danmeiser.github.io/');
+        document.getElementById('menuBtn').addEventListener('click', () => window.location.href = 'https://danmeiser.github.io/games/');
     }
 
     handleAction(action) {
