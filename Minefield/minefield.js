@@ -413,17 +413,22 @@ function render() {
     }
     ctx.restore();
 
-    // ── Flag-mode indicator (mobile) ─────────────────────────────
+    // ── Flag-mode indicator ───────────────────────────────────────
     if (flagMode) {
-        const fw = 90, fh = 28;
+        const label = '🚩  FLAG MODE  (F to exit)';
+        ctx.font = 'bold 13px Arial';
+        const fw = ctx.measureText(label).width + 20;
+        const fh = 28;
         drawRoundRect(ctx, W - fw - 6, 6, fw, fh, 6);
-        ctx.fillStyle = 'rgba(239,83,80,0.85)';
+        ctx.fillStyle = 'rgba(239,83,80,0.9)';
         ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
         ctx.fillStyle = '#fff';
-        ctx.font = `bold 13px Arial`;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('🚩 FLAG MODE', W - fw / 2 - 6, 6 + fh / 2);
+        ctx.fillText(label, W - fw / 2 - 6, 6 + fh / 2);
     }
 }
 
@@ -437,16 +442,28 @@ function resize() {
 // ── Keyboard input ────────────────────────────────────────────────
 document.addEventListener('keydown', (e) => {
     if (state !== 'PLAYING') return;
+
+    // F or Tab toggles persistent flag mode
+    if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        flagMode = !flagMode;
+        setFlagBtn(flagMode);
+        render();
+        return;
+    }
+
+    // Shift+Arrow = one-shot flag (ignores flagMode)
     const shift = e.shiftKey;
+    const doFlag = flagMode || shift;
     switch (e.key) {
         case 'ArrowLeft':  case 'a': case 'A':
-            e.preventDefault(); shift ? tryFlag(-1, 0) : tryMove(-1, 0); break;
+            e.preventDefault(); doFlag ? tryFlag(-1, 0) : tryMove(-1, 0); break;
         case 'ArrowRight': case 'd': case 'D':
-            e.preventDefault(); shift ? tryFlag(1, 0)  : tryMove(1, 0);  break;
+            e.preventDefault(); doFlag ? tryFlag(1, 0)  : tryMove(1, 0);  break;
         case 'ArrowUp':    case 'w': case 'W':
-            e.preventDefault(); shift ? tryFlag(0, -1) : tryMove(0, -1); break;
+            e.preventDefault(); doFlag ? tryFlag(0, -1) : tryMove(0, -1); break;
         case 'ArrowDown':  case 's': case 'S':
-            e.preventDefault(); shift ? tryFlag(0, 1)  : tryMove(0, 1);  break;
+            e.preventDefault(); doFlag ? tryFlag(0, 1)  : tryMove(0, 1);  break;
     }
 });
 
@@ -471,10 +488,9 @@ canvas.addEventListener('touchend', (e) => {
     if (Math.abs(dx) >= Math.abs(dy)) mx = dx > 0 ? 1 : -1;
     else                               my = dy > 0 ? 1 : -1;
 
+    // Flag mode is sticky on mobile — stays on until the 🚩 button is tapped again
     if (flagMode) {
         tryFlag(mx, my);
-        flagMode = false;
-        setFlagBtn(false);
     } else {
         tryMove(mx, my);
     }
@@ -483,10 +499,9 @@ canvas.addEventListener('touchend', (e) => {
 // ── Mobile D-pad ──────────────────────────────────────────────────
 function dpadMove(dx, dy) {
     if (state !== 'PLAYING') return;
+    // Flag mode is sticky — stays on until 🚩 button is tapped again
     if (flagMode) {
         tryFlag(dx, dy);
-        flagMode = false;
-        setFlagBtn(false);
     } else {
         tryMove(dx, dy);
     }

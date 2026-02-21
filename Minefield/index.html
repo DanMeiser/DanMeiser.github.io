@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minefield</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="style.css?v=1">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <div id="gameWrapper">
@@ -30,9 +30,10 @@
                 <div class="menu-info">
                     <strong>How to Play:</strong>
                     <p>&#8226; Arrow keys / WASD to walk</p>
-                    <p>&#8226; Shift + Arrow to flag a tile</p>
-                    <p>&#8226; Avoid the mines! Numbers show nearby mines</p>
-                    <p>&#8226; Reveal all safe tiles to win!</p>
+                    <p>&#8226; <strong>F</strong> to toggle &#128681; Flag Mode &mdash; then move to flag</p>
+                    <p>&#8226; Shift + Arrow for a quick one-shot flag</p>
+                    <p>&#8226; Flagged tiles block movement &mdash; unflag to walk through</p>
+                    <p>&#8226; Numbers show nearby mines &mdash; clear all safe tiles to win!</p>
                 </div>
                 <a href="https://danmeiser.github.io/" class="btn btn-secondary" style="display:inline-block;margin-top:12px;text-decoration:none;">&#127968; Home</a>
             </div>
@@ -70,6 +71,6 @@
 
     </div>
 
-    <script src="minefield.js?v=1"></script>
+    <script src="minefield.js?v=2"></script>
 </body>
 </html>

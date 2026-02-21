@@ -171,8 +171,9 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Mines are placed on the first in-grid step (safe zone: 3×3 around landing tile)
 - [ ] Tiles can be safe or contain a mine; walking onto a mine results in game over
 - [ ] Safe tiles display a number (1–8) indicating adjacent mines; 0 tiles auto-flood-reveal
-- [ ] Player flags tiles with **Shift + Arrow** (desktop) or FLAG toggle + D-pad (mobile)
-- [ ] Cannot walk onto a flagged tile
+- [ ] **F key** toggles persistent flag mode (desktop) — directional keys then flag the neighbor tile instead of moving; press F again to exit; Shift+Arrow works as a one-shot alternative
+- [ ] Mobile: sticky 🚩 FLAG MODE toggle button — stays on until tapped again; swipes and D-pad both flag while active
+- [ ] Cannot walk onto a flagged tile (flagged tiles must be unflagged first)
 - [ ] Score = number of unique safe tiles revealed (including flood-revealed); max 180
 - [ ] Win condition: all 180 safe tiles revealed
 - [ ] High score persistence per character via localStorage (`minefield_best_<char>`)
