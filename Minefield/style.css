@@ -1,0 +1,138 @@
+/* Minefield - local overrides (shared styles from ../css/style.css) */
+
+/* Slightly squarer container than 1:1.5 to fit the 15x15 grid nicely */
+#gameWrapper {
+    position: relative;
+    width: min(600px, 83.33vh);
+    aspect-ratio: 1 / 1.2;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 3px solid #333;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* HUD pill badges */
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+#hud.hidden {
+    display: none !important;
+}
+
+.hud-pill {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.flags-pill {
+    color: #ffeb3b;
+}
+
+/* Game-over content */
+#gameWrapper .game-over-content {
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+#gameWrapper .game-over-content h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#gameWrapper .game-over-content p {
+    font-size: 18px;
+    color: white;
+    margin: 6px 0;
+}
+
+/* Mobile D-pad */
+#dpad {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 20;
+}
+
+.dpad-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.dpad-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.dpad-btn:active {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.flag-btn {
+    background: rgba(239, 83, 80, 0.3);
+    border: 2px solid rgba(239, 83, 80, 0.6);
+    font-size: 18px;
+}
+
+.flag-btn.active {
+    background: rgba(239, 83, 80, 0.7);
+    border-color: #ef5350;
+}
+
+/* Show D-pad on touch devices */
+@media (pointer: coarse) {
+    #dpad {
+        display: flex;
+    }
+
+    /* Shrink canvas to leave room for the d-pad */
+    #gameCanvas {
+        height: calc(100% - 80px) !important;
+    }
+}
+
+/* Mobile full-screen */
+@media (max-width: 600px) {
+    #gameWrapper {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        aspect-ratio: auto;
+        border: none;
+        max-width: none;
+    }
+}

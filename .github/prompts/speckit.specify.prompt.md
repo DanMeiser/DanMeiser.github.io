@@ -12,6 +12,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - **Flappy Family** (`flappyFamily/`): Flappy Bird-style game
 - **CactoCrash** (`CactoCrash/`): Chrome Dino-style endless runner
 - **Cannon Ball** (`CannonBall/`): Block-breaking paddle game
+- **Minefield** (`Minefield/`): Minesweeper/character-style game
 - **Shared Assets** (`assets/`): Character sprites, backgrounds, sounds
 - **Shared CSS** (`css/style.css`): Unified menu/UI styling used by all games
 
@@ -163,6 +164,26 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Power-ups: pulsing colored circles with glow
 - [ ] Blocks: per-row color, gloss gradient highlight, dark border; HP number shown on multi-hit blocks
 
+## Minefield Feature Requirements
+- [ ] Walk-based Minesweeper: character moves one tile at a time via directional controls
+- [ ] Top-down view with 15×15 grid of tiles, 45 mines fixed (~20%)
+- [ ] Player character starts **outside the left edge** of the grid and must walk in
+- [ ] Mines are placed on the first in-grid step (safe zone: 3×3 around landing tile)
+- [ ] Tiles can be safe or contain a mine; walking onto a mine results in game over
+- [ ] Safe tiles display a number (1–8) indicating adjacent mines; 0 tiles auto-flood-reveal
+- [ ] Player flags tiles with **Shift + Arrow** (desktop) or FLAG toggle + D-pad (mobile)
+- [ ] Cannot walk onto a flagged tile
+- [ ] Score = number of unique safe tiles revealed (including flood-revealed); max 180
+- [ ] Win condition: all 180 safe tiles revealed
+- [ ] High score persistence per character via localStorage (`minefield_best_<char>`)
+- [ ] Game over reveals all mines; shows exploded tile in red
+- [ ] Main menu with character selection (Calvin and Bailey) -- identical style to other games
+- [ ] Container: `aspect-ratio: 1/1.2` override (slightly squarer than 1:1.5 to fit grid)
+- [ ] In-game HUD: Score pill + Mines remaining pill
+- [ ] Game over / Win screen with final score and personal best, reuse same div
+- [ ] Mobile: on-screen D-pad (↑↓←→ + 🚩 FLAG toggle button) + swipe gesture support
+- [ ] Visual style: dark space background (#1a1a2e → #16213e), classic Minesweeper number colours
+
 ## File Structure
 
     index.html                  # Homepage with game links
@@ -187,6 +208,10 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
       index.html                # Cannon Ball game page
       cannonball.js             # Complete Cannon Ball game engine (self-contained)
       style.css                 # Local overrides for container dimensions only
+    Minefield/
+      index.html                # Minefield game page
+      minefield.js              # Complete Minefield game engine (self-contained, walk-based)
+      style.css                 # aspect-ratio 1/1.2 + HUD pill + D-pad overrides
 
 ## Audio/Visual Polish
 - [ ] Flap sound effect (flap.mp3)
