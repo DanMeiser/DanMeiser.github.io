@@ -104,6 +104,45 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] GitHub Pages deployment ready
 - [ ] Cache-busting via query string versioning on CSS/JS files
 
+##  Cannon Ball Feature Requirements
+
+### Core Gameplay
+- [ ] Block breaking game where you have a platform you move left and right to bounce a ball and break blocks at the top of the screen
+- [ ] Multiple levels with increasing difficulty (more blocks, faster ball)
+- [ ] Power-ups that drop from blocks (expand platform, extra life, multi-ball)
+- [ ] Score tracking and high score persistence per character via localStorage
+- [ ] Game over state and restart functionality
+- [ ] Responsive design for desktop and mobile browsers
+- [ ] High scores displayed separately for each character (Calvin and Bailey) on main menu and game over screen
+
+
+### User Interface
+- [ ] Main menu with character selection (Calvin and Bailey) -- identical style to Flappy Family
+- [ ] Container sized to match Flappy Family (600px max-width, aspect-ratio 1/1.5)
+- [ ] In-game HUD (score display)
+- [ ] Game over screen with score and best
+- [ ] Main Menu button navigates to homepage
+
+### Characters
+- [ ] Calvin and Bailey using first sprite frame only (no flap animation cycling)
+- [ ] Same preview images as Flappy Family
+
+### Controls
+- [ ] left/right arrow keys or A/D to move platform
+- [ ] Touch controls for mobile
+
+## Technical Requirements
+- [ ] Vanilla JavaScript (no frameworks)
+- [ ] HTML5 Canvas rendering
+- [ ] Web Audio API for sound (mobile-compatible with AudioContext unlock on first user gesture)
+- [ ] LocalStorage for high score persistence (per-character, per-game)
+- [ ] Asset loading with error handling
+- [ ] 60 FPS target framerate
+- [ ] Responsive canvas sizing
+- [ ] GitHub Pages deployment ready
+- [ ] Cache-busting via query string versioning on CSS/JS files
+
+
 ## File Structure
 
     index.html                  # Homepage with game links
