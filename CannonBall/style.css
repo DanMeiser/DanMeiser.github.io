@@ -1,12 +1,19 @@
 /* Cannon Ball - local overrides (shared styles come from ../css/style.css) */
 
+/* Override body so tall container isn't clipped */
+body {
+    overflow: auto;
+    align-items: flex-start;
+    padding: 10px 0;
+}
+
 /* Match the same container dimensions as Flappy Family (#gameContainer) */
 #gameWrapper {
     position: relative;
     width: 100%;
     max-width: 600px;
-    aspect-ratio: 1 / 1.5;
-    max-height: 100vh;
+    height: calc(100vh - 20px);
+    max-height: 900px;
     overflow: hidden;
     background: #1a1a2e;
     border: 3px solid #333;
