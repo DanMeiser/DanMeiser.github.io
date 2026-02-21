@@ -11,6 +11,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - **Homepage** (`index.html`): Central hub linking to all games
 - **Flappy Family** (`flappyFamily/`): Flappy Bird-style game
 - **CactoCrash** (`CactoCrash/`): Chrome Dino-style endless runner
+- **Cannon Ball** (`CannonBall/`): Block-breaking paddle game
 - **Shared Assets** (`assets/`): Character sprites, backgrounds, sounds
 - **Shared CSS** (`css/style.css`): Unified menu/UI styling used by all games
 
@@ -30,6 +31,13 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Bounce animation on title, slide-in animation on character cards
 - [ ] Consistent styling via shared css/style.css
 - [ ] Game-specific overrides in local style.css only for container dimensions
+
+## Viewport / Container Sizing Rules (applies to ALL games)
+- [ ] Desktop: `width: min(600px, 66.667vh)` with `aspect-ratio: 1/1.5` so the container height never exceeds 100vh
+- [ ] Mobile (max-width 600px): `width: 100vw`, `height: 100vh` (fallback) then `height: 100dvh` (override) — `dvh` MUST be listed after `vh` so it wins on modern browsers
+- [ ] `100dvh` (dynamic viewport height) prevents the mobile browser address bar from clipping the bottom of the game
+- [ ] `aspect-ratio: auto` and no border on mobile
+- [ ] NEVER use `ctx.roundRect()` — always use a custom `drawRoundRect(ctx, x, y, w, h, r)` helper built with `arcTo()` for cross-browser compatibility
 
 ## Flappy Family Feature Requirements
 
@@ -79,7 +87,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 
 ### User Interface
 - [ ] Main menu with character selection (Calvin and Bailey) -- identical style to Flappy Family
-- [ ] Container sized to match Flappy Family (600px max-width, aspect-ratio 1/1.5)
+- [ ] Container sized per shared viewport rules above
 - [ ] In-game HUD (score display)
 - [ ] Game over screen with score and best
 - [ ] Main Menu button navigates to homepage
@@ -96,52 +104,64 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 ## Technical Requirements
 - [ ] Vanilla JavaScript (no frameworks)
 - [ ] HTML5 Canvas rendering
+- [ ] NEVER use `ctx.roundRect()` — always use a `drawRoundRect(ctx, x, y, w, h, r)` helper with `arcTo()`
 - [ ] Web Audio API for sound (mobile-compatible with AudioContext unlock on first user gesture)
 - [ ] LocalStorage for high score persistence (per-character, per-game)
 - [ ] Asset loading with error handling
-- [ ] 60 FPS target framerate
-- [ ] Responsive canvas sizing
+- [ ] 60 FPS target framerate via `requestAnimationFrame`
+- [ ] dt-based movement (multiply speeds by `dt/16`) for frame-rate independence
+- [ ] Responsive canvas sizing via `resize()` reading `wrapper.clientWidth/clientHeight`
 - [ ] GitHub Pages deployment ready
 - [ ] Cache-busting via query string versioning on CSS/JS files
 
-##  Cannon Ball Feature Requirements
+## Cannon Ball Feature Requirements
 
 ### Core Gameplay
-- [ ] Block breaking game where you have a platform you move left and right to bounce a ball and break blocks at the top of the screen
-- [ ] Multiple levels with increasing difficulty (more blocks, faster ball)
-- [ ] Power-ups that drop from blocks (expand platform, extra life, multi-ball)
-- [ ] Score tracking and high score persistence per character via localStorage
-- [ ] Game over state and restart functionality
-- [ ] Responsive design for desktop and mobile browsers
-- [ ] High scores displayed separately for each character (Calvin and Bailey) on main menu and game over screen
+- [ ] Block-breaking game: move paddle left/right to bounce a ball and break blocks
+- [ ] Multiple levels with increasing difficulty (more block rows, higher HP blocks, faster ball)
+- [ ] Ball bounce angle on paddle depends on where it hits (edge = shallow, center = steep)
+- [ ] Power-ups drop from destroyed blocks: Expand Paddle (green W), Extra Life (red ♥), Multi-Ball (blue M)
+- [ ] Power-up drop chance: 18% per block
+- [ ] Score: 10 × level per block destroyed; 50 × level bonus on level clear
+- [ ] High score persistence per character via localStorage (key: `cannonBall_best_<character>`)
+- [ ] Lives system: starts at 3, max 5; lose a life when all balls fall off screen
+- [ ] Game over when lives reach 0
+- [ ] Level complete screen shown between levels
+- [ ] Particle burst effect when a block is destroyed
 
+### Difficulty Scaling (by level)
+- [ ] Ball speed: 4 + (level - 1) × 0.4
+- [ ] Block rows: min(4 + floor(level/2), 8)
+- [ ] Block HP: level ≥ 3 → front rows get 2 HP; level ≥ 5 → top row gets 3 HP; level ≥ 7 → graduated HP
+- [ ] Block colors cycle through 8-color palette per row
 
 ### User Interface
 - [ ] Main menu with character selection (Calvin and Bailey) -- identical style to Flappy Family
-- [ ] Container sized to match Flappy Family (600px max-width, aspect-ratio 1/1.5)
-- [ ] In-game HUD (score display)
-- [ ] Game over screen with score and best
+- [ ] Container sized per shared viewport rules above
+- [ ] In-game HUD: Score / Lives / Level in 3 pill badges at the top
+- [ ] Game over screen with final score and personal best
+- [ ] Level complete screen with current score and Next Level button
+- [ ] LAUNCH state: ball rests on paddle; hint text shown; click/tap/SPACE launches
 - [ ] Main Menu button navigates to homepage
 
 ### Characters
-- [ ] Calvin and Bailey using first sprite frame only (no flap animation cycling)
-- [ ] Same preview images as Flappy Family
+- [ ] Calvin and Bailey using first sprite frame only (calvin1.png / bailey1.png)
+- [ ] Character sprite rendered centered above the paddle during gameplay
+- [ ] Same preview images as Flappy Family on menu buttons
 
 ### Controls
-- [ ] left/right arrow keys or A/D to move platform
-- [ ] Touch controls for mobile
+- [ ] LEFT / RIGHT arrow keys or A / D to move paddle
+- [ ] Mouse movement tracks paddle position (mousemove on canvas)
+- [ ] Touch drag moves paddle; tap to launch ball
+- [ ] SPACE or click canvas launches ball from LAUNCH state
 
-## Technical Requirements
-- [ ] Vanilla JavaScript (no frameworks)
-- [ ] HTML5 Canvas rendering
-- [ ] Web Audio API for sound (mobile-compatible with AudioContext unlock on first user gesture)
-- [ ] LocalStorage for high score persistence (per-character, per-game)
-- [ ] Asset loading with error handling
-- [ ] 60 FPS target framerate
-- [ ] Responsive canvas sizing
-- [ ] GitHub Pages deployment ready
-- [ ] Cache-busting via query string versioning on CSS/JS files
-
+### Visual Style
+- [ ] Dark space background: linear gradient #1a1a2e → #16213e
+- [ ] Subtle white grid overlay (opacity 0.03)
+- [ ] Paddle: light grey with gloss gradient, white border always visible; green glow when expanded
+- [ ] Ball: white circle with black outline and small shine dot
+- [ ] Power-ups: pulsing colored circles with glow
+- [ ] Blocks: per-row color, gloss gradient highlight, dark border; HP number shown on multi-hit blocks
 
 ## File Structure
 
@@ -163,6 +183,10 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
       index.html                # CactoCrash game page
       runner.js                 # Complete CactoCrash game engine (self-contained)
       style.css                 # Local overrides for container dimensions only
+    CannonBall/
+      index.html                # Cannon Ball game page
+      cannonball.js             # Complete Cannon Ball game engine (self-contained)
+      style.css                 # Local overrides for container dimensions only
 
 ## Audio/Visual Polish
 - [ ] Flap sound effect (flap.mp3)
@@ -179,7 +203,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 3. High scores persist between sessions per character per game
 4. Site deploys to GitHub Pages without issues
 5. Plays correctly on Chrome, Firefox, and Safari
-6. Mobile browsers can play (touch input and audio work)
-7. Both game menus look visually identical (shared CSS)
+6. Mobile browsers can play (touch input and audio work) — full game visible, nothing clipped by browser chrome
+7. All game menus look visually identical (shared CSS)
 8. Homepage provides clear navigation to all games
 ```
