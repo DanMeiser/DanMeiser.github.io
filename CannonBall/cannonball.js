@@ -23,6 +23,22 @@ const POWERUP_CHANCE = 0.18;
 const MAX_LIVES = 5;
 const INITIAL_LIVES = 3;
 
+// ─── Canvas Helper ──────────────────────────────────────
+function drawRoundRect(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+}
+
 const POWERUP_TYPES = {
     EXPAND: { color: '#4CAF50', label: 'W', desc: 'Expand Paddle' },
     EXTRA_LIFE: { color: '#f44336', label: '♥', desc: 'Extra Life' },
@@ -158,9 +174,8 @@ class Paddle {
     draw(ctx) {
         // Draw paddle body
         const r = this.height / 2;
+        drawRoundRect(ctx, this.x, this.y, this.width, this.height, r);
         ctx.fillStyle = '#ddd';
-        ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.height, r);
         ctx.fill();
 
         // Gradient overlay
@@ -169,6 +184,11 @@ class Paddle {
         grad.addColorStop(1, 'rgba(0,0,0,0.2)');
         ctx.fillStyle = grad;
         ctx.fill();
+
+        // Border so it's always visible
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
         // Expand glow
         if (this.expandTimer > 0) {
@@ -330,9 +350,8 @@ class Block {
 
         // Darken color if multi-hit
         const hpRatio = this.hp / this.maxHp;
+        drawRoundRect(ctx, this.x, this.y, this.width, this.height, 3);
         ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.height, 3);
         ctx.fill();
 
         // Top highlight
