@@ -58,10 +58,9 @@
 @media (max-width: 600px) {
     #gameWrapper {
         width: 100vw;
-        /* dvh accounts for mobile browser chrome (address bar); vh fallback for older browsers */
-        height: 100dvh;
+        /* 100vh fallback, then dvh (dynamic viewport height) overrides on browsers that support it */
         height: 100vh;
-        max-height: -webkit-fill-available;
+        height: 100dvh;
         max-width: none;
         aspect-ratio: auto;
         border: none;
