@@ -32,6 +32,11 @@ class Bird {
                 AssetLoader.getImage('bailey1'),
                 AssetLoader.getImage('bailey2'),
                 AssetLoader.getImage('bailey3')
+            ],
+            lilly: [
+                AssetLoader.getImage('lilly1'),
+                AssetLoader.getImage('lilly2'),
+                AssetLoader.getImage('lilly3')
             ]
         };
         return characters[this.character] || [AssetLoader.getImage('calvin1')];

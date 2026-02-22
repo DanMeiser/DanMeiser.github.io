@@ -150,7 +150,7 @@ class Runner {
         if (frame) {
             ctx.drawImage(frame, this.x, drawY, this.width, effectiveH);
         } else {
-            ctx.fillStyle = this.character === 'calvin' ? '#d4a017' : '#8B4513';
+            ctx.fillStyle = this.character === 'calvin' ? '#d4a017' : this.character === 'bailey' ? '#8B4513' : '#e06090';
             ctx.fillRect(this.x, drawY, this.width, effectiveH);
         }
     }
@@ -334,6 +334,9 @@ class DinoRunGame {
             Assets.loadImage('bailey1', base + 'bailey1.png'),
             Assets.loadImage('bailey2', base + 'bailey2.png'),
             Assets.loadImage('bailey3', base + 'bailey3.png'),
+            Assets.loadImage('lilly1', base + 'lilly1.png'),
+            Assets.loadImage('lilly2', base + 'lilly2.png'),
+            Assets.loadImage('lilly3', base + 'lilly3.png'),
         ]);
         await Promise.all([
             Assets.loadSound('jump', base + 'flap.mp3'),
@@ -411,6 +414,7 @@ class DinoRunGame {
     updateBestLabels() {
         document.getElementById('calvinBest').textContent = Scores.get('calvin');
         document.getElementById('baileyBest').textContent = Scores.get('bailey');
+        document.getElementById('lillyBest').textContent = Scores.get('lilly');
     }
 
     startGame() {

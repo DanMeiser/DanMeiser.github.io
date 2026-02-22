@@ -17,9 +17,10 @@ const NUM_COLORS = [
 ];
 
 // ── Assets ──────────────────────────────────────────────────────
-const sprites = { calvin: new Image(), bailey: new Image() };
+const sprites = { calvin: new Image(), bailey: new Image(), lilly: new Image() };
 sprites.calvin.src  = '../assets/calvin1.png';
 sprites.bailey.src  = '../assets/bailey1.png';
+sprites.lilly.src   = '../assets/lilly1.png';
 
 // ── Canvas / DOM ────────────────────────────────────────────────
 const canvas  = document.getElementById('gameCanvas');
@@ -49,6 +50,7 @@ function showMenu() {
     document.getElementById('hud').classList.add('hidden');
     document.getElementById('calvinBest').textContent = getBest('calvin');
     document.getElementById('baileyBest').textContent = getBest('bailey');
+    document.getElementById('lillyBest').textContent  = getBest('lilly');
     resize();
 }
 

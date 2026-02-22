@@ -525,6 +525,7 @@ class CannonBallGame {
         await Promise.all([
             Assets.loadImage('calvin1', base + 'calvin1.png'),
             Assets.loadImage('bailey1', base + 'bailey1.png'),
+            Assets.loadImage('lilly1', base + 'lilly1.png'),
         ]);
         await Promise.all([
             Assets.loadSound('flap', base + 'flap.mp3'),
@@ -599,6 +600,7 @@ class CannonBallGame {
     updateBestLabels() {
         document.getElementById('calvinBest').textContent = Scores.get('calvin');
         document.getElementById('baileyBest').textContent = Scores.get('bailey');
+        document.getElementById('lillyBest').textContent = Scores.get('lilly');
     }
 
     startGame() {

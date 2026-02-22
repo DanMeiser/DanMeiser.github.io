@@ -129,6 +129,9 @@ class Game {
                 AssetLoader.loadImage('bailey1', basePath + 'bailey1.png'),
                 AssetLoader.loadImage('bailey2', basePath + 'bailey2.png'),
                 AssetLoader.loadImage('bailey3', basePath + 'bailey3.png'),
+                AssetLoader.loadImage('lilly1', basePath + 'lilly1.png'),
+                AssetLoader.loadImage('lilly2', basePath + 'lilly2.png'),
+                AssetLoader.loadImage('lilly3', basePath + 'lilly3.png'),
                 AssetLoader.loadImage('bg', basePath + 'bg.png'),
                 AssetLoader.loadImage('ground', basePath + 'ground.png')
             ]);
@@ -249,13 +252,14 @@ class Game {
         AssetLoader.playSound('hit');
 
         // Update UI
-        const charName = this.selectedCharacter === 'calvin' ? 'Calvin' : 'Bailey';
+        const charName = this.selectedCharacter === 'calvin' ? 'Calvin' : this.selectedCharacter === 'bailey' ? 'Bailey' : 'Lilly';
         document.getElementById('finalScore').textContent = this.score;
         document.getElementById('finalHighScore').textContent = this.highScore;
         document.getElementById('gameOverCharacter').textContent = charName;
         document.getElementById('gameOverCharName').textContent = charName;
         document.getElementById('gameOverCalvinHigh').textContent = ScoreManager.getHighScore('calvin');
         document.getElementById('gameOverBaileyHigh').textContent = ScoreManager.getHighScore('bailey');
+        document.getElementById('gameOverLillyHigh').textContent = ScoreManager.getHighScore('lilly');
 
         this.updateScreens();
     }
@@ -278,6 +282,7 @@ class Game {
             // Update menu high scores
             document.getElementById('calvinHighScore').textContent = ScoreManager.getHighScore('calvin');
             document.getElementById('baileyHighScore').textContent = ScoreManager.getHighScore('bailey');
+            document.getElementById('lillyHighScore').textContent = ScoreManager.getHighScore('lilly');
         } else if (this.state === GAME_STATE.CHARACTER_SELECT) {
             screens.characterSelect.classList.remove('hidden');
         } else if (this.state === GAME_STATE.PLAYING) {
