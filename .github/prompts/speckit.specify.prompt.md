@@ -5,7 +5,7 @@ agent: speckit.specify
 # Project Specification - Meiser's Market
 
 ## Project Overview
-Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based games. It features a central homepage with a link to the games page and that page serves as a hub with links to each game, and each game features playable characters (Calvin and Bailey) with persistent high score tracking via localStorage.
+Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based games. It features a central homepage with a link to the games page and that page serves as a hub with links to each game, and each game features playable characters (Calvin, Bailey, and Lilly) with persistent high score tracking via localStorage.
 
 ## Site Structure
 - **Homepage** (`index.html`): Landing page with a single "Play Games" card linking to the games hub
@@ -31,7 +31,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 
 ## Shared UI/Menu Requirements (applies to ALL games)
 - [ ] Dark semi-transparent overlay with backdrop blur for menus
-- [ ] Character selection with Calvin and Bailey avatar buttons
+- [ ] Character selection with Calvin, Bailey, and Lilly avatar buttons
 - [ ] High score display per character on main menu (yellow text, #ffeb3b)
 - [ ] How to Play instructions section with rounded background
 - [ ] Home button linking to https://danmeiser.github.io/games/ (the games hub)
@@ -57,7 +57,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Game over state and restart functionality
 - [ ] Pause/resume gameplay
 - [ ] Responsive design for desktop and mobile browsers
-- [ ] High scores displayed separately for each character (Calvin and Bailey) on main menu and game over screen
+- [ ] High scores displayed separately for each character (Calvin, Bailey, and Lilly) on main menu and game over screen
 - [ ] Custom background image (bg.png)
 
 ### User Interface
@@ -70,6 +70,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 ### Characters
 - [ ] Calvin character with 3 sprite frames (calvin1-3.png), enlarged to 50x36 pixels
 - [ ] Bailey character with 3 sprite frames (bailey1-3.png), enlarged to 50x36 pixels
+- [ ] Lilly character with 3 sprite frames (lilly1-3.png), enlarged to 50x36 pixels
 - [ ] Slowed rotation speed (multiplier 0.8)
 - [ ] Character preview images on menu buttons
 
@@ -94,14 +95,14 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Gravity 0.5, jump power -11
 
 ### User Interface
-- [ ] Main menu with character selection (Calvin and Bailey) -- identical style to Flappy Family
+- [ ] Main menu with character selection (Calvin, Bailey, and Lilly) -- identical style to Flappy Family
 - [ ] Container sized per shared viewport rules above
 - [ ] In-game HUD (score display)
 - [ ] Game over screen with score and best
 - [ ] Main Menu button navigates to homepage
 
 ### Characters
-- [ ] Calvin and Bailey using first sprite frame only (no flap animation cycling)
+- [ ] Calvin, Bailey, and Lilly using first sprite frame only (no flap animation cycling)
 - [ ] Same preview images as Flappy Family
 
 ### Controls
@@ -144,7 +145,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Block colors cycle through 8-color palette per row
 
 ### User Interface
-- [ ] Main menu with character selection (Calvin and Bailey) -- identical style to Flappy Family
+- [ ] Main menu with character selection (Calvin, Bailey, and Lilly) -- identical style to Flappy Family
 - [ ] Container sized per shared viewport rules above
 - [ ] In-game HUD: Score / Lives / Level in 3 pill badges at the top
 - [ ] Game over screen with final score and personal best
@@ -153,7 +154,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Main Menu button navigates to homepage
 
 ### Characters
-- [ ] Calvin and Bailey using first sprite frame only (calvin1.png / bailey1.png)
+- [ ] Calvin, Bailey, and Lilly using first sprite frame only (calvin1.png / bailey1.png / lilly1.png)
 - [ ] Character sprite rendered centered above the paddle during gameplay
 - [ ] Same preview images as Flappy Family on menu buttons
 
@@ -185,7 +186,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Win condition: all 180 safe tiles revealed
 - [ ] High score persistence per character via localStorage (`minefield_best_<char>`)
 - [ ] Game over reveals all mines; shows exploded tile in red
-- [ ] Main menu with character selection (Calvin and Bailey) -- identical style to other games
+- [ ] Main menu with character selection (Calvin, Bailey, and Lilly) -- identical style to other games
 - [ ] Container: `aspect-ratio: 1/1.2` override (slightly squarer than 1:1.5 to fit grid)
 - [ ] In-game HUD: Score pill + Mines remaining pill
 - [ ] Game over / Win screen with final score and personal best, reuse same div
@@ -201,6 +202,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
     assets/                     # Shared character sprites, backgrounds, sounds
       calvin1-3.png, calvin_preview.png
       bailey1-3.png, bailey_preview.png
+      lilly1-3.png, lilly-preview.png
       bg.png, ground.png
       flap.mp3, hit.mp3, point.mp3
     flappyFamily/

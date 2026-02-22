@@ -29,8 +29,6 @@ agent: speckit.analyze
 - Animation speed: 60fps native render rate
 
 ## Known Limitations
-- Audio files not yet included in assets/
-- Character sprites use emoji representations (no image assets)
 - No particle effects or advanced animations yet
 - No mobile touch optimization
 
