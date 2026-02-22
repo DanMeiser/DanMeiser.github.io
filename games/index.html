@@ -5,123 +5,550 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Games - Meiser's Market</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
+            background: #07071a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
             color: #fff;
+        }
+
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background: radial-gradient(ellipse 80% 60% at 50% 50%,
+                rgba(102, 60, 200, 0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .pixels {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .pixel {
+            position: absolute;
+            border-radius: 2px;
+            opacity: 0;
+            animation: floatPixel linear infinite;
+        }
+
+        @keyframes floatPixel {
+            0%   { opacity: 0;   transform: translateY(0) rotate(0deg); }
+            10%  { opacity: 0.6; }
+            90%  { opacity: 0.6; }
+            100% { opacity: 0;   transform: translateY(-100vh) rotate(360deg); }
         }
 
         .container {
+            position: relative;
+            z-index: 2;
             text-align: center;
             padding: 2rem;
-            max-width: 600px;
+            max-width: 620px;
+            width: 100%;
+            animation: fadeUp 0.8s ease-out both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(1.1rem, 4vw, 1.8rem);
+            letter-spacing: 0.06em;
+            background: linear-gradient(135deg, #e0aaff 0%, #c77dff 35%, #9d4edd 65%, #7b2ff7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 18px rgba(180, 100, 255, 0.6));
+            animation: titlePulse 4s ease-in-out infinite;
             margin-bottom: 0.5rem;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.85;
-            margin-bottom: 2.5rem;
+        @keyframes titlePulse {
+            0%, 100% { filter: drop-shadow(0 0 18px rgba(180, 100, 255, 0.55)); }
+            50%       { filter: drop-shadow(0 0 32px rgba(180, 100, 255, 0.9)); }
         }
 
-        .links {
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0.9rem auto 0.8rem;
+            max-width: 360px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(180, 100, 255, 0.6), transparent);
+        }
+
+        .divider-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #c77dff;
+            box-shadow: 0 0 8px #c77dff;
+        }
+
+        .subtitle {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            color: rgba(200, 170, 255, 0.65);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+            animation: blink 1.4s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+
+        /* ── Game Grid ── */
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .game-card {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
             align-items: center;
-        }
-
-        .link-card {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 12px;
-            padding: 1.2rem 2rem;
-            width: 100%;
-            max-width: 400px;
             text-decoration: none;
             color: #fff;
-            transition: transform 0.2s, background 0.2s;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(180, 100, 255, 0.22);
+            border-radius: 12px;
+            padding: 1.6rem 1rem 1.3rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
-        .link-card:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.25);
+        /* CRT scanline overlay */
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 3px,
+                rgba(0, 0, 0, 0.07) 3px,
+                rgba(0, 0, 0, 0.07) 4px
+            );
+            pointer-events: none;
+            z-index: 2;
+            border-radius: 12px;
         }
 
-        .link-card .icon {
-            font-size: 2rem;
+        /* Top-left gradient sheen */
+        .game-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(180, 100, 255, 0.07) 0%, transparent 55%);
+            pointer-events: none;
+            border-radius: 12px;
         }
 
-        .link-card .label {
-            font-size: 1.2rem;
-            font-weight: 600;
+        .game-card:hover {
+            transform: translateY(-6px) scale(1.025);
+            box-shadow:
+                0 0 0 1px rgba(200, 130, 255, 0.55),
+                0 0 28px rgba(155, 70, 220, 0.5),
+                0 14px 40px rgba(0, 0, 0, 0.45);
+            border-color: rgba(200, 130, 255, 0.6);
         }
 
+        /* ── Pixel Art ── */
+        .pixel-art-wrap {
+            position: relative;
+            z-index: 3;
+            margin-bottom: 1.1rem;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            animation: artBob 2.4s ease-in-out infinite;
+        }
+
+        @keyframes artBob {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-4px); }
+        }
+
+        .pixel-art-wrap svg {
+            image-rendering: pixelated;
+            filter: drop-shadow(0 0 8px var(--art-glow, rgba(180,100,255,0.5)));
+            transition: filter 0.2s ease;
+        }
+
+        .game-card:hover .pixel-art-wrap svg {
+            filter: drop-shadow(0 0 20px var(--art-glow, rgba(180,100,255,0.9)));
+        }
+
+        .game-label {
+            position: relative;
+            z-index: 3;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            line-height: 1.7;
+            letter-spacing: 0.04em;
+            color: #e0d0ff;
+            text-shadow: 0 0 10px rgba(180, 100, 255, 0.7);
+        }
+
+        .game-tag {
+            position: relative;
+            z-index: 3;
+            margin-top: 0.45rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.78rem;
+            color: rgba(200, 160, 255, 0.55);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* ── Corner pixel accents ── */
+        .game-card .corner {
+            position: absolute;
+            z-index: 3;
+            width: 8px;
+            height: 8px;
+            border-color: var(--art-glow, rgba(180,100,255,0.5));
+            border-style: solid;
+            opacity: 0.6;
+        }
+
+        .corner-tl { top: 6px; left: 6px;  border-width: 2px 0 0 2px; }
+        .corner-tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+        .corner-bl { bottom: 6px; left: 6px;  border-width: 0 0 2px 2px; }
+        .corner-br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+        /* ── Back link ── */
         .back-link {
-            margin-top: 2rem;
             display: inline-block;
-            color: rgba(255, 255, 255, 0.75);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5rem;
+            color: rgba(200, 170, 255, 0.55);
             text-decoration: none;
-            font-size: 0.95rem;
+            letter-spacing: 0.1em;
             transition: color 0.2s;
         }
 
-        .back-link:hover {
-            color: #fff;
+        .back-link:hover { color: #c77dff; }
+
+        @media (max-width: 480px) {
+            .game-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>&#127918; Games</h1>
-        <p class="subtitle">Pick a game and start playing!</p>
+    <canvas id="starCanvas"></canvas>
+    <div class="pixels" id="pixels"></div>
 
-        <div class="links">
-            <a href="../flappyFamily/" class="link-card">
-                <span class="icon">&#127918;</span>
-                <div>
-                    <div class="label">Flappy Family</div>
+    <div class="container">
+        <h1>SELECT GAME</h1>
+        <div class="divider">
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+            <div class="divider-dot"></div>
+        </div>
+        <p class="subtitle">&#9658; INSERT COIN TO CONTINUE &#9668;</p>
+
+        <div class="game-grid">
+
+            <!-- ── Flappy Family ── -->
+            <a href="../flappyFamily/" class="game-card" style="--art-glow: rgba(255,215,0,0.75);">
+                <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+                <div class="pixel-art-wrap">
+                    <svg width="72" height="72" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <!-- sky -->
+                        <rect width="18" height="18" fill="#1a1a3e"/>
+                        <!-- pipe top -->
+                        <rect x="0" y="0" width="3" height="7" fill="#33a136"/>
+                        <rect x="0" y="6" width="4" height="2" fill="#267028"/>
+                        <!-- pipe bottom -->
+                        <rect x="0" y="11" width="4" height="2" fill="#267028"/>
+                        <rect x="0" y="12" width="3" height="6" fill="#33a136"/>
+                        <!-- clouds -->
+                        <rect x="8" y="2" width="4" height="1" fill="#c5cae9" opacity="0.4"/>
+                        <rect x="7" y="3" width="6" height="1" fill="#c5cae9" opacity="0.4"/>
+                        <rect x="13" y="5" width="3" height="1" fill="#c5cae9" opacity="0.3"/>
+                        <!-- bird body -->
+                        <rect x="8" y="8" width="5" height="4" fill="#FFD600"/>
+                        <!-- bird head bump -->
+                        <rect x="10" y="7" width="3" height="2" fill="#FFD600"/>
+                        <!-- wing -->
+                        <rect x="8" y="9" width="2" height="2" fill="#FFA000"/>
+                        <!-- tail -->
+                        <rect x="6" y="9" width="2" height="2" fill="#FFB300"/>
+                        <!-- eye -->
+                        <rect x="12" y="8" width="1" height="1" fill="#fff"/>
+                        <rect x="12" y="8" width="1" height="1" fill="#111" opacity="0.9"/>
+                        <rect x="12" y="8" width="0" height="0"/>
+                        <!-- pupil -->
+                        <rect x="12" y="8" width="1" height="1" fill="#1a1a1a"/>
+                        <rect x="12" y="8" width="1" height="1" fill="rgba(255,255,255,0.5)" opacity="0.5" transform="translate(0,0)"/>
+                        <!-- beak -->
+                        <rect x="13" y="9" width="2" height="1" fill="#FF6F00"/>
+                        <rect x="13" y="10" width="2" height="1" fill="#E65100"/>
+                        <!-- belly -->
+                        <rect x="10" y="10" width="3" height="2" fill="#FFFDE7"/>
+                    </svg>
                 </div>
+                <div class="game-label">Flappy Family</div>
+                <div class="game-tag">Dodge &amp; Fly</div>
             </a>
-            <a href="../CactoCrash/" class="link-card">
-                <span class="icon">&#127797;</span>
-                <div>
-                    <div class="label">CactoCrash</div>
+
+            <!-- ── CactoCrash ── -->
+            <a href="../CactoCrash/" class="game-card" style="--art-glow: rgba(80,220,100,0.75);">
+                <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+                <div class="pixel-art-wrap">
+                    <svg width="72" height="72" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <!-- sky -->
+                        <rect width="18" height="18" fill="#1a1a3e"/>
+                        <!-- sun -->
+                        <rect x="14" y="2" width="3" height="3" fill="#FFF176"/>
+                        <!-- ground -->
+                        <rect x="0" y="14" width="18" height="4" fill="#5d4037"/>
+                        <rect x="0" y="14" width="18" height="1" fill="#795548"/>
+                        <!-- cactus body -->
+                        <rect x="11" y="5" width="2" height="9" fill="#43a047"/>
+                        <!-- cactus left arm -->
+                        <rect x="8"  y="8" width="3" height="2" fill="#43a047"/>
+                        <rect x="8"  y="6" width="2" height="2" fill="#43a047"/>
+                        <!-- cactus right arm -->
+                        <rect x="13" y="7" width="3" height="2" fill="#43a047"/>
+                        <rect x="14" y="5" width="2" height="2" fill="#43a047"/>
+                        <!-- cactus spikes -->
+                        <rect x="10" y="4" width="1" height="1" fill="#a5d6a7"/>
+                        <rect x="13" y="4" width="1" height="1" fill="#a5d6a7"/>
+                        <!-- dino runner -->
+                        <rect x="1" y="10" width="6" height="4" fill="#78909c"/>
+                        <rect x="4" y="8"  width="4" height="3" fill="#78909c"/>
+                        <!-- dino head detail -->
+                        <rect x="7" y="8"  width="1" height="1" fill="#fff"/>
+                        <rect x="7" y="9"  width="1" height="1" fill="#546e7a"/>
+                        <!-- dino eye -->
+                        <rect x="6" y="8"  width="1" height="1" fill="#111"/>
+                        <!-- dino mouth -->
+                        <rect x="7" y="10" width="1" height="1" fill="#546e7a"/>
+                        <!-- dino legs (running) -->
+                        <rect x="2" y="14" width="2" height="2" fill="#546e7a"/>
+                        <rect x="5" y="14" width="2" height="2" fill="#546e7a"/>
+                    </svg>
                 </div>
+                <div class="game-label">CactoCrash</div>
+                <div class="game-tag">Jump &amp; Dodge</div>
             </a>
-            <a href="../CannonBall/" class="link-card">
-                <span class="icon">&#129521;</span>
-                <div>
-                    <div class="label">Cannon Ball</div>
+
+            <!-- ── Cannon Ball ── -->
+            <a href="../CannonBall/" class="game-card" style="--art-glow: rgba(255,100,60,0.75);">
+                <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+                <div class="pixel-art-wrap">
+                    <svg width="72" height="72" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <!-- bg -->
+                        <rect width="18" height="18" fill="#1a1a3e"/>
+                        <!-- ground -->
+                        <rect x="0" y="15" width="18" height="3" fill="#37474f"/>
+                        <!-- cannon barrel -->
+                        <rect x="4" y="9"  width="10" height="4" fill="#616161"/>
+                        <rect x="5" y="8"  width="9" height="1"  fill="#9e9e9e"/>
+                        <rect x="5" y="13" width="9" height="1"  fill="#424242"/>
+                        <!-- barrel highlight -->
+                        <rect x="5" y="9"  width="3" height="1"  fill="#757575"/>
+                        <!-- cannon base -->
+                        <rect x="3" y="12" width="7" height="3"  fill="#795548"/>
+                        <rect x="3" y="11" width="7" height="1"  fill="#8d6e63"/>
+                        <!-- wheels -->
+                        <rect x="2"  y="13" width="4" height="4" fill="#424242"/>
+                        <rect x="7"  y="13" width="4" height="4" fill="#424242"/>
+                        <rect x="3"  y="14" width="2" height="2" fill="#616161"/>
+                        <rect x="8"  y="14" width="2" height="2" fill="#616161"/>
+                        <!-- cannonball in barrel -->
+                        <rect x="12" y="10" width="2" height="2" fill="#212121"/>
+                        <!-- flying cannonball -->
+                        <rect x="1" y="2" width="3" height="3" fill="#212121"/>
+                        <rect x="1" y="2" width="1" height="1" fill="#616161"/>
+                        <!-- trajectory dots -->
+                        <rect x="4" y="4" width="1" height="1" fill="#ef9a9a" opacity="0.7"/>
+                        <rect x="6" y="5" width="1" height="1" fill="#ef9a9a" opacity="0.5"/>
+                        <rect x="8" y="6" width="1" height="1" fill="#ef9a9a" opacity="0.35"/>
+                        <rect x="10" y="7" width="1" height="1" fill="#ef9a9a" opacity="0.2"/>
+                        <!-- explosion sparks -->
+                        <rect x="0" y="1" width="1" height="1" fill="#ff7043"/>
+                        <rect x="3" y="0" width="1" height="1" fill="#ff7043"/>
+                        <rect x="4" y="2" width="1" height="1" fill="#ffcc02"/>
+                    </svg>
                 </div>
+                <div class="game-label">Cannon Ball</div>
+                <div class="game-tag">Aim &amp; Fire</div>
             </a>
-            <a href="../Minefield/" class="link-card">
-                <span class="icon">&#128163;</span>
-                <div>
-                    <div class="label">Minefield</div>
+
+            <!-- ── Minefield ── -->
+            <a href="../Minefield/" class="game-card" style="--art-glow: rgba(255,80,80,0.75);">
+                <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+                <div class="pixel-art-wrap">
+                    <svg width="72" height="72" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <!-- bg -->
+                        <rect width="18" height="18" fill="#1a1a3e"/>
+                        <!-- 4x4 tile grid -->
+                        <rect x="1"  y="3"  width="4" height="4" fill="#455a64"/>
+                        <rect x="5"  y="3"  width="4" height="4" fill="#546e7a"/>
+                        <rect x="9"  y="3"  width="4" height="4" fill="#455a64"/>
+                        <rect x="13" y="3"  width="4" height="4" fill="#546e7a"/>
+                        <rect x="1"  y="7"  width="4" height="4" fill="#546e7a"/>
+                        <rect x="5"  y="7"  width="4" height="4" fill="#c62828"/><!-- mine cell -->
+                        <rect x="9"  y="7"  width="4" height="4" fill="#546e7a"/>
+                        <rect x="13" y="7"  width="4" height="4" fill="#455a64"/>
+                        <rect x="1"  y="11" width="4" height="4" fill="#455a64"/>
+                        <rect x="5"  y="11" width="4" height="4" fill="#546e7a"/>
+                        <rect x="9"  y="11" width="4" height="4" fill="#455a64"/>
+                        <rect x="13" y="11" width="4" height="4" fill="#546e7a"/>
+                        <!-- grid lines -->
+                        <rect x="1"  y="3"  width="16" height="1" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="1"  y="7"  width="16" height="1" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="1"  y="11" width="16" height="1" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="1"  y="15" width="16" height="1" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="1"  y="3"  width="1" height="12" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="5"  y="3"  width="1" height="12" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="9"  y="3"  width="1" height="12" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="13" y="3"  width="1" height="12" fill="rgba(0,0,0,0.3)"/>
+                        <rect x="17" y="3"  width="1" height="12" fill="rgba(0,0,0,0.3)"/>
+                        <!-- number tiles -->
+                        <rect x="2"  y="4"  width="1" height="2" fill="#1565c0"/>
+                        <rect x="10" y="4"  width="2" height="1" fill="#558b2f"/>
+                        <rect x="10" y="5"  width="2" height="1" fill="#558b2f"/>
+                        <rect x="14" y="4"  width="2" height="1" fill="#c62828" opacity="0.8"/>
+                        <rect x="2"  y="12" width="2" height="1" fill="#1565c0"/>
+                        <rect x="2"  y="13" width="2" height="1" fill="#1565c0"/>
+                        <!-- mine (on red cell) -->
+                        <rect x="7"  y="9"  width="2" height="2" fill="#111"/>
+                        <rect x="6"  y="10" width="4" height="1" fill="#111"/>
+                        <rect x="7"  y="8"  width="1" height="1" fill="#111"/>
+                        <rect x="6"  y="9"  width="1" height="1" fill="#111"/>
+                        <rect x="9"  y="9"  width="1" height="1" fill="#111"/>
+                        <rect x="7"  y="11" width="1" height="1" fill="#111"/>
+                        <!-- mine shine -->
+                        <rect x="7"  y="9"  width="1" height="1" fill="#555"/>
+                        <!-- explosion sparks -->
+                        <rect x="10" y="7"  width="1" height="1" fill="#ffeb3b"/>
+                        <rect x="11" y="6"  width="1" height="1" fill="#ff7043" opacity="0.85"/>
+                        <rect x="9"  y="6"  width="1" height="1" fill="#ffeb3b" opacity="0.7"/>
+                    </svg>
                 </div>
+                <div class="game-label">Minefield</div>
+                <div class="game-tag">Find The Mines</div>
             </a>
+
         </div>
 
-        <a href="https://danmeiser.github.io/" class="back-link">&#8592; danmeiser.github.io</a>
+        <a href="https://danmeiser.github.io/" class="back-link">&#8592; back to home</a>
     </div>
+
+    <script>
+        // ── Starfield ──
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resize() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function initStars(n) {
+            stars = [];
+            for (let i = 0; i < n; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 1.4 + 0.2,
+                    a: Math.random(),
+                    speed: Math.random() * 0.004 + 0.001,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function drawStars(t) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const s of stars) {
+                const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * s.speed * 60 + s.phase));
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(210, 180, 255, ${alpha * s.a})`;
+                ctx.fill();
+            }
+        }
+
+        function loop(t) {
+            drawStars(t * 0.001);
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('resize', () => { resize(); initStars(220); });
+        resize();
+        initStars(220);
+        requestAnimationFrame(loop);
+
+        // ── Floating pixel decorations ──
+        const pixelContainer = document.getElementById('pixels');
+        const COLORS = ['#c77dff', '#9d4edd', '#7b2ff7', '#ff9ef5', '#a78bfa'];
+
+        function spawnPixel() {
+            const el = document.createElement('div');
+            el.className = 'pixel';
+            const size = Math.random() * 8 + 4;
+            el.style.cssText = [
+                `width:${size}px`,
+                `height:${size}px`,
+                `left:${Math.random() * 100}vw`,
+                `bottom:-${size}px`,
+                `background:${COLORS[Math.floor(Math.random() * COLORS.length)]}`,
+                `animation-duration:${Math.random() * 8 + 6}s`,
+                `animation-delay:${Math.random() * 4}s`,
+                `box-shadow:0 0 ${size}px ${COLORS[Math.floor(Math.random() * COLORS.length)]}`
+            ].join(';');
+            pixelContainer.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+        }
+
+        for (let i = 0; i < 18; i++) spawnPixel();
+        setInterval(spawnPixel, 800);
+    </script>
 </body>
 </html>
