@@ -1,0 +1,87 @@
+/* PacFamily - local overrides (shared styles from ../css/style.css) */
+
+/* Slightly squarer container to fit the maze nicely */
+#gameWrapper {
+    position: relative;
+    width: min(600px, 81.97vh); /* height = 1.22 * width <= 100vh */
+    aspect-ratio: 1 / 1.22;
+    background: #0d0d1a;
+    border: 3px solid #333;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+/* Game-over content */
+#gameWrapper .game-over-content {
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+#gameWrapper .game-over-content h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#gameWrapper .game-over-content p {
+    font-size: 18px;
+    color: white;
+    margin: 6px 0;
+}
+
+/* HUD pill badges */
+#hud {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+#hud.hidden {
+    display: none !important;
+}
+
+.hud-pill {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    min-width: 44px;
+    text-align: center;
+}
+
+.lives-pill {
+    color: #f44336;
+    letter-spacing: 3px;
+}
+
+.dots-pill {
+    color: #ffeb3b;
+}
+
+/* Menu characters — 3 per row on desktop, column on mobile */
+.menu-characters {
+    gap: 16px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #gameWrapper {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-width: none;
+        border: none;
+        aspect-ratio: auto;
+    }
+}

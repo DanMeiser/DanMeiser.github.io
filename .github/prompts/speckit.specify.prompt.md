@@ -14,6 +14,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - **CactoCrash** (`CactoCrash/`): Chrome Dino-style endless runner
 - **Cannon Ball** (`CannonBall/`): Block-breaking paddle game
 - **Minefield** (`Minefield/`): Minesweeper/character-style game
+- **Pac Family** (`PacFamily/`): Pac-Man-style maze game
 - **Shared Assets** (`assets/`): Character sprites, backgrounds, sounds
 - **Shared CSS** (`css/style.css`): Unified menu/UI styling used by all games
 
@@ -193,6 +194,51 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Mobile: on-screen D-pad (↑↓←→ + 🚩 FLAG toggle button) + swipe gesture support
 - [ ] Visual style: dark space background (#1a1a2e → #16213e), classic Minesweeper number colours
 
+## Pac Family Feature Requirements
+
+### Core Gameplay
+- [ ] Pac-Man-style maze game: player eats dots and power pellets while being chased
+- [ ] The two non-selected characters become the chasers (e.g. select Calvin → Bailey and Lilly chase)
+- [ ] 19×21 tile maze with walls, dots (value 0), power pellets (value 2), ghost-floor tiles (value 3), and eaten tiles (value 4)
+- [ ] Tunnel on row 8: wraps from col 0 to col 18 (and vice versa) — passable by both player and chasers
+- [ ] Ghost house in map center (rows 7–9, cols 6–12, value 3): chasers start here and exit to main maze
+- [ ] Chaser 0 exits immediately; Chaser 1 exits after 3-second delay
+- [ ] 4 power pellets (two at top, two at bottom); eating one frightens chasers for 8 seconds
+- [ ] Frightened chasers can be eaten for +200 pts; eaten chasers return to ghost house as eyes
+- [ ] Fruit (🍒) spawns at centre tile after 70 dots eaten, worth 150 pts, disappears after 9 seconds
+- [ ] Score: dot=10, power pellet=50, frightened chaser=200, fruit=150
+- [ ] Lives: starts at 3; lose a life when a non-frightened chaser catches player
+- [ ] Win condition: all dots and power pellets eaten
+- [ ] High score persistence per character via localStorage (`pacFamily_best_<char>`)
+
+### Ghost AI Modes
+- [ ] HOUSE: navigate via BFS to exit target tile, then transition to SCATTER
+- [ ] SCATTER: navigate via BFS to assigned corner (top-right / bottom-left)
+- [ ] CHASE: navigate via BFS toward player's current tile
+- [ ] FRIGHTENED: random valid direction at each tile (no U-turn), slower speed
+- [ ] EATEN: navigate via BFS back to ghost house, then transition to SCATTER
+- [ ] Mode cycling: SCATTER 7s → CHASE 20s → SCATTER 7s → CHASE 20s → CHASE indefinitely
+- [ ] FRIGHTENED overrides current mode; restores to CHASE after 8s
+
+### User Interface
+- [ ] Main menu with character selection (Calvin, Bailey, and Lilly) -- identical style to other games
+- [ ] Container: `aspect-ratio: 1/1.22` for maze proportions
+- [ ] In-game HUD: Score pill, Lives pill (♥ per life remaining), Dots remaining pill
+- [ ] Game over / Win screen with score and personal best, reusing same `#gameOver` div
+- [ ] Dying state: player flashes for 1.2s with red overlay before losing life
+- [ ] Main Menu button navigates to games hub
+
+### Characters
+- [ ] Selected character rendered as circular sprite with gold ring
+- [ ] Ghost chasers rendered with sprite clipped to ghost-body shape with red outline
+- [ ] Frightened chasers: solid blue ghost body, white dot-eyes, wavy scared mouth
+- [ ] Eaten chasers: pair of eyes only (white + blue pupils), transparent background
+- [ ] Fallback: Pac-Man yellow wedge for player; solid-colour ghost body for chasers
+
+### Controls
+- [ ] Arrow keys / WASD for movement (direction queued, applied at next tile center)
+- [ ] Touch swipe for mobile direction input
+
 ## File Structure
 
     index.html                  # Landing page — single "Play Games" card
@@ -224,6 +270,10 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
       index.html                # Minefield game page
       minefield.js              # Complete Minefield game engine (self-contained, walk-based)
       style.css                 # aspect-ratio 1/1.2 + HUD pill + D-pad overrides
+    PacFamily/
+      index.html                # Pac Family game page
+      pacfamily.js              # Complete Pac Family game engine (self-contained)
+      style.css                 # aspect-ratio 1/1.22 + HUD pill overrides
 
 ## Audio/Visual Polish
 - [ ] Flap sound effect (flap.mp3)
