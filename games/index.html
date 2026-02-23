@@ -523,6 +523,48 @@
                 <div class="game-tag">Eat &amp; Evade</div>
             </a>
 
+            <!-- ── Family Dodge ── -->
+            <a href="../FamilyDodge/" class="game-card" id="family-dodge-card" style="--art-glow: rgba(66,165,245,0.75);">
+                <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+                <div class="pixel-art-wrap">
+                    <svg width="72" height="72" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <!-- bg open field -->
+                        <rect width="18" height="18" fill="#07071a"/>
+                        <!-- ground strip -->
+                        <rect x="0" y="13" width="18" height="5" fill="#0d2010"/>
+                        <rect x="0" y="13" width="18" height="1" fill="#1a3d1a"/>
+                        <!-- stars -->
+                        <rect x="3"  y="2" width="1" height="1" fill="#fff" opacity="0.5"/>
+                        <rect x="9"  y="1" width="1" height="1" fill="#fff" opacity="0.35"/>
+                        <rect x="15" y="3" width="1" height="1" fill="#fff" opacity="0.6"/>
+                        <!-- player (blue) center -->
+                        <rect x="7" y="8"  width="4" height="4" fill="#42a5f5"/>
+                        <rect x="8" y="7"  width="2" height="2" fill="#42a5f5"/>
+                        <rect x="9" y="7"  width="1" height="1" fill="#fff" opacity="0.9"/>
+                        <!-- player motion trail -->
+                        <rect x="11" y="9" width="1" height="1" fill="#42a5f5" opacity="0.5"/>
+                        <rect x="12" y="8" width="1" height="1" fill="#42a5f5" opacity="0.3"/>
+                        <!-- creep 1 (red) top-right -->
+                        <rect x="14" y="1"  width="3" height="3" fill="#ef5350"/>
+                        <rect x="15" y="0"  width="2" height="1" fill="#ef5350"/>
+                        <rect x="13" y="4"  width="1" height="1" fill="#ef5350" opacity="0.45"/>
+                        <rect x="12" y="5"  width="1" height="1" fill="#ef5350" opacity="0.25"/>
+                        <!-- creep 2 (orange) bottom-left -->
+                        <rect x="0"  y="10" width="3" height="3" fill="#ff7043"/>
+                        <rect x="1"  y="9"  width="2" height="1" fill="#ff7043"/>
+                        <rect x="3"  y="10" width="1" height="1" fill="#ff7043" opacity="0.4"/>
+                        <rect x="4"  y="10" width="1" height="1" fill="#ff7043" opacity="0.22"/>
+                        <!-- creep 3 (yellow) bottom-right -->
+                        <rect x="15" y="11" width="3" height="3" fill="#ffb300"/>
+                        <rect x="13" y="11" width="1" height="1" fill="#ffb300" opacity="0.4"/>
+                        <rect x="12" y="11" width="1" height="1" fill="#ffb300" opacity="0.2"/>
+                    </svg>
+                </div>
+                <div class="game-label">Family Dodge</div>
+                <div class="game-tag">Dodge &amp; Survive</div>
+            </a>
+
         </div>
 
         <a href="https://danmeiser.github.io/" class="back-link">&#8592; back to home</a>
@@ -598,6 +640,13 @@
 
         for (let i = 0; i < 18; i++) spawnPixel();
         setInterval(spawnPixel, 800);
+
+        // ── Family Dodge: only show if WebAssembly is supported ──
+        // (Godot 4 web exports require WebAssembly / SharedArrayBuffer)
+        if (typeof WebAssembly !== 'object') {
+            const card = document.getElementById('family-dodge-card');
+            if (card) card.remove();
+        }
     </script>
 </body>
 </html>

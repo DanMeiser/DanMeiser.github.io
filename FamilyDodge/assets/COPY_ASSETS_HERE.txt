@@ -1,0 +1,11 @@
+Copy the character PNG files from ../assets/ into this folder before opening the project in Godot.
+
+Required files:
+  calvin1.png  calvin2.png  calvin3.png  calvin_preview.png
+  bailey1.png  bailey2.png  bailey3.png  bailey_preview.png
+  lilly1.png   lilly2.png   lilly3.png   lilly-preview.png
+
+Quick PowerShell copy (run from repo root):
+  Copy-Item assets\calvin*.png FamilyDodge\assets\
+  Copy-Item assets\bailey*.png FamilyDodge\assets\
+  Copy-Item assets\lilly*.png  FamilyDodge\assets\

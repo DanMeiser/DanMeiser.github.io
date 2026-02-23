@@ -1,0 +1,114 @@
+[gd_scene load_steps=2 format=3 uid="uid://fdtcs1"]
+
+[ext_resource type="Script" path="res://character_select.gd" id="1"]
+
+[node name="CharacterSelect" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.07, 0.04, 0.18, 1.0)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchor_left = 0.04
+anchor_top = 0.02
+anchor_right = 0.96
+anchor_bottom = 0.98
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+size_flags_horizontal = 3
+text = "Family Dodge"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 52
+
+[node name="SubtitleLabel" type="Label" parent="VBox"]
+size_flags_horizontal = 3
+text = "Choose your character"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+
+[node name="Characters" type="HBoxContainer" parent="VBox"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Calvin" type="VBoxContainer" parent="VBox/Characters"]
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Preview" type="TextureRect" parent="VBox/Characters/Calvin"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0.0, 130.0)
+stretch_mode = 5
+
+[node name="CalvinBtn" type="Button" parent="VBox/Characters/Calvin"]
+size_flags_horizontal = 3
+text = "Calvin"
+theme_override_font_sizes/font_size = 20
+
+[node name="BestLabel" type="Label" parent="VBox/Characters/Calvin"]
+size_flags_horizontal = 3
+text = "Best: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+
+[node name="Bailey" type="VBoxContainer" parent="VBox/Characters"]
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Preview" type="TextureRect" parent="VBox/Characters/Bailey"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0.0, 130.0)
+stretch_mode = 5
+
+[node name="BaileyBtn" type="Button" parent="VBox/Characters/Bailey"]
+size_flags_horizontal = 3
+text = "Bailey"
+theme_override_font_sizes/font_size = 20
+
+[node name="BestLabel" type="Label" parent="VBox/Characters/Bailey"]
+size_flags_horizontal = 3
+text = "Best: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+
+[node name="Lilly" type="VBoxContainer" parent="VBox/Characters"]
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Preview" type="TextureRect" parent="VBox/Characters/Lilly"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0.0, 130.0)
+stretch_mode = 5
+
+[node name="LillyBtn" type="Button" parent="VBox/Characters/Lilly"]
+size_flags_horizontal = 3
+text = "Lilly"
+theme_override_font_sizes/font_size = 20
+
+[node name="BestLabel" type="Label" parent="VBox/Characters/Lilly"]
+size_flags_horizontal = 3
+text = "Best: 0"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+
+[node name="InstructionsLabel" type="Label" parent="VBox"]
+size_flags_horizontal = 3
+text = "Use W A S D or Arrow Keys to dodge the family creeps!"
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 15
+
+[connection signal="pressed" from="VBox/Characters/Calvin/CalvinBtn" to="." method="_on_calvin_btn_pressed"]
+[connection signal="pressed" from="VBox/Characters/Bailey/BaileyBtn" to="." method="_on_bailey_btn_pressed"]
+[connection signal="pressed" from="VBox/Characters/Lilly/LillyBtn" to="." method="_on_lilly_btn_pressed"]
