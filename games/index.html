@@ -641,12 +641,10 @@
         for (let i = 0; i < 18; i++) spawnPixel();
         setInterval(spawnPixel, 800);
 
-        // ── Family Dodge: only show if WebAssembly is supported ──
-        // (Godot 4 web exports require WebAssembly / SharedArrayBuffer)
-        if (typeof WebAssembly !== 'object') {
-            const card = document.getElementById('family-dodge-card');
-            if (card) card.remove();
-        }
+        // ── Family Dodge: hidden until web export is published ──
+        // Remove the comment below and delete this block when the game is live.
+        const _fdCard = document.getElementById('family-dodge-card');
+        if (_fdCard) _fdCard.remove();
     </script>
 </body>
 </html>
