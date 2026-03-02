@@ -608,7 +608,14 @@ class FamilyFlingGame {
         // Remove dead bodies
         this.bodies = this.bodies.filter(b => b.alive);
 
-        // Settle logic: after projectile dies, wait then check win/lose
+        // ── Immediate win check: all enemies cleared regardless of shot state ──
+        const enemiesLeft = this.bodies.filter(b => b.type === 'enemy').length;
+        if (enemiesLeft === 0 && this.settleTimer === 0) {
+            // Use a short settle so blocks finish tumbling before the screen pops up
+            this.settleTimer = 45;
+        }
+
+        // Settle logic: after projectile dies (or enemies cleared), wait then check win/lose
         if (this.shot && !this.shot.alive && this.settleTimer === 0) {
             this.settleTimer = 95;
         }
