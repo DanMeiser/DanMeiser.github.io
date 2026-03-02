@@ -127,7 +127,7 @@ class Paddle {
         this.width = PADDLE_WIDTH_DEFAULT;
         this.height = PADDLE_HEIGHT;
         this.x = (canvasW - this.width) / 2;
-        this.y = canvasH - 40;
+        this.y = canvasH - 80;
         this.speed = PADDLE_SPEED;
         this.canvasW = canvasW;
         this.expandTimer = 0;
@@ -516,7 +516,7 @@ class CannonBallGame {
         this.canvas.height = wrapper.clientHeight;
         if (this.paddle) {
             this.paddle.canvasW = this.canvas.width;
-            this.paddle.y = this.canvas.height - 40;
+            this.paddle.y = this.canvas.height - 80;
         }
     }
 
