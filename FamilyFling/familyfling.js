@@ -43,7 +43,7 @@ class PhysicsBody {
         this.angle = 0; this.omega = 0;
         this.type    = type;     // 'wood' | 'stone' | 'plank' | 'enemy'
         this.imgKey  = imgKey;
-        this.hp      = type === 'stone' ? 5 : type === 'enemy' ? 3 : 2;
+        this.hp      = type === 'stone' ? 2 : type === 'enemy' ? 2 : 1;
         this.isStatic = true;
         this.alive   = true;
         this.scored  = false;
@@ -95,6 +95,7 @@ function buildLevel(lvl, W, H, groundY, char2, char3) {
     const EW = Math.round(BW * 1.15);   // enemy block (slightly bigger)
     const EH = EW;
     const g  = groundY;
+    const s  = BW * 1.08;               // standard spacing between block centres
 
     function woodBlock(cx, cy) {
         bodies.push(new PhysicsBody(cx, cy, BW, BH, 'wood'));
@@ -108,106 +109,135 @@ function buildLevel(lvl, W, H, groundY, char2, char3) {
     function enemy(cx, cy, who) {
         bodies.push(new PhysicsBody(cx, cy, EW, EH, 'enemy', who));
     }
+    // Shorthand: column of n wood blocks, bottom-most first
+    function woodCol(cx, n) {
+        for (let i = 0; i < n; i++) woodBlock(cx, g - BH * (i + 0.5));
+    }
+    function stoneCol(cx, n) {
+        for (let i = 0; i < n; i++) stoneBlock(cx, g - BH * (i + 0.5));
+    }
 
     const lev = ((lvl - 1) % 5) + 1;
 
     if (lev === 1) {
-        // ── Two small pillars ──
-        const tx = W * 0.66;
-        woodBlock(tx,            g - BH * 0.5);
-        woodBlock(tx,            g - BH * 1.5);
-        enemy    (tx,            g - BH * 2.7, char2);
+        // ── Three small towers ──
+        const t1 = W * 0.58;
+        woodCol(t1, 2);
+        woodBlock(t1 - s * 0.5, g - BH * 0.5); // flanking block
+        woodBlock(t1 + s * 0.5, g - BH * 0.5);
+        enemy(t1, g - BH * 2.7, char2);
 
-        const tx2 = W * 0.82;
-        woodBlock(tx2,           g - BH * 0.5);
-        enemy    (tx2,           g - BH * 1.7, char3);
+        const t2 = W * 0.74;
+        woodCol(t2, 2);
+        woodBlock(t2 - s * 0.5, g - BH * 0.5);
+        woodBlock(t2 + s * 0.5, g - BH * 0.5);
+
+        const t3 = W * 0.88;
+        woodCol(t3, 2);
+        woodBlock(t3, g - BH * 2.5);
+        enemy(t3, g - BH * 3.7, char3);
     }
 
     if (lev === 2) {
-        // ── Wider towers, one with a plank cap ──
-        const tx = W * 0.62;
-        woodBlock(tx,            g - BH * 0.5);
-        woodBlock(tx,            g - BH * 1.5);
-        woodBlock(tx,            g - BH * 2.5);
-        enemy    (tx,            g - BH * 3.7, char2);
+        // ── Two taller towers with plank bridges ──
+        const t1 = W * 0.60;
+        woodCol(t1 - s, 3);
+        woodCol(t1,     3);
+        woodCol(t1 + s, 3);
+        plank(t1, g - BH * 3.6);
+        enemy(t1, g - BH * 4.3, char2);
 
-        const tx2 = W * 0.80;
-        woodBlock(tx2,           g - BH * 0.5);
-        woodBlock(tx2,           g - BH * 1.5);
-        enemy    (tx2,           g - BH * 2.7, char3);
-
-        // Catapult bonus block
-        woodBlock(W * 0.91,      g - BH * 0.5);
+        const t2 = W * 0.82;
+        woodCol(t2 - s * 0.5, 3);
+        woodCol(t2 + s * 0.5, 3);
+        plank(t2, g - BH * 3.6);
+        woodBlock(t2, g - BH * 4.15);
+        enemy(t2, g - BH * 4.85, char3);
     }
 
     if (lev === 3) {
-        // ── Covered structure ──
-        const tx = W * 0.63;
-        const gap = BW * 1.15;
-        woodBlock(tx,            g - BH * 0.5);
-        woodBlock(tx + gap,      g - BH * 0.5);
-        plank    (tx + gap * 0.5, g - BH * 1.15);
-        enemy    (tx,            g - BH * 1.9, char2);
-        enemy    (tx + gap,      g - BH * 1.9, char3);
-        stoneBlock(tx + gap * 0.5, g - BH * 2.85);
+        // ── Spread-out structures with stone pillars ──
+        const t1 = W * 0.56;
+        woodCol(t1 - s, 2);
+        stoneCol(t1, 2);
+        woodCol(t1 + s, 2);
+        plank(t1, g - BH * 2.6);
+        woodBlock(t1 - s, g - BH * 2.5);
+        woodBlock(t1 + s, g - BH * 2.5);
+        enemy(t1 - s * 0.5, g - BH * 3.5, char2);
+        enemy(t1 + s * 0.5, g - BH * 3.5, char3);
+        stoneBlock(t1, g - BH * 3.6);
 
-        // Side stack
-        const tx2 = W * 0.86;
-        woodBlock(tx2,           g - BH * 0.5);
-        woodBlock(tx2,           g - BH * 1.5);
-        stoneBlock(tx2,          g - BH * 2.5);
+        // Detached pile on the right
+        const t2 = W * 0.84;
+        woodCol(t2 - s * 0.5, 3);
+        woodCol(t2 + s * 0.5, 3);
+        woodBlock(t2, g - BH * 0.5);
+        woodBlock(t2, g - BH * 1.5);
+        stoneBlock(t2, g - BH * 2.5);
     }
 
     if (lev === 4) {
-        // ── Fortress with walls ──
-        const tx = W * 0.59;
-        const span = BW * 2.3;
-        // Left wall
-        woodBlock(tx,            g - BH * 0.5);
-        woodBlock(tx,            g - BH * 1.5);
-        woodBlock(tx,            g - BH * 2.5);
-        // Right wall
-        woodBlock(tx + span,     g - BH * 0.5);
-        woodBlock(tx + span,     g - BH * 1.5);
-        woodBlock(tx + span,     g - BH * 2.5);
-        // Roof
-        plank    (tx + span * 0.5, g - BH * 3.05);
+        // ── Wide fortress with inner chambers ──
+        const base = W * 0.56;
+        const span = s * 4;
+        // Outer walls (4 columns high)
+        woodCol(base,          4);
+        woodCol(base + span,   4);
+        // Inner columns
+        woodCol(base + s * 1.5, 2);
+        woodCol(base + s * 2.5, 2);
+        // Ground fill between outer walls
+        woodBlock(base + s,     g - BH * 0.5);
+        woodBlock(base + s * 3, g - BH * 0.5);
+        // Stone caps on inner columns
+        stoneBlock(base + s * 1.5, g - BH * 2.5);
+        stoneBlock(base + s * 2.5, g - BH * 2.5);
+        // Roof planks
+        plank(base + span * 0.25, g - BH * 4.6);
+        plank(base + span * 0.75, g - BH * 4.6);
         // Enemies on roof
-        enemy    (tx + span * 0.2, g - BH * 3.75, char2);
-        enemy    (tx + span * 0.8, g - BH * 3.75, char3);
-        // Inner support
-        woodBlock(tx + span * 0.5, g - BH * 0.5);
+        enemy(base + span * 0.25, g - BH * 5.3, char2);
+        enemy(base + span * 0.75, g - BH * 5.3, char3);
 
-        // Side tower
-        const tx2 = W * 0.88;
-        stoneBlock(tx2,          g - BH * 0.5);
-        stoneBlock(tx2,          g - BH * 1.5);
+        // Right-side bonus column
+        const t2 = W * 0.91;
+        stoneCol(t2, 3);
+        woodBlock(t2, g - BH * 3.5);
     }
 
     if (lev === 5) {
-        // ── Big layered fortress ──
-        const tx = W * 0.57;
-        const s  = BW * 1.15;
-        // Ground row of 4
-        for (let i = 0; i < 4; i++) woodBlock(tx + s * i, g - BH * 0.5);
-        // Second row (stone in middle)
-        woodBlock (tx,           g - BH * 1.5);
-        stoneBlock(tx + s,       g - BH * 1.5);
-        stoneBlock(tx + s * 2,   g - BH * 1.5);
-        woodBlock (tx + s * 3,   g - BH * 1.5);
-        // Plank
-        plank     (tx + s * 1.5, g - BH * 2.15);
-        // Enemies flanking
-        enemy     (tx + s * 0.4, g - BH * 2.1, char2);
-        enemy     (tx + s * 2.6, g - BH * 2.1, char3);
+        // ── Mega fortress ──
+        const base = W * 0.53;
+        const cols = 5;
+        // Bottom row across 5 cols
+        for (let i = 0; i < cols; i++) woodBlock(base + s * i, g - BH * 0.5);
+        // Second row: alternate stone / wood
+        for (let i = 0; i < cols; i++) {
+            (i % 2 === 0 ? stoneBlock : woodBlock)(base + s * i, g - BH * 1.5);
+        }
+        // Third row: wood
+        for (let i = 0; i < cols; i++) woodBlock(base + s * i, g - BH * 2.5);
+        // Fourth row: stone
+        for (let i = 0; i < cols; i++) stoneBlock(base + s * i, g - BH * 3.5);
+        // Wide plank cap
+        plank(base + s * 1.0, g - BH * 4.2);
+        plank(base + s * 3.0, g - BH * 4.2);
+        // Fifth row mid section
+        woodBlock(base + s, g - BH * 4.6);
+        stoneBlock(base + s * 2, g - BH * 4.6);
+        woodBlock(base + s * 3, g - BH * 4.6);
+        // Enemies
+        enemy(base + s * 0.8, g - BH * 5.45, char2);
+        enemy(base + s * 3.2, g - BH * 5.45, char3);
         // Top stone
-        stoneBlock(tx + s * 1.5, g - BH * 2.9);
+        stoneBlock(base + s * 2, g - BH * 5.5);
 
-        // Far right column
-        const tx2 = W * 0.89;
-        woodBlock(tx2,           g - BH * 0.5);
-        stoneBlock(tx2,          g - BH * 1.5);
-        stoneBlock(tx2,          g - BH * 2.5);
+        // Detached right spike
+        const t2 = W * 0.92;
+        woodCol(t2, 2);
+        stoneBlock(t2, g - BH * 2.5);
+        woodBlock(t2, g - BH * 3.5);
     }
 
     return bodies;
@@ -419,7 +449,7 @@ class FamilyFlingGame {
     }
 
     _startLevel() {
-        const MAX_SHOTS = [0, 3, 4, 4, 5, 5];
+        const MAX_SHOTS = [0, 4, 5, 6, 7, 8];
         this.shotsLeft   = MAX_SHOTS[Math.min(this.level, 5)];
         this.shot        = null;
         this.popups      = [];
@@ -879,7 +909,7 @@ class FamilyFlingGame {
             ctx.strokeStyle = '#37474f';
             ctx.lineWidth = 1.5;
             ctx.strokeRect(-b.w * 0.5, -b.h * 0.5, b.w, b.h);
-            if (b.hp <= 2) {
+            if (b.hp <= 1) {
                 ctx.strokeStyle = '#263238';
                 ctx.lineWidth   = 1;
                 ctx.beginPath();
