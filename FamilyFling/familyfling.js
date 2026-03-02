@@ -12,8 +12,8 @@ const RESTITUTION_GND   = 0.28;
 const RESTITUTION_BLOCK = 0.22;
 const FRICTION_GND      = 0.80;
 const ANGULAR_DRAG      = 0.88;
-const MAX_PULL          = 70;
-const LAUNCH_POWER      = 0.205;
+const MAX_PULL          = 85;
+const LAUNCH_POWER      = 0.30;
 const TRAIL_LEN         = 30;
 const SCORE_BLOCK       = 50;
 const SCORE_ENEMY       = 300;
@@ -286,30 +286,69 @@ class FamilyFlingGame {
     // ── Input ─────────────────────────────────────────────────────────────────
     _setupInput() {
         const c = this.canvas;
-        const onStart = (px, py) => {
+
+        // Virtual-joystick state for touch — lets the user start anywhere and
+        // drag without their finger going off the left edge of the screen.
+        this._touchStartX = 0;
+        this._touchStartY = 0;
+        this._usingTouch  = false;
+
+        const applyDrag = (targetX, targetY) => {
+            // Clamp to MAX_PULL radius from fork rest position
+            const dx = targetX - this.forkX, dy = targetY - this.forkRestY;
+            const dist = Math.hypot(dx, dy);
+            if (dist > MAX_PULL) {
+                const s = MAX_PULL / dist;
+                targetX = this.forkX + dx * s;
+                targetY = this.forkRestY + dy * s;
+            }
+            // Clamp to screen bounds
+            this.dragX = Math.max(3, Math.min(this.canvas.width  - 3, targetX));
+            this.dragY = Math.max(3, Math.min(this.canvas.height - 3, targetY));
+        };
+
+        const onStartMouse = (px, py) => {
             if (this.state !== STATE.PLAYING) return;
             if (this.shot && this.shot.alive)  return;
             if (this.shotsLeft <= 0)           return;
+            // Mouse: must begin near the slingshot fork
             const dx = px - this.forkX, dy = py - this.forkRestY;
-            if (Math.hypot(dx, dy) < 90) {
-                this.isAiming = true;
+            if (Math.hypot(dx, dy) < 100) {
+                this._usingTouch = false;
+                this.isAiming    = true;
                 this.dragX = this.forkX;
                 this.dragY = this.forkRestY;
             }
         };
-        const onMove = (px, py) => {
-            if (!this.isAiming) return;
-            const dx = px - this.forkX, dy = py - this.forkRestY;
-            const dist = Math.hypot(dx, dy);
-            if (dist > MAX_PULL) {
-                const s = MAX_PULL / dist;
-                this.dragX = this.forkX + dx * s;
-                this.dragY = this.forkRestY + dy * s;
-            } else {
-                this.dragX = px;
-                this.dragY = py;
+
+        const onStartTouch = (px, py) => {
+            if (this.state !== STATE.PLAYING) return;
+            if (this.shot && this.shot.alive)  return;
+            if (this.shotsLeft <= 0)           return;
+            // Touch: accept anywhere on the left 50% of the canvas so the thumb
+            // never has to reach precisely to the fork.
+            if (px <= this.canvas.width * 0.50) {
+                this._usingTouch  = true;
+                this._touchStartX = px;
+                this._touchStartY = py;
+                this.isAiming     = true;
+                this.dragX = this.forkX;
+                this.dragY = this.forkRestY;
             }
         };
+
+        const onMove = (px, py) => {
+            if (!this.isAiming) return;
+            if (this._usingTouch) {
+                // Virtual joystick: translate the finger delta onto the fork rest
+                const deltaX = px - this._touchStartX;
+                const deltaY = py - this._touchStartY;
+                applyDrag(this.forkX + deltaX, this.forkRestY + deltaY);
+            } else {
+                applyDrag(px, py);
+            }
+        };
+
         const onEnd = () => {
             if (!this.isAiming) return;
             this.isAiming = false;
@@ -325,13 +364,13 @@ class FamilyFlingGame {
             return [t.clientX - r.left, t.clientY - r.top];
         };
 
-        c.addEventListener('mousedown',  e => { const [x,y] = pos(e);  onStart(x, y); });
+        c.addEventListener('mousedown',  e => { const [x,y] = pos(e);  onStartMouse(x, y); });
         c.addEventListener('mousemove',  e => { const [x,y] = pos(e);  onMove(x, y); });
         c.addEventListener('mouseup',    ()  => onEnd());
         c.addEventListener('mouseleave', ()  => onEnd());
-        c.addEventListener('touchstart', e => { e.preventDefault(); const [x,y] = tpos(e); onStart(x, y); }, { passive: false });
-        c.addEventListener('touchmove',  e => { e.preventDefault(); const [x,y] = tpos(e); onMove(x, y); },  { passive: false });
-        c.addEventListener('touchend',   e => { e.preventDefault(); onEnd(); },                               { passive: false });
+        c.addEventListener('touchstart', e => { e.preventDefault(); const [x,y] = tpos(e); onStartTouch(x, y); }, { passive: false });
+        c.addEventListener('touchmove',  e => { e.preventDefault(); const [x,y] = tpos(e); onMove(x, y); },        { passive: false });
+        c.addEventListener('touchend',   e => { e.preventDefault(); onEnd(); },                                     { passive: false });
     }
 
     _launch() {
