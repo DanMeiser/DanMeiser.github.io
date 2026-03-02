@@ -1,14 +1,49 @@
-/* Family Fling – game wrapper and overrides */
+/* Family Fling – local overrides (shared styles come from ../css/style.css) */
 
 #gameWrapper {
     position: relative;
-    /* Landscape: cap width, derive height from 16:9 ratio */
-    width: min(800px, 100vw);
-    aspect-ratio: 16 / 9;
+    /* Portrait, same sizing formula as CannonBall:
+       width is capped so that height (1.5× width) never overflows the viewport */
+    width: min(600px, 66.667vh);
+    aspect-ratio: 1 / 1.5;
     background: linear-gradient(180deg, #87ceeb 0%, #b0e0ff 60%, #c8f0d0 100%);
     border: 3px solid #333;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
     overflow: hidden;
+}
+
+/* Allow the menu overlay to scroll if content is taller than the box */
+#menu.screen {
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#menu .menu-content {
+    margin: auto;
+    padding: 16px 20px;
+}
+
+/* Tighten up the menu a little to fit the portrait box comfortably */
+#menu .menu-content h1 {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+#menu .menu-characters {
+    gap: 18px;
+    margin: 14px 0;
+}
+
+#menu .menu-character-btn img {
+    width: 70px;
+    height: 70px;
+}
+
+#menu .menu-info {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    padding: 14px;
 }
 
 /* Game-over / level-complete content wrapper */
@@ -19,31 +54,31 @@
 }
 
 #gameWrapper .game-over-content h2 {
-    font-size: clamp(20px, 4vw, 32px);
+    font-size: 28px;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 #gameWrapper .game-over-content p {
-    font-size: clamp(14px, 2.5vw, 18px);
+    font-size: 18px;
     color: white;
     margin: 6px 0;
 }
 
-/* HUD – positioned at top of canvas area */
+/* HUD */
 #hud {
     position: absolute;
-    top: 8px;
+    top: 10px;
     left: 10px;
     right: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: white;
-    font-size: clamp(12px, 2vw, 16px);
+    font-size: 16px;
     font-weight: bold;
     z-index: 10;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     pointer-events: none;
 }
 
@@ -55,41 +90,15 @@
     border-radius: 6px;
 }
 
-/* Rotate hint – shown on very small portrait screens */
-#rotateHint {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.88);
-    color: white;
-    font-size: 18px;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 12px;
-    z-index: 200;
-}
-
-@media (max-aspect-ratio: 1/1) and (max-width: 500px) {
-    #rotateHint { display: flex; }
-}
-
-/* Mobile full-screen */
-@media (max-width: 820px) {
+/* Responsive – full screen on mobile */
+@media (max-width: 600px) {
     #gameWrapper {
         width: 100vw;
-        height: calc(100vw * 9 / 16);
+        height: 100vh;
+        height: 100dvh;
         max-width: none;
+        aspect-ratio: auto;
         border: none;
         box-shadow: none;
-    }
-}
-
-/* Very short screens (e.g. landscape mobile with browser chrome) */
-@media (max-height: 420px) {
-    #gameWrapper {
-        width: calc(100vh * 16 / 9);
-        height: 100vh;
     }
 }

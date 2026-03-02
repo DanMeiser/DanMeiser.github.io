@@ -15,6 +15,7 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - **Cannon Ball** (`CannonBall/`): Block-breaking paddle game
 - **Minefield** (`Minefield/`): Minesweeper/character-style game
 - **Pac Family** (`PacFamily/`): Pac-Man-style maze game
+- **Family Fling** (`FamilyFling/`): Angry Birds-style slingshot physics game
 - **Shared Assets** (`assets/`): Character sprites, backgrounds, sounds
 - **Shared CSS** (`css/style.css`): Unified menu/UI styling used by all games
 
@@ -239,6 +240,65 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - [ ] Arrow keys / WASD for movement (direction queued, applied at next tile center)
 - [ ] Touch swipe for mobile direction input
 
+## Family Fling Feature Requirements
+
+### Core Gameplay
+- [ ] Angry Birds-style slingshot game: pull back to aim and launch your character at towers
+- [ ] The two non-selected characters (e.g. select Calvin → Bailey and Lilly are enemies) sit atop towers
+- [ ] Knock both enemies off their towers to complete each level
+- [ ] 5 progressively harder levels (pillars → covered structures → fortress with walls → big layered fortress)
+- [ ] Blocks: wood (2 HP), stone (5 HP), plank (2 HP, wide/thin)
+- [ ] Enemies: 3 HP each; destroying one awards 300 pts; each block awards 50 pts
+- [ ] Impulse-based physics: blocks wake on impact, bounce off ground/walls, collide with each other via circle approximation
+- [ ] Projectile leaves a trail; bounces up to 5 times before dying
+- [ ] Settle timer: 95 frames after projectile dies, check win/lose condition
+- [ ] Score bonus: unused shots × 150 on level complete
+- [ ] High score persistence per character via localStorage (`ff_best_<char>`)
+
+### Slingshot & Input
+- [ ] Mouse: click and drag from near the fork (within 100px) to aim; release to launch
+- [ ] Touch (mobile): virtual joystick — tap anywhere on the left 50% of the screen; the projectile position tracks the *delta* of the finger from where the touch started, so the thumb never needs to reach the fork exactly and cannot go off the left edge
+- [ ] Pull radius capped at `MAX_PULL = 85` px; `LAUNCH_POWER = 0.30` multiplier
+- [ ] Rubber band drawn from both fork tips to the held ball position
+- [ ] Dotted trajectory arc preview while aiming
+- [ ] Remaining shots shown as small character circles below the slingshot
+
+### Slingshot Positioning
+- [ ] `forkX = canvasWidth * 0.128`
+- [ ] `forkRestY = groundY - canvasWidth * 0.20` — anchored relative to groundY so the trunk always reaches the ground regardless of aspect ratio
+- [ ] `groundY = canvasHeight * (1 - GROUND_RATIO)` where `GROUND_RATIO = 0.145`
+
+### Shots per Level
+| Level | Shots |
+|-------|-------|
+| 1     | 3     |
+| 2     | 4     |
+| 3     | 4     |
+| 4     | 5     |
+| 5     | 5     |
+
+### User Interface
+- [ ] Main menu with character selection (Calvin, Bailey, and Lilly) — identical style to other games
+- [ ] Container sized per shared viewport rules (`min(600px, 66.667vh)`, `aspect-ratio: 1/1.5`)
+- [ ] Menu overlay allows scrolling (`overflow-y: auto`) to handle taller content on small screens
+- [ ] In-game HUD: Score pill, Level pill, Shots pill
+- [ ] Level complete screen: score + shot bonus message + Next Level / Main Menu buttons
+- [ ] Game over screen: score, personal best, Play Again / Main Menu buttons
+- [ ] Score popup floats up from destroyed blocks/enemies
+- [ ] Home button linking to `https://danmeiser.github.io/games/`
+
+### Visual Style
+- [ ] Sky gradient background (#4a90c8 → #c4ecaa)
+- [ ] Green ground with grass highlight strip
+- [ ] White fluffy clouds (arc compositing)
+- [ ] Two green hills behind towers
+- [ ] Slingshot: brown trunk + two forked arms, darker fork tips, brown rubber bands
+- [ ] Wood blocks: warm brown gradient, grain lines, crack when HP = 1
+- [ ] Stone blocks: grey gradient, crack line when HP ≤ 2
+- [ ] Plank: wide thin wood variant
+- [ ] Enemy blocks: character preview image clipped to rounded square with red border
+- [ ] Projectile: character sprite clipped to circle with white border and white trail
+
 ## File Structure
 
     index.html                  # Landing page — single "Play Games" card
@@ -274,6 +334,10 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
       index.html                # Pac Family game page
       pacfamily.js              # Complete Pac Family game engine (self-contained)
       style.css                 # aspect-ratio 1/1.22 + HUD pill overrides
+    FamilyFling/
+      index.html                # Family Fling game page
+      familyfling.js            # Complete Family Fling engine (self-contained, slingshot physics)
+      style.css                 # Same 1/1.5 sizing as CannonBall + menu overflow-y scroll
 
 ## Audio/Visual Polish
 - [ ] Flap sound effect (flap.mp3)

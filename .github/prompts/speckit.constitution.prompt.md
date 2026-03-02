@@ -33,6 +33,7 @@ This file outlines the non-negotiable rules, principles, and constraints that mu
 *   **Scoring:** A score counter must be visible on the screen and increment each time the bird successfully passes a pair of pipes.
 *   **Randomization:** Pipes should be generated randomly with varying vertical positions but a fixed gap between the top and bottom pipes.
 *   **Multiple Characters:** Support for multiple playable characters (at minimum 3: Calvin, Bailey, and Lilly) with different visual representations.
+*   **Multi-Game Site:** The site hosts 6 games: Flappy Family, CactoCrash, Cannon Ball, Minefield, Pac Family, and Family Fling. Each game is self-contained in its own subdirectory.
 
 ## GitHub Pages Deployment
 

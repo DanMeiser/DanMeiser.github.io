@@ -252,7 +252,9 @@ class FamilyFlingGame {
     // ── Getters ──────────────────────────────────────────────────────────────
     get groundY()   { return this.canvas.height * (1 - GROUND_RATIO); }
     get forkX()     { return this.canvas.width  * 0.128; }
-    get forkRestY() { return this.canvas.height * 0.595; }
+    // Anchor fork to groundY so the slingshot trunk always reaches the ground
+    // regardless of the canvas aspect ratio (portrait or landscape).
+    get forkRestY() { return this.groundY - this.canvas.width * 0.20; }
 
     // ── Persistence ──────────────────────────────────────────────────────────
     _loadBests() {
