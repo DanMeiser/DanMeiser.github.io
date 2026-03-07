@@ -20,13 +20,13 @@
     /* Fill the safe-area strip with the game bg colour */
     body {
         background: #000010;
-        padding-bottom: env(safe-area-inset-bottom, 60px);
+        padding-bottom: env(safe-area-inset-bottom, 110px);
     }
 
     #gameWrapper {
         width: 100vw;
         /* shrink the game canvas to sit fully above the iOS home bar */
-        height: calc(100dvh - env(safe-area-inset-bottom, 60px));
+        height: calc(100dvh - env(safe-area-inset-bottom, 110px));
         max-width: none;
         aspect-ratio: auto;
         border: none;
