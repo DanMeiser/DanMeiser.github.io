@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Character Sheet Inspector</title>
+<style>
+  body { margin:0; background:#111; color:#eee; font-family:monospace; display:flex; flex-direction:column; align-items:center; }
+  h2   { margin:10px 0 4px; }
+  #controls { display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; padding:6px; }
+  label { font-size:13px; }
+  input[type=number] { width:60px; padding:3px; background:#222; color:#fff; border:1px solid #555; }
+  #info { background:#1a1a2e; padding:8px 16px; border-radius:6px; font-size:14px; min-width:340px; text-align:center; margin:4px 0; }
+  #wrap { position:relative; cursor:crosshair; }
+  canvas { display:block; image-rendering: pixelated; }
+  #highlight { position:absolute; border:2px solid #ff0; pointer-events:none; box-sizing:border-box; }
+
+  /* Preview box */
+  #preview { margin-top:10px; display:flex; gap:20px; align-items:flex-start; justify-content:center; flex-wrap:wrap; }
+  .prev-item { text-align:center; }
+  .prev-item canvas { border:1px solid #444; background:#000; }
+  .prev-item p { font-size:12px; margin:4px 0 0; color:#aaa; }
+</style>
+</head>
+<body>
+<h2>Character Sheet Inspector — platformerPack_character.png</h2>
+<div id="controls">
+  <label>Frame W: <input id="fw" type="number" value="96" min="8" max="256"/></label>
+  <label>Frame H: <input id="fh" type="number" value="96" min="8" max="256"/></label>
+  <label>Scale: <input id="sc" type="number" value="3" min="0.5" max="8" step="0.5"/></label>
+  <button onclick="draw()">Redraw</button>
+</div>
+<div id="info">Click a frame to see its coordinates &amp; preview it</div>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="highlight"></div>
+</div>
+
+<div id="preview"></div>
+
+<script>
+const img = new Image();
+img.src = 'assets/platformerPack_character.png';
+img.onload = draw;
+
+function getVals() {
+  return {
+    fw: parseInt(document.getElementById('fw').value)||96,
+    fh: parseInt(document.getElementById('fh').value)||96,
+    sc: parseFloat(document.getElementById('sc').value)||3,
+  };
+}
+
+function draw() {
+  if (!img.complete || !img.naturalWidth) return;
+  const {fw, fh, sc} = getVals();
+  const c = document.getElementById('c');
+  c.width  = img.naturalWidth  * sc;
+  c.height = img.naturalHeight * sc;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+
+  // Grid overlay
+  ctx.strokeStyle = 'rgba(255,255,0,0.5)';
+  ctx.lineWidth = 1;
+  const cols = Math.floor(img.naturalWidth  / fw);
+  const rows = Math.floor(img.naturalHeight / fh);
+  for (let r = 0; r <= rows; r++) {
+    const y = r * fh * sc;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke();
+  }
+  for (let col = 0; col <= cols; col++) {
+    const x = col * fw * sc;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke();
+  }
+
+  // Label each cell
+  ctx.fillStyle = 'rgba(255,255,100,0.7)';
+  ctx.font = `${Math.max(8, fw*sc*0.14)}px monospace`;
+  for (let r = 0; r < rows; r++) {
+    for (let col = 0; col < cols; col++) {
+      ctx.fillText(`${col},${r}`, col*fw*sc + 3, r*fh*sc + 14);
+    }
+  }
+}
+
+document.getElementById('c').addEventListener('click', e => {
+  const {fw, fh, sc} = getVals();
+  const rect = e.currentTarget.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) / sc;
+  const my = (e.clientY - rect.top)  / sc;
+  const col = Math.floor(mx / fw);
+  const row = Math.floor(my / fh);
+  const sx  = col * fw;
+  const sy  = row * fh;
+
+  document.getElementById('info').innerHTML =
+    `Col ${col}, Row ${row} &nbsp;|&nbsp; <b>sx=${sx}, sy=${sy}</b> &nbsp;|&nbsp; frame size ${fw}&times;${fh}`;
+
+  // Highlight
+  const hl   = document.getElementById('highlight');
+  const wrap = document.getElementById('wrap');
+  const wRect = wrap.getBoundingClientRect();
+  const cRect = document.getElementById('c').getBoundingClientRect();
+  hl.style.left   = (cRect.left - wRect.left + sx*sc) + 'px';
+  hl.style.top    = (cRect.top  - wRect.top  + sy*sc) + 'px';
+  hl.style.width  = (fw * sc) + 'px';
+  hl.style.height = (fh * sc) + 'px';
+
+  // Animated preview
+  const prev = document.getElementById('preview');
+  const pW = fw * 2, pH = fh * 2;
+  // Remove existing preview for this row+col if present, else add
+  const pid = `prev-${col}-${row}`;
+  let existing = document.getElementById(pid);
+  if (existing) { existing.remove(); return; }
+
+  const div = document.createElement('div');
+  div.className = 'prev-item';
+  div.id = pid;
+  const pc = document.createElement('canvas');
+  pc.width = pW; pc.height = pH;
+  const pctx = pc.getContext('2d');
+  pctx.imageSmoothingEnabled = false;
+  pctx.drawImage(img, sx, sy, fw, fh, 0, 0, pW, pH);
+  const p = document.createElement('p');
+  p.textContent = `sx=${sx} sy=${sy}`;
+  const rm = document.createElement('button');
+  rm.textContent = '✕';
+  rm.style.cssText = 'background:#333;color:#fff;border:none;cursor:pointer;margin-top:4px;padding:2px 8px;';
+  rm.onclick = () => div.remove();
+  div.append(pc, p, rm);
+  prev.appendChild(div);
+});
+
+['fw','fh','sc'].forEach(id => document.getElementById(id).addEventListener('change', draw));
+</script>
+</body>
+</html>

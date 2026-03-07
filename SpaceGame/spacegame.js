@@ -1,5 +1,5 @@
 /* ============================================================
-   SPACE STATION MANAGER  v1.0
+   SPACE STATION MANAGER  v1.1
    Walk your astronaut around a 5-room ship, repair systems,
    grow food, manage power & O2, and defend against aliens.
    ============================================================ */
@@ -17,8 +17,12 @@ const IDLE_SX      = 0;
 const IDLE_SY      = 96;
 const JUMP_SX      = 288;
 const JUMP_SY      = 96;
-const WALK_FRAMES  = 4;
-const WALK_SPD     = 7;   // canvas frames per walk sprite frame
+const WALK_FRAMES  = 2;        // 2-frame walk cycle
+const WALK_SPD     = 7;        // canvas frames per walk sprite frame
+const RUN_SPD      = 6.0;      // speed when double-tapping
+const RUN_WALK_SPD = 4;        // faster animation when running
+// Explicit walk frame coords [sx, sy]
+const WALK_FRAME_COORDS = [ [192, 0], [288, 0] ];
 
 // -- Tile sheet (platformPack_tilesheet.png, 104x104 per tile) ----------------
 const TILE_W = 104, TILE_H = 104;
@@ -31,7 +35,7 @@ const TILE_CEIL    = [{ sx:0, sy:208 }, { sx:104, sy:208 }, { sx:208, sy:208 }];
 const GRAVITY      = 0.48;
 const JUMP_VY      = -10;
 const MOVE_SPD     = 3.0;
-const PLAYER_SCALE = 0.46;   // 96 * 0.46 â‰ˆ 44 px drawn
+const PLAYER_SCALE = 0.92;   // 96 * 0.92 ≈ 88 px drawn
 const FLOOR_RATIO  = 0.78;   // floor y as fraction of canvas H
 const SHIP_ROOMS   = 5;
 const ROOM_PX      = 500;    // world-px per room
@@ -92,19 +96,29 @@ function loadImage(src) {
 }
 
 // â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const keys = { left:false, right:false, up:false, interact:false };
+const keys = { left:false, right:false, up:false, interact:false, running:false };
 const _justPressed = { interact:false };
+const _doubleTap   = { left:0, right:0 };   // timestamps for double-tap run detection
 
 window.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft'  || e.key === 'a')                       keys.left     = true;
-    if (e.key === 'ArrowRight' || e.key === 'd')                       keys.right    = true;
+    const now = Date.now();
+    if (e.key === 'ArrowLeft'  || e.key === 'a') {
+        if (!keys.left && now - _doubleTap.left < 280) keys.running = true;
+        _doubleTap.left = now;
+        keys.left = true;
+    }
+    if (e.key === 'ArrowRight' || e.key === 'd') {
+        if (!keys.right && now - _doubleTap.right < 280) keys.running = true;
+        _doubleTap.right = now;
+        keys.right = true;
+    }
     if (e.key === 'ArrowUp'    || e.key === 'w' || e.key === ' ')      keys.up       = true;
     if ((e.key === 'e' || e.key === 'E') && !keys.interact)           { keys.interact = true; _justPressed.interact = true; }
     if (e.key === ' ') e.preventDefault();
 });
 window.addEventListener('keyup', e => {
-    if (e.key === 'ArrowLeft'  || e.key === 'a')                  keys.left     = false;
-    if (e.key === 'ArrowRight' || e.key === 'd')                  keys.right    = false;
+    if (e.key === 'ArrowLeft'  || e.key === 'a')                  { keys.left    = false; if (!keys.right) keys.running = false; }
+    if (e.key === 'ArrowRight' || e.key === 'd')                  { keys.right   = false; if (!keys.left)  keys.running = false; }
     if (e.key === 'ArrowUp'    || e.key === 'w' || e.key === ' ') keys.up       = false;
     if (e.key === 'e' || e.key === 'E')                           keys.interact = false;
 });
@@ -267,6 +281,7 @@ class Player {
         this.walkTick = 0;
         this.moving   = false;
         this.jumping  = false;
+        this.running  = false;
         this.pw       = SRC_FW * PLAYER_SCALE;
         this.ph       = SRC_FH * PLAYER_SCALE;
         this.interacting = false;
@@ -274,9 +289,11 @@ class Player {
     }
 
     update(floorY) {
-        this.moving = false;
-        if (keys.left)  { this.x -= MOVE_SPD; this.facing=-1; this.moving=true; }
-        if (keys.right) { this.x += MOVE_SPD; this.facing= 1; this.moving=true; }
+        this.moving  = false;
+        this.running = keys.running;
+        const spd    = this.running ? RUN_SPD : MOVE_SPD;
+        if (keys.left)  { this.x -= spd; this.facing=-1; this.moving=true; }
+        if (keys.right) { this.x += spd; this.facing= 1; this.moving=true; }
         this.x = Math.max(this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
 
         if (keys.up && this.onGround) {
@@ -291,18 +308,19 @@ class Player {
         if (this.interactTick > 0) { this.interactTick--; this.interacting = this.interactTick > 0; }
 
         if (!this.jumping && this.moving) {
+            const animSpd = this.running ? RUN_WALK_SPD : WALK_SPD;
             this.walkTick++;
-            if (this.walkTick >= WALK_SPD) { this.walkTick=0; this.walkFrame=(this.walkFrame+1)%WALK_FRAMES; }
+            if (this.walkTick >= animSpd) { this.walkTick=0; this.walkFrame=(this.walkFrame+1)%WALK_FRAMES; }
         }
     }
 
     draw(camX) {
         if (!this.sheet) return;
         let sx, sy;
-        if (this.jumping)       { sx = JUMP_SX;              sy = JUMP_SY; }
-        else if (this.interacting){ sx = 192;                 sy = 96; }  // thinking frame
-        else if (this.moving)   { sx = this.walkFrame * SRC_FW; sy = WALK_ROW_SY; }
-        else                    { sx = IDLE_SX;              sy = IDLE_SY; }
+        if (this.jumping)         { sx = JUMP_SX;              sy = JUMP_SY; }
+        else if (this.interacting) { sx = 192;                  sy = 96; }  // thinking frame
+        else if (this.moving)      { [sx, sy] = WALK_FRAME_COORDS[this.walkFrame]; }
+        else                       { sx = IDLE_SX;              sy = IDLE_SY; }
 
         const dx = this.x - camX - this.pw/2;
         const dy = this.y - this.ph;
@@ -574,27 +592,14 @@ class Game {
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(rx, cY + roomH * 0.10); ctx.lineTo(rx + ROOM_PX, cY + roomH * 0.10); ctx.stroke();
 
-        // ── Floor (tiled sprites) ─────────────────────────────
-        const floorH = roomH * 0.14;
+        // ── Floor ────────────────────────────────────────────
+        const floorH   = roomH * 0.08;
         const grateTop = fY - floorH;
-        ctx.save();
-        ctx.rect(rx, grateTop, ROOM_PX, floorH);
-        ctx.clip();
-        if (this.tiles) {
-            const tDrawW = floorH; // square tile scaled to floor height
-            let fx = rx;
-            while (fx < rx + ROOM_PX) {
-                ctx.drawImage(this.tiles, TILE_FLOOR.sx, TILE_FLOOR.sy, TILE_W, TILE_H, fx, grateTop, tDrawW, floorH);
-                fx += tDrawW;
-            }
-        } else {
-            const grateGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
-            grateGrad.addColorStop(0, def.floor);
-            grateGrad.addColorStop(1, '#0a0a10');
-            ctx.fillStyle = grateGrad;
-            ctx.fillRect(rx, grateTop, ROOM_PX, floorH);
-        }
-        ctx.restore();
+        const grateGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
+        grateGrad.addColorStop(0, def.floor);
+        grateGrad.addColorStop(1, '#0a0a10');
+        ctx.fillStyle = grateGrad;
+        ctx.fillRect(rx, grateTop, ROOM_PX, floorH);
         // Floor edge highlight
         ctx.fillStyle = def.accent + '55';
         ctx.fillRect(rx, grateTop, ROOM_PX, 2);
@@ -624,7 +629,7 @@ class Game {
                 ctx.beginPath(); ctx.arc(bx + 6, by, 3, 0, Math.PI*2); ctx.fill();
             }
 
-            // Door arch at bottom
+            // Door arch
             ctx.fillStyle = '#111520';
             roundRect(bx - 8, grateTop - roomH * 0.30, 16, roomH * 0.38, 4);
             ctx.fill();
@@ -977,14 +982,25 @@ function bindMobileBtn(id, key) {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('touchstart',  e => { e.preventDefault(); keys[key] = true;  }, {passive:false});
-    el.addEventListener('touchend',    e => { e.preventDefault(); keys[key] = false; }, {passive:false});
-    el.addEventListener('touchcancel', () => { keys[key] = false; });
+    el.addEventListener('touchend',    e => { e.preventDefault(); keys[key] = false; if (key==='left'&&!keys.right||key==='right'&&!keys.left) keys.running=false; }, {passive:false});
+    el.addEventListener('touchcancel', () => { keys[key] = false; keys.running = false; });
     el.addEventListener('mousedown',   () => { keys[key] = true;  });
-    el.addEventListener('mouseup',     () => { keys[key] = false; });
+    el.addEventListener('mouseup',     () => { keys[key] = false; keys.running = false; });
 }
 bindMobileBtn('mcLeft',  'left');
 bindMobileBtn('mcRight', 'right');
 bindMobileBtn('mcUp',    'up');
+
+// Double-tap run for mobile left/right buttons
+['mcLeft','mcRight'].forEach(id => {
+    let lastTap = 0;
+    const dir = id === 'mcLeft' ? 'left' : 'right';
+    document.getElementById(id)?.addEventListener('touchstart', e => {
+        const now = Date.now();
+        if (now - lastTap < 280) { keys.running = true; }
+        lastTap = now;
+    }, {passive:false});
+});
 
 const mcActEl = document.getElementById('mcAct');
 if (mcActEl) {
