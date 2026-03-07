@@ -1,0 +1,7 @@
+Drop your sprite image files here (PNG, JPG, etc.)
+
+Expected files (name them whatever you like and let me know the filenames):
+  - player sprite(s)
+  - enemy sprite(s)
+  - background / tileset
+  - any other assets (bullets, explosions, UI icons, etc.)

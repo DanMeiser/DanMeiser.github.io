@@ -1,0 +1,21 @@
+/* Space Game — local container overrides only.
+   All menu / button / overlay styles come from ../css/style.css */
+
+#gameWrapper {
+    width: min(600px, 66.667vh);
+    aspect-ratio: 1 / 1.5;
+    background: #000010;
+    border: 3px solid #333;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 600px) {
+    #gameWrapper {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-width: none;
+        aspect-ratio: auto;
+        border: none;
+    }
+}

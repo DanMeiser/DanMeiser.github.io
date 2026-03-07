@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Space Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="gameWrapper">
+
+    <!-- Character Select Menu -->
+    <div id="menu">
+      <h1>Space Game</h1>
+      <p class="subtitle">Choose your pilot</p>
+      <div class="char-row">
+        <div class="char-card" data-char="calvin">
+          <img src="../assets/calvin_preview.png" alt="Calvin" />
+          <span>Calvin</span>
+        </div>
+        <div class="char-card" data-char="bailey">
+          <img src="../assets/bailey_preview.png" alt="Bailey" />
+          <span>Bailey</span>
+        </div>
+        <div class="char-card" data-char="lilly">
+          <img src="../assets/lilly-preview.png" alt="Lilly" />
+          <span>Lilly</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD (shown during gameplay) -->
+    <div id="hud" class="hidden">
+      <span class="pill" id="scoreDisplay">Score: 0</span>
+      <span class="pill" id="levelDisplay">Level: 1</span>
+      <span class="pill" id="livesDisplay">Lives: 3</span>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Game Over Overlay -->
+    <div id="gameOver" class="overlay hidden">
+      <h2>GAME OVER</h2>
+      <p id="finalScore">Score: 0</p>
+      <button id="retryBtn">Try Again</button>
+      <button id="menuBtn">Menu</button>
+    </div>
+
+  </div>
+
+  <script src="spacegame.js"></script>
+</body>
+</html>
