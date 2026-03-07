@@ -333,7 +333,9 @@ class Game {
         this.W = canvas.width;
         this.H = canvas.height;
         this.ceilY  = this.H * 0.12;   // top of interior rooms (ceiling)
-        this.floorY = this.H * 0.76;   // bottom of interior rooms (floor)
+        // On narrow/tall screens leave extra room for mobile controls at bottom
+        const mobile = this.W < 480 || (this.H / this.W) > 1.4;
+        this.floorY = this.H * (mobile ? 0.68 : 0.76);
     }
 
     addAlert(msg, color = '#ffff88') {
@@ -361,7 +363,8 @@ class Game {
         this.W = canvas.width;
         this.H = canvas.height;
         this.ceilY  = this.H * 0.12;
-        this.floorY = this.H * 0.76;
+        const mobile = this.W < 480 || (this.H / this.W) > 1.4;
+        this.floorY = this.H * (mobile ? 0.68 : 0.76);
         this.tick++;
 
         // Day cycle

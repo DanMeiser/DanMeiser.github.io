@@ -24,13 +24,15 @@
         max-width: none;
         aspect-ratio: auto;
         border: none;
+        /* push content above iOS home bar */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 }
 
 /* ── Mobile Controls ── */
 #mobileControls {
     position: absolute;
-    bottom: 0;
+    bottom: env(safe-area-inset-bottom, 0px);
     left: 0;
     right: 0;
     height: 15%;
@@ -38,7 +40,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 10px 6px;
+    padding: 4px 10px calc(6px + env(safe-area-inset-bottom, 0px));
     pointer-events: none;
 }
 
