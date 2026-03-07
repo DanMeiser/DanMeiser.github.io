@@ -30,18 +30,20 @@ const TILE_W = 104, TILE_H = 104;
 const TILE_FLOOR   = { sx: 312, sy: 312 };
 // Ceiling tiles (3 variants, cycle across room width)
 const TILE_CEIL      = [{ sx:0, sy:208 }, { sx:104, sy:208 }, { sx:208, sy:208 }];
+// Outside / EVA zone ceiling tiles
+const TILE_CEIL_OUT  = [{ sx:0, sy:0 }, { sx:104, sy:0 }];
 
 // â”€â”€ World / ship â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const GRAVITY      = 0.48;
 const JUMP_VY      = -10;
-const MOVE_SPD     = 3.0;
+const MOVE_SPD     = 4.5;
 const PLAYER_SCALE = 0.92;   // 96 * 0.92 ≈ 88 px drawn
 const FLOOR_RATIO  = 0.78;   // floor y as fraction of canvas H
 const SHIP_ROOMS   = 5;
 const ROOM_PX      = 500;    // world-px per room
 const SHIP_W       = SHIP_ROOMS * ROOM_PX;
 const CAM_EASE     = 0.10;
-const COZY_MOVE_SPD    = 1.2;             // slow wander speed in cozy mode
+const OUTSIDE_W    = 600;    // exterior EVA zone extends this far LEFT of the ship (world x -600..0)
 const COZY_BTN_WORLD_X = ROOM_PX * 0.75; // cozy station world-x (right side of airlock)
 
 // â”€â”€ Resource rates (per frame, out of 100) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -99,7 +101,7 @@ function loadImage(src) {
 
 // â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const keys = { left:false, right:false, up:false, interact:false, running:false };
-const _justPressed = { interact:false };
+const _justPressed = { interact:false, up:false };
 const _doubleTap   = { left:0, right:0 };   // timestamps for double-tap run detection
 
 window.addEventListener('keydown', e => {
@@ -114,7 +116,7 @@ window.addEventListener('keydown', e => {
         _doubleTap.right = now;
         keys.right = true;
     }
-    if (e.key === 'ArrowUp'    || e.key === 'w' || e.key === ' ')      keys.up       = true;
+    if (e.key === 'ArrowUp'    || e.key === 'w' || e.key === ' ') { if (!keys.up) _justPressed.up = true; keys.up = true; }
     if ((e.key === 'e' || e.key === 'E') && !keys.interact)           { keys.interact = true; _justPressed.interact = true; }
     if (e.key === ' ') e.preventDefault();
 });
@@ -283,6 +285,7 @@ class Player {
         this.walkTick = 0;
         this.moving   = false;
         this.jumping  = false;
+        this.jumpsLeft= 2;
         this.running  = false;
         this.pw       = SRC_FW * PLAYER_SCALE;
         this.ph       = SRC_FH * PLAYER_SCALE;
@@ -293,20 +296,20 @@ class Player {
     update(floorY) {
         this.moving  = false;
         this.running = keys.running;
-        const cozy   = game && game.cozyMode;
-        const spd    = cozy ? COZY_MOVE_SPD : (this.running ? RUN_SPD : MOVE_SPD);
+        const spd    = this.running ? RUN_SPD : MOVE_SPD;
         if (keys.left)  { this.x -= spd; this.facing=-1; this.moving=true; }
         if (keys.right) { this.x += spd; this.facing= 1; this.moving=true; }
-        this.x = Math.max(this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
+        this.x = Math.max(-OUTSIDE_W + this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
 
-        if (keys.up && this.onGround) {
+        if (_justPressed.up && this.jumpsLeft > 0) {
             this.vy = JUMP_VY;
             this.onGround = false;
             this.jumping  = true;
+            this.jumpsLeft--;
         }
         this.vy += GRAVITY;
         this.y  += this.vy;
-        if (this.y >= floorY) { this.y = floorY; this.vy = 0; this.onGround = true; this.jumping = false; }
+        if (this.y >= floorY) { this.y = floorY; this.vy = 0; this.onGround = true; this.jumping = false; this.jumpsLeft = 2; }
 
         if (this.interactTick > 0) { this.interactTick--; this.interacting = this.interactTick > 0; }
 
@@ -407,15 +410,19 @@ class Game {
         }
 
         // Events
-        if (this.tick % 1100 === 550) this.triggerBreakdown();
-        if (this.tick % 2200 === 0)   this.startAlienAttack();
+        if (!this.cozyMode) {
+            if (this.tick % 1100 === 550) this.triggerBreakdown();
+            if (this.tick % 2200 === 0)   this.startAlienAttack();
+        }
 
-        // Depletion
-        this.resources.o2    -= BASE_DEPLETE.o2;
-        this.resources.power -= BASE_DEPLETE.power;
-        this.resources.food  -= BASE_DEPLETE.food;
-        if (this.stations[3].broken) this.resources.power -= EXTRA_BROKEN;
-        if (this.stations[4].broken) this.resources.o2    -= EXTRA_BROKEN;
+        // Depletion (paused in cozy mode)
+        if (!this.cozyMode) {
+            this.resources.o2    -= BASE_DEPLETE.o2;
+            this.resources.power -= BASE_DEPLETE.power;
+            this.resources.food  -= BASE_DEPLETE.food;
+            if (this.stations[3].broken) this.resources.power -= EXTRA_BROKEN;
+            if (this.stations[4].broken) this.resources.o2    -= EXTRA_BROKEN;
+        }
 
         // Alien attack
         if (this.alienAttack) {
@@ -440,10 +447,11 @@ class Game {
 
         // Player
         this.player.update(this.floorY);
+        _justPressed.up = false;
         this.player.y = Math.min(this.player.y, this.floorY); // safety clamp
 
         // Camera
-        const targetCamX = Math.max(0, Math.min(SHIP_W - this.W, this.player.x - this.W/2));
+        const targetCamX = Math.max(-OUTSIDE_W, Math.min(SHIP_W - this.W, this.player.x - this.W/2));
         if (!this.camX) this.camX = targetCamX;
         this.camX += (targetCamX - this.camX) * CAM_EASE;
 
@@ -553,6 +561,113 @@ class Game {
         for (let rx = 10; rx < W; rx += 32) {
             ctx.fillStyle = '#3a4a60';
             ctx.beginPath(); ctx.arc(rx, fY + hullH * 0.65, 3, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    drawOutside(camX) {
+        const W = this.W, H = this.H;
+        const fY    = this.floorY;
+        const cY    = this.ceilY;
+        const roomH = fY - cY;
+        const ceilH = roomH * 0.13;
+        const floorH   = roomH * 0.08;
+        const grateTop = fY - floorH;
+
+        // Screen coords of the outside zone
+        const rxLeft  = -OUTSIDE_W - camX;
+        const rxRight = -camX;  // world x=0 = left wall of room 0
+
+        // Cull if entirely off-screen
+        if (rxRight < -20 || rxLeft > W + 20) return;
+
+        // ── Interior atmosphere fill ──────────────────────────
+        const extGrad = ctx.createLinearGradient(0, cY, 0, fY);
+        extGrad.addColorStop(0,   '#04060d');
+        extGrad.addColorStop(0.7, '#070a12');
+        extGrad.addColorStop(1,   '#0b0e18');
+        ctx.fillStyle = extGrad;
+        ctx.fillRect(rxLeft, cY, OUTSIDE_W, roomH);
+
+        // Depth haze – fades to near-transparent toward the airlock
+        const hazeGrad = ctx.createLinearGradient(rxLeft, 0, rxRight, 0);
+        hazeGrad.addColorStop(0,   'rgba(0,0,0,0.55)');
+        hazeGrad.addColorStop(0.8, 'rgba(0,0,0,0.05)');
+        hazeGrad.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.fillStyle = hazeGrad;
+        ctx.fillRect(rxLeft, cY + ceilH, OUTSIDE_W, roomH - ceilH - floorH);
+
+        // ── Ceiling tiles (sx=0/104, sy=0) ───────────────────
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(rxLeft, cY, OUTSIDE_W, ceilH);
+        ctx.clip();
+        if (this.tiles) {
+            const tDrawW = ceilH;
+            let cx2 = rxLeft;
+            let tidx = 0;
+            while (cx2 < rxRight + tDrawW) {
+                const t = TILE_CEIL_OUT[tidx % TILE_CEIL_OUT.length];
+                ctx.drawImage(this.tiles, t.sx, t.sy, TILE_W, TILE_H, cx2, cY, tDrawW, ceilH);
+                cx2 += tDrawW;
+                tidx++;
+            }
+        }
+        // Accent strip on top of ceiling tiles
+        ctx.fillStyle = '#4d9de044';
+        ctx.fillRect(rxLeft, cY, OUTSIDE_W, 3);
+        ctx.restore();
+
+        // ── Ceiling conduit ───────────────────────────────────
+        ctx.strokeStyle = '#1a2030';
+        ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(rxLeft, cY + roomH * 0.10); ctx.lineTo(rxRight, cY + roomH * 0.10); ctx.stroke();
+        ctx.strokeStyle = '#4d9de033';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(rxLeft, cY + roomH * 0.10); ctx.lineTo(rxRight, cY + roomH * 0.10); ctx.stroke();
+
+        // ── Floor ledge ───────────────────────────────────────
+        const floorGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
+        floorGrad.addColorStop(0, '#10151f');
+        floorGrad.addColorStop(1, '#070a10');
+        ctx.fillStyle = floorGrad;
+        ctx.fillRect(rxLeft, grateTop, OUTSIDE_W, floorH);
+        ctx.fillStyle = '#4d9de033';
+        ctx.fillRect(rxLeft, grateTop, OUTSIDE_W, 2);
+
+        // ── Door frame at world x=0 (junction with Airlock) ───
+        const bx = rxRight;
+        const bGrad = ctx.createLinearGradient(bx - 14, 0, bx + 14, 0);
+        bGrad.addColorStop(0,   '#0a0c10');
+        bGrad.addColorStop(0.3, '#2a3040');
+        bGrad.addColorStop(0.5, '#3a4555');
+        bGrad.addColorStop(0.7, '#2a3040');
+        bGrad.addColorStop(1,   '#0a0c10');
+        ctx.fillStyle = bGrad;
+        ctx.fillRect(bx - 14, cY, 28, roomH);
+
+        // Bolts
+        for (const by of [cY + roomH*0.15, cY + roomH*0.40, cY + roomH*0.65, cY + roomH*0.85]) {
+            ctx.fillStyle = '#4a5570';
+            ctx.beginPath(); ctx.arc(bx - 7, by, 3, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(bx + 7, by, 3, 0, Math.PI*2); ctx.fill();
+        }
+
+        // Arch opening (matches interior bulkheads)
+        ctx.fillStyle = '#0a0f18';
+        roundRect(bx - 9, grateTop - roomH * 0.30, 18, roomH * 0.38, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#4d9de077';
+        ctx.lineWidth = 1.5;
+        roundRect(bx - 9, grateTop - roomH * 0.30, 18, roomH * 0.38, 4);
+        ctx.stroke();
+
+        // ── EVA zone label ────────────────────────────────────
+        const labelX = Math.max(rxLeft + 60, Math.min(rxRight - 60, rxLeft + OUTSIDE_W * 0.4));
+        if (labelX > 0 && labelX < W) {
+            ctx.font      = `bold ${W * 0.026}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#1e3040';
+            ctx.fillText('EVA ZONE', labelX, cY - H * 0.018);
         }
     }
 
@@ -781,6 +896,14 @@ class Game {
             ctx.fillRect(hx + hw * 0.35, hy + hh * 0.42, hw * 0.3, hh * 0.06);
             ctx.beginPath(); ctx.arc(hx + hw * 0.5, hy + hh * 0.45, hw * 0.07, 0, Math.PI*2); ctx.fill();
 
+            // Outside exit hint near the left wall
+            if (this.player && this.player.x < ROOM_PX * 0.25) {
+                ctx.font      = `bold ${this.W * 0.028}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#4d9de0cc';
+                ctx.fillText('\u25c4 EVA EXIT', rx + ROOM_PX * 0.08 + hw / 2, hy - roomH * 0.06);
+            }
+
         } else if (def.id === 'farm') {
             // Grow shelves
             for (let sh = 0; sh < 3; sh++) {
@@ -1005,6 +1128,7 @@ class Game {
         const W = this.W, H = this.H;
         this.drawSpaceBg();
         this.drawHullExterior();
+        this.drawOutside(this.camX);
         for (let i = 0; i < SHIP_ROOMS; i++) {
             const rx = i * ROOM_PX - this.camX;
             if (rx + ROOM_PX < -20 || rx > W + 20) continue;
@@ -1061,6 +1185,8 @@ function bindMobileBtn(id, key) {
 bindMobileBtn('mcLeft',  'left');
 bindMobileBtn('mcRight', 'right');
 bindMobileBtn('mcUp',    'up');
+document.getElementById('mcUp')?.addEventListener('touchstart', e => { e.preventDefault(); _justPressed.up = true; }, {passive:false});
+document.getElementById('mcUp')?.addEventListener('mousedown', () => { _justPressed.up = true; });
 
 // Double-tap run for mobile left/right buttons
 ['mcLeft','mcRight'].forEach(id => {
