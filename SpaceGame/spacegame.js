@@ -61,6 +61,9 @@ const levelEl     = document.getElementById('levelDisplay');
 const livesEl     = document.getElementById('livesDisplay');
 const finalScoreEl= document.getElementById('finalScore');
 
+// Game instance declared early so resize() can reference it safely
+let game = null;
+
 // â”€â”€ Resize â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function resize() {
     canvas.width  = wrapper.clientWidth;
@@ -587,7 +590,6 @@ class Game {
 }
 
 // â”€â”€ Touch input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-let game = null;
 
 function evalTouch(touches, down) {
     if (!game) return;
