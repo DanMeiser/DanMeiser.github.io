@@ -20,6 +20,13 @@ const JUMP_SY      = 96;
 const WALK_FRAMES  = 4;
 const WALK_SPD     = 7;   // canvas frames per walk sprite frame
 
+// -- Tile sheet (platformPack_tilesheet.png, 104x104 per tile) ----------------
+const TILE_W = 104, TILE_H = 104;
+// Floor tile
+const TILE_FLOOR   = { sx: 312, sy: 312 };
+// Ceiling tiles (3 variants, cycle across room width)
+const TILE_CEIL    = [{ sx:0, sy:208 }, { sx:104, sy:208 }, { sx:208, sy:208 }];
+
 // â”€â”€ World / ship â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const GRAVITY      = 0.48;
 const JUMP_VY      = -10;
@@ -310,8 +317,9 @@ class Player {
 
 // â”€â”€ Game class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class Game {
-    constructor(sheet) {
+    constructor(sheet, tiles) {
         this.sheet     = sheet;
+        this.tiles     = tiles;
         this.stations  = ROOM_DEFS.map((_, i) => new Station(i));
         this.player    = new Player(sheet);
         this.resources = { o2:80, power:90, food:65, hull:100, credits:5 };
@@ -530,16 +538,33 @@ class Game {
         ctx.fillStyle = def.accent + '44';
         ctx.fillRect(rx, cY, ROOM_PX, 4);
 
-        // ── Ceiling panels ────────────────────────────────────
-        const panelW = ROOM_PX / 4;
-        for (let p = 0; p < 4; p++) {
-            const px = rx + p * panelW;
-            ctx.fillStyle = p % 2 === 0 ? '#1a1f2e' : '#151a28';
-            ctx.fillRect(px + 2, cY, panelW - 4, roomH * 0.07);
-            // ceiling strip light
-            ctx.fillStyle = def.accent + '66';
-            ctx.fillRect(px + panelW * 0.2, cY + 2, panelW * 0.6, 3);
+        // ── Ceiling panels (tiled sprites) ───────────────────
+        const ceilH = roomH * 0.13;
+        ctx.save();
+        ctx.rect(rx, cY, ROOM_PX, ceilH);
+        ctx.clip();
+        if (this.tiles) {
+            const tDrawW = ceilH; // square tile scaled to ceiling height
+            let cx2 = rx;
+            let tileIdx = 0;
+            while (cx2 < rx + ROOM_PX) {
+                const t = TILE_CEIL[tileIdx % TILE_CEIL.length];
+                ctx.drawImage(this.tiles, t.sx, t.sy, TILE_W, TILE_H, cx2, cY, tDrawW, ceilH);
+                cx2 += tDrawW;
+                tileIdx++;
+            }
+        } else {
+            const panelW = ROOM_PX / 4;
+            for (let p = 0; p < 4; p++) {
+                const px = rx + p * panelW;
+                ctx.fillStyle = p % 2 === 0 ? '#1a1f2e' : '#151a28';
+                ctx.fillRect(px + 2, cY, panelW - 4, ceilH);
+            }
         }
+        // accent light strip on top of ceiling tiles
+        ctx.fillStyle = def.accent + '55';
+        ctx.fillRect(rx, cY, ROOM_PX, 3);
+        ctx.restore();
 
         // ── Ceiling conduit pipes ─────────────────────────────
         ctx.strokeStyle = '#2a3040';
@@ -549,26 +574,29 @@ class Game {
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(rx, cY + roomH * 0.10); ctx.lineTo(rx + ROOM_PX, cY + roomH * 0.10); ctx.stroke();
 
-        // ── Floor grating ─────────────────────────────────────
-        const grateTop = fY - roomH * 0.10;
-        const grateGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
-        grateGrad.addColorStop(0, def.floor);
-        grateGrad.addColorStop(1, '#0a0a10');
-        ctx.fillStyle = grateGrad;
-        ctx.fillRect(rx, grateTop, ROOM_PX, roomH * 0.10);
-
-        // Floor grate lines (horizontal)
-        ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-        ctx.lineWidth = 1;
-        for (let gy = grateTop + 4; gy < fY; gy += 6) {
-            ctx.beginPath(); ctx.moveTo(rx, gy); ctx.lineTo(rx + ROOM_PX, gy); ctx.stroke();
+        // ── Floor (tiled sprites) ─────────────────────────────
+        const floorH = roomH * 0.14;
+        const grateTop = fY - floorH;
+        ctx.save();
+        ctx.rect(rx, grateTop, ROOM_PX, floorH);
+        ctx.clip();
+        if (this.tiles) {
+            const tDrawW = floorH; // square tile scaled to floor height
+            let fx = rx;
+            while (fx < rx + ROOM_PX) {
+                ctx.drawImage(this.tiles, TILE_FLOOR.sx, TILE_FLOOR.sy, TILE_W, TILE_H, fx, grateTop, tDrawW, floorH);
+                fx += tDrawW;
+            }
+        } else {
+            const grateGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
+            grateGrad.addColorStop(0, def.floor);
+            grateGrad.addColorStop(1, '#0a0a10');
+            ctx.fillStyle = grateGrad;
+            ctx.fillRect(rx, grateTop, ROOM_PX, floorH);
         }
-        // Floor grate lines (vertical)
-        for (let gx = rx; gx < rx + ROOM_PX; gx += 18) {
-            ctx.beginPath(); ctx.moveTo(gx, grateTop); ctx.lineTo(gx, fY); ctx.stroke();
-        }
+        ctx.restore();
         // Floor edge highlight
-        ctx.fillStyle = def.accent + '33';
+        ctx.fillStyle = def.accent + '55';
         ctx.fillRect(rx, grateTop, ROOM_PX, 2);
 
         // ── Room-specific decorative equipment ───────────────
@@ -971,12 +999,15 @@ if (mcActEl) {
 
 // â”€â”€ Menu & wiring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function startGame() {
-    const sheet = await loadImage('assets/platformerPack_character.png');
+    const [sheet, tiles] = await Promise.all([
+        loadImage('assets/platformerPack_character.png'),
+        loadImage('assets/platformPack_tilesheet.png'),
+    ]);
     menu.classList.add('hidden');
     hud.classList.remove('hidden');
     if ('ontouchstart' in window) mobileControls.classList.remove('hidden');
     if (game) game.stop();
-    game = new Game(sheet);
+    game = new Game(sheet, tiles);
     game.start();
 }
 
