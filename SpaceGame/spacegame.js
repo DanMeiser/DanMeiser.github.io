@@ -59,7 +59,8 @@ const ctx         = canvas.getContext('2d');
 const scoreEl     = document.getElementById('scoreDisplay');
 const levelEl     = document.getElementById('levelDisplay');
 const livesEl     = document.getElementById('livesDisplay');
-const finalScoreEl= document.getElementById('finalScore');
+const finalScoreEl     = document.getElementById('finalScore');
+const mobileControls   = document.getElementById('mobileControls');
 
 // Game instance declared early so resize() can reference it safely
 let game = null;
@@ -923,7 +924,6 @@ class Game {
         this.drawAlienWarning();
         this.drawResourceBars();
         this.drawAlertBanner();
-        this.drawMobileButtons();
     }
 
     start() {
@@ -941,36 +941,37 @@ class Game {
 }
 // â”€â”€ Touch input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function evalTouch(touches, down) {
-    if (!game) return;
-    const rect = canvas.getBoundingClientRect();
-    const scX  = canvas.width  / rect.width;
-    const scY  = canvas.height / rect.height;
-
-    // Reset button states then re-evaluate all active touches
-    keys.left = keys.right = keys.up = false;
-    for (const t of touches) {
-        const tx = (t.clientX - rect.left)  * scX;
-        const ty = (t.clientY - rect.top)   * scY;
-        const hit = b => b && tx>=b.x && tx<=b.x+b.w && ty>=b.y && ty<=b.y+b.h;
-        if (hit(game.btnLeft))  keys.left  = true;
-        if (hit(game.btnRight)) keys.right = true;
-        if (hit(game.btnUp))    keys.up    = true;
-        if (hit(game.btnAct) && down) { keys.interact = true; _justPressed.interact = true; }
-    }
-    if (!touches || touches.length === 0) keys.interact = false;
+// -- HTML mobile button wiring -----------------------------------------------
+function bindMobileBtn(id, key) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('touchstart',  e => { e.preventDefault(); keys[key] = true;  }, {passive:false});
+    el.addEventListener('touchend',    e => { e.preventDefault(); keys[key] = false; }, {passive:false});
+    el.addEventListener('touchcancel', () => { keys[key] = false; });
+    el.addEventListener('mousedown',   () => { keys[key] = true;  });
+    el.addEventListener('mouseup',     () => { keys[key] = false; });
 }
+bindMobileBtn('mcLeft',  'left');
+bindMobileBtn('mcRight', 'right');
+bindMobileBtn('mcUp',    'up');
 
-canvas.addEventListener('touchstart', e => { e.preventDefault(); evalTouch(e.targetTouches, true);  }, {passive:false});
-canvas.addEventListener('touchend',   e => { e.preventDefault(); evalTouch(e.targetTouches, false); }, {passive:false});
-canvas.addEventListener('touchmove',  e => { e.preventDefault(); evalTouch(e.targetTouches, false); }, {passive:false});
+const mcActEl = document.getElementById('mcAct');
+if (mcActEl) {
+    mcActEl.addEventListener('touchstart', e => {
+        e.preventDefault(); keys.interact = true; _justPressed.interact = true;
+    }, {passive:false});
+    mcActEl.addEventListener('touchend',    e => { e.preventDefault(); keys.interact = false; }, {passive:false});
+    mcActEl.addEventListener('touchcancel', () => { keys.interact = false; });
+    mcActEl.addEventListener('mousedown',   () => { keys.interact = true; _justPressed.interact = true; });
+    mcActEl.addEventListener('mouseup',     () => { keys.interact = false; });
+}
 
 // â”€â”€ Menu & wiring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function startGame() {
     const sheet = await loadImage('assets/platformerPack_character.png');
     menu.classList.add('hidden');
     hud.classList.remove('hidden');
-    canvas.style.pointerEvents = 'auto';   // re-enable touch for in-game buttons
+    if ('ontouchstart' in window) mobileControls.classList.remove('hidden');
     if (game) game.stop();
     game = new Game(sheet);
     game.start();
@@ -987,7 +988,7 @@ document.getElementById('menuBtn').addEventListener('click', () => {
     if (game) { game.stop(); game = null; }
     gameOver.classList.add('hidden');
     hud.classList.add('hidden');
-    canvas.style.pointerEvents = 'none';   // let menu receive clicks again
+    mobileControls.classList.add('hidden');
     menu.classList.remove('hidden');
 });
 

@@ -26,3 +26,58 @@
         border: none;
     }
 }
+
+/* ── Mobile Controls ── */
+#mobileControls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 15%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 10px 6px;
+    pointer-events: none;
+}
+
+#mobileControls.hidden { display: none; }
+
+.mc-side {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.mc-btn {
+    width: min(14vw, 64px);
+    height: min(14vw, 64px);
+    border-radius: 50%;
+    background: rgba(10, 20, 45, 0.80);
+    border: 2px solid rgba(77, 157, 224, 0.45);
+    color: #7aaed4;
+    font-size: clamp(1rem, 5vw, 1.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background 0.08s, border-color 0.08s;
+}
+
+.mc-btn:active, .mc-btn.pressed {
+    background: rgba(60, 120, 200, 0.60);
+    border-color: #4d9de0;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(77, 157, 224, 0.6);
+}
+
+.mc-act {
+    font-size: clamp(0.9rem, 4vw, 1.2rem);
+    font-weight: 700;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
