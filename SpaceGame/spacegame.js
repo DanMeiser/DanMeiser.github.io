@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    SPACE STATION MANAGER  v1.1
    Walk your astronaut around a 5-room ship, repair systems,
    grow food, manage power & O2, and defend against aliens.
@@ -29,7 +29,7 @@ const TILE_W = 104, TILE_H = 104;
 // Floor tile
 const TILE_FLOOR   = { sx: 312, sy: 312 };
 // Ceiling tiles (3 variants, cycle across room width)
-const TILE_CEIL    = [{ sx:0, sy:208 }, { sx:104, sy:208 }, { sx:208, sy:208 }];
+const TILE_CEIL      = [{ sx:0, sy:208 }, { sx:104, sy:208 }, { sx:208, sy:208 }];
 
 // â”€â”€ World / ship â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const GRAVITY      = 0.48;
@@ -41,6 +41,8 @@ const SHIP_ROOMS   = 5;
 const ROOM_PX      = 500;    // world-px per room
 const SHIP_W       = SHIP_ROOMS * ROOM_PX;
 const CAM_EASE     = 0.10;
+const COZY_MOVE_SPD    = 1.2;             // slow wander speed in cozy mode
+const COZY_BTN_WORLD_X = ROOM_PX * 0.75; // cozy station world-x (right side of airlock)
 
 // â”€â”€ Resource rates (per frame, out of 100) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const BASE_DEPLETE = { o2: 0.007, power: 0.005, food: 0.004 };
@@ -291,7 +293,8 @@ class Player {
     update(floorY) {
         this.moving  = false;
         this.running = keys.running;
-        const spd    = this.running ? RUN_SPD : MOVE_SPD;
+        const cozy   = game && game.cozyMode;
+        const spd    = cozy ? COZY_MOVE_SPD : (this.running ? RUN_SPD : MOVE_SPD);
         if (keys.left)  { this.x -= spd; this.facing=-1; this.moving=true; }
         if (keys.right) { this.x += spd; this.facing= 1; this.moving=true; }
         this.x = Math.max(this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
@@ -351,6 +354,9 @@ class Game {
         this.alienAttack  = false;
         this.alienTimer   = 0;
         this.nearStation  = null;
+        this.nearCozyBtn  = false;
+        this.cozyMode     = false;
+        this.cozyFlash    = 0;
         this.raf          = null;
         this.onResize();
     }
@@ -419,8 +425,8 @@ class Game {
             if (this.alienTimer <= 0) { this.alienAttack = false; this.addAlert('âœ… Aliens repelled!', '#2ecc71'); }
         }
 
-        // Periodic credit earn
-        if (this.tick % 360 === 0) {
+        // Periodic credit earn (paused in cozy mode)
+        if (!this.cozyMode && this.tick % 360 === 0) {
             const healthy = ['o2','power','food','hull'].filter(k => this.resources[k] > 55).length;
             this.resources.credits = Math.min(99, this.resources.credits + healthy);
             this.score += healthy * 8;
@@ -447,10 +453,24 @@ class Game {
             if (Math.abs(s.worldX - this.player.x) < ROOM_PX * 0.20) { this.nearStation = s; break; }
         }
 
+        // Cozy button proximity
+        this.nearCozyBtn = Math.abs(this.player.x - COZY_BTN_WORLD_X) < ROOM_PX * 0.20;
+        this.cozyFlash   = (this.cozyFlash + 1) % 60;
+
         // Interact (edge-triggered)
-        if (_justPressed.interact && this.nearStation) {
-            const msg = this.nearStation.tryInteract(this.resources);
-            if (msg) { this.addAlert(msg, '#88ffcc'); this.player.interactTick = 80; this.player.interacting = true; }
+        if (_justPressed.interact) {
+            if (this.nearCozyBtn) {
+                this.cozyMode = !this.cozyMode;
+                this.addAlert(
+                    this.cozyMode ? '☕ Cozy mode ON — relax!' : '⚡ Back to work!',
+                    this.cozyMode ? '#88ccff' : '#ffcc44'
+                );
+                this.player.interactTick = 60;
+                this.player.interacting  = true;
+            } else if (this.nearStation) {
+                const msg = this.nearStation.tryInteract(this.resources);
+                if (msg) { this.addAlert(msg, '#88ffcc'); this.player.interactTick = 80; this.player.interacting = true; }
+            }
         }
         _justPressed.interact = false;
 
@@ -704,6 +724,44 @@ class Game {
         }
     }
 
+    drawCozyStation(camX) {
+        const W   = canvas.width;
+        const H   = canvas.height;
+        const fY  = H * FLOOR_RATIO;
+        const sx  = COZY_BTN_WORLD_X - camX;
+        const sw  = ROOM_PX * 0.17;
+        const sh  = fY * 0.30;
+        const sTop = fY - sh;
+
+        // Body — dark when off, teal-tinted when on
+        ctx.fillStyle = this.cozyMode ? '#0a2a30' : '#0d1020';
+        roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.fill();
+
+        // Border — flashes softly when active
+        const flash = this.cozyMode && Math.floor(this.cozyFlash / 8) % 2 === 0;
+        ctx.strokeStyle = flash ? '#88ccff' : (this.cozyMode ? '#55aacc' : '#334466');
+        ctx.lineWidth   = this.cozyMode ? 2.5 : 1.5;
+        roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.stroke();
+
+        // Icon
+        ctx.font      = `${sw * 0.50}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('☕', sx, sTop + sh * 0.58);
+
+        // Label below
+        ctx.fillStyle = this.cozyMode ? '#88ccff' : '#4d7a9e';
+        ctx.font      = `${W * 0.025}px sans-serif`;
+        ctx.fillText('Cozy Mode', sx, fY + H * 0.035);
+
+        // [E] hint when player is near
+        if (this.nearCozyBtn) {
+            const grateTop = fY - (fY - H * 0.12) * 0.10;
+            ctx.font      = `bold ${W * 0.028}px monospace`;
+            ctx.fillStyle = '#ffff88';
+            ctx.fillText(this.cozyMode ? '[E] Exit Cozy' : '[E] Cozy Mode', sx, sTop - H * 0.03);
+        }
+    }
+
     drawRoomDecor(i, rx, cY, fY, roomH, def) {
         const grateTop = fY - roomH * 0.10;
         const mid      = rx + ROOM_PX / 2;
@@ -940,7 +998,7 @@ class Game {
         btn(this.btnLeft,  '<', keys.left);
         btn(this.btnRight, '>', keys.right);
         btn(this.btnUp,    '^', !this.player.onGround);
-        btn(this.btnAct,   'E', this.nearStation !== null);
+        btn(this.btnAct,   'E', this.nearStation !== null || this.nearCozyBtn);
     }
 
     draw() {
@@ -952,7 +1010,20 @@ class Game {
             if (rx + ROOM_PX < -20 || rx > W + 20) continue;
             this.drawRoom(i);
         }
+        this.stations.forEach(s => s.draw(this.camX));
+        this.drawCozyStation(this.camX);
         this.player.draw(this.camX);
+
+        // Cozy mode soft overlay
+        if (this.cozyMode) {
+            ctx.fillStyle = 'rgba(10, 30, 60, 0.18)';
+            ctx.fillRect(0, 0, W, H);
+            ctx.font      = `${W * 0.028}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(136, 204, 255, 0.55)';
+            ctx.fillText('☕ COZY MODE', W / 2, this.ceilY + H * 0.048);
+        }
+
         ctx.font      = `bold ${W * 0.026}px monospace`;
         ctx.textAlign = 'center';
         ctx.fillStyle = '#3a5070';
@@ -1055,4 +1126,5 @@ document.getElementById('menuBtn').addEventListener('click', () => {
     }
     requestAnimationFrame(idleLoop);
 })();
+
 
