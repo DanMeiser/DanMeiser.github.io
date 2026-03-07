@@ -32,6 +32,10 @@ const TILE_FLOOR   = { sx: 312, sy: 312 };
 const TILE_CEIL      = [{ sx:0, sy:208 }, { sx:104, sy:208 }, { sx:208, sy:208 }];
 // Outside / EVA zone ceiling tiles
 const TILE_CEIL_OUT  = [{ sx:0, sy:0 }, { sx:104, sy:0 }];
+// Ladder tile
+const TILE_LADDER    = { sx: 104, sy: 416 };
+const LADDER_GAP     = 30;   // passthrough opening width at ladder x in mid-floor
+const CLIMB_SPD      = 2.5;  // px per frame while climbing
 
 // â”€â”€ World / ship â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const GRAVITY      = 0.48;
@@ -40,8 +44,9 @@ const MOVE_SPD     = 4.5;
 const PLAYER_SCALE = 0.92;   // 96 * 0.92 ≈ 88 px drawn
 const FLOOR_RATIO  = 0.78;   // floor y as fraction of canvas H
 const SHIP_ROOMS   = 5;
-const ROOM_PX      = 500;    // world-px per room
+const ROOM_PX      = 380;    // world-px per room
 const SHIP_W       = SHIP_ROOMS * ROOM_PX;
+const LADDER_WXLIST = Array.from({ length: SHIP_ROOMS }, (_, i) => i * ROOM_PX + ROOM_PX * 0.25);
 const CAM_EASE     = 0.10;
 const OUTSIDE_W    = 600;    // exterior EVA zone extends this far LEFT of the ship (world x -600..0)
 const COZY_BTN_WORLD_X = ROOM_PX * 0.75; // cozy station world-x (right side of airlock)
@@ -286,6 +291,7 @@ class Player {
         this.moving   = false;
         this.jumping  = false;
         this.jumpsLeft= 2;
+        this.onLadder = false;
         this.running  = false;
         this.pw       = SRC_FW * PLAYER_SCALE;
         this.ph       = SRC_FH * PLAYER_SCALE;
@@ -293,27 +299,82 @@ class Player {
         this.interactTick= 0;
     }
 
-    update(floorY) {
+    update(floorY, midFloorY, ceilY, ladderWXs) {
         this.moving  = false;
         this.running = keys.running;
         const spd    = this.running ? RUN_SPD : MOVE_SPD;
-        if (keys.left)  { this.x -= spd; this.facing=-1; this.moving=true; }
-        if (keys.right) { this.x += spd; this.facing= 1; this.moving=true; }
-        this.x = Math.max(-OUTSIDE_W + this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
 
-        if (_justPressed.up && this.jumpsLeft > 0) {
-            this.vy = JUMP_VY;
-            this.onGround = false;
-            this.jumping  = true;
-            this.jumpsLeft--;
+        // Find nearest ladder world-x
+        const nearLadder = ladderWXs.find(lx => Math.abs(this.x - lx) < LADDER_GAP);
+
+        if (this.onLadder) {
+            if (nearLadder === undefined) {
+                this.onLadder = false;          // walked far enough away — fall off
+            } else if (keys.left || keys.right) {
+                // Step off ladder horizontally — release and fall
+                this.onLadder = false; this.onGround = false;
+                if (keys.left)  { this.x -= spd; this.facing = -1; this.moving = true; }
+                if (keys.right) { this.x += spd; this.facing =  1; this.moving = true; }
+            } else if (_justPressed.up && this.jumpsLeft > 0) {
+                // Jump off ladder
+                this.onLadder = false; this.onGround = false;
+                this.vy = JUMP_VY; this.jumping = true; this.jumpsLeft--;
+            } else {
+                this.x  = nearLadder;           // snap x to ladder center
+                this.vy = 0;
+                if (keys.up)   this.y -= CLIMB_SPD;
+                if (keys.down) this.y += CLIMB_SPD;
+                // Arrived at top of ladder (ceiling)
+                const ceilingStop = ceilY + this.ph;
+                if (this.y <= ceilingStop) {
+                    this.y = ceilingStop; this.onLadder = false; this.onGround = true; this.jumping = false; this.jumpsLeft = 2;
+                }
+                // Arrived at main floor (lower exit)
+                if (this.y >= floorY) {
+                    this.y = floorY; this.onLadder = false; this.onGround = true; this.jumping = false; this.jumpsLeft = 2;
+                }
+            }
+        } else {
+            // Horizontal movement
+            if (keys.left)  { this.x -= spd; this.facing=-1; this.moving=true; }
+            if (keys.right) { this.x += spd; this.facing= 1; this.moving=true; }
+            this.x = Math.max(-OUTSIDE_W + this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
+
+            const onLowerFloor = this.onGround && Math.abs(this.y - floorY) < 5;
+            const onUpperFloor = this.onGround && Math.abs(this.y - midFloorY) < 5;
+
+            if (nearLadder !== undefined && (onLowerFloor || onUpperFloor) && _justPressed.up) {
+                // Grab ladder from either floor to ascend
+                this.onLadder = true; this.onGround = false; this.jumping = false; this.vy = 0;
+            } else if (nearLadder !== undefined && onUpperFloor && keys.down) {
+                // Grab ladder from upper floor to descend
+                this.onLadder = true; this.onGround = false; this.jumping = false; this.vy = 0;
+                this.y += 3; // nudge past mid-floor so collision doesn't re-land immediately
+            } else {
+                // Normal jump
+                if (_justPressed.up && this.jumpsLeft > 0) {
+                    this.vy = JUMP_VY;
+                    this.onGround = false;
+                    this.jumping  = true;
+                    this.jumpsLeft--;
+                }
+                const prevY = this.y;
+                this.vy += GRAVITY;
+                this.y  += this.vy;
+                // Mid-floor collision (skip at ladder gap, skip in EVA zone)
+                const atGap  = nearLadder !== undefined;
+                const inShip = this.x >= 0;
+                if (inShip && !atGap && this.vy > 0 && prevY <= midFloorY && this.y >= midFloorY) {
+                    this.y = midFloorY; this.vy = 0; this.onGround = true; this.jumping = false; this.jumpsLeft = 2;
+                }
+                // Main floor
+                if (this.y >= floorY) { this.y = floorY; this.vy = 0; this.onGround = true; this.jumping = false; this.jumpsLeft = 2; }
+            }
         }
-        this.vy += GRAVITY;
-        this.y  += this.vy;
-        if (this.y >= floorY) { this.y = floorY; this.vy = 0; this.onGround = true; this.jumping = false; this.jumpsLeft = 2; }
 
         if (this.interactTick > 0) { this.interactTick--; this.interacting = this.interactTick > 0; }
 
-        if (!this.jumping && this.moving) {
+        if (!this.jumping && this.moving && !this.onLadder) {
             const animSpd = this.running ? RUN_WALK_SPD : WALK_SPD;
             this.walkTick++;
             if (this.walkTick >= animSpd) { this.walkTick=0; this.walkFrame=(this.walkFrame+1)%WALK_FRAMES; }
@@ -323,7 +384,8 @@ class Player {
     draw(camX) {
         if (!this.sheet) return;
         let sx, sy;
-        if (this.jumping)         { sx = JUMP_SX;              sy = JUMP_SY; }
+        if (this.onLadder)         { sx = JUMP_SX;              sy = JUMP_SY; }  // arms-up climbing frame
+        else if (this.jumping)     { sx = JUMP_SX;              sy = JUMP_SY; }
         else if (this.interacting) { sx = 192;                  sy = 96; }  // thinking frame
         else if (this.moving)      { [sx, sy] = WALK_FRAME_COORDS[this.walkFrame]; }
         else                       { sx = IDLE_SX;              sy = IDLE_SY; }
@@ -371,6 +433,7 @@ class Game {
         // On narrow/tall screens leave extra room for mobile controls at bottom
         const mobile = this.W < 480 || (this.H / this.W) > 1.4;
         this.floorY = this.H * (mobile ? 0.68 : 0.76);
+        this.midFloorY = this.ceilY + (this.floorY - this.ceilY) * 0.50;
     }
 
     addAlert(msg, color = '#ffff88') {
@@ -400,6 +463,7 @@ class Game {
         this.ceilY  = this.H * 0.12;
         const mobile = this.W < 480 || (this.H / this.W) > 1.4;
         this.floorY = this.H * (mobile ? 0.68 : 0.76);
+        this.midFloorY = this.ceilY + (this.floorY - this.ceilY) * 0.50;
         this.tick++;
 
         // Day cycle
@@ -446,7 +510,7 @@ class Game {
         this.stations.forEach(s => s.update());
 
         // Player
-        this.player.update(this.floorY);
+        this.player.update(this.floorY, this.midFloorY, this.ceilY, LADDER_WXLIST);
         _justPressed.up = false;
         this.player.y = Math.min(this.player.y, this.floorY); // safety clamp
 
@@ -739,6 +803,41 @@ class Game {
         ctx.fillStyle = def.accent + '55';
         ctx.fillRect(rx, grateTop, ROOM_PX, 2);
 
+        // ── Mid-floor platform (upper level) ─────────────────
+        const midFY    = this.midFloorY;
+        const midFlH   = roomH * 0.05;
+        const ladSX    = rx + ROOM_PX * 0.25;  // ladder screen-x (left quarter, offset from station)
+        const halfGap  = LADDER_GAP / 2;
+        const midGrad  = ctx.createLinearGradient(0, midFY - midFlH, 0, midFY);
+        midGrad.addColorStop(0, def.floor);
+        midGrad.addColorStop(1, '#0a0a10');
+        ctx.fillStyle = midGrad;
+        ctx.fillRect(rx,              midFY - midFlH, ladSX - rx - halfGap,              midFlH); // left of gap
+        ctx.fillRect(ladSX + halfGap, midFY - midFlH, rx + ROOM_PX - ladSX - halfGap,   midFlH); // right of gap
+        ctx.fillStyle = def.accent + '55';
+        ctx.fillRect(rx,              midFY - midFlH, ladSX - rx - halfGap,              2);
+        ctx.fillRect(ladSX + halfGap, midFY - midFlH, rx + ROOM_PX - ladSX - halfGap,   2);
+
+        // ── Ladder (ceiling to main floor) ────────────────────
+        const ladW = Math.round(TILE_W * 0.30);   // ~31 px wide, keep proportional height
+        if (this.tiles) {
+            let ly = cY;
+            while (ly < grateTop) {
+                const segH = Math.min(ladW, grateTop - ly);
+                ctx.drawImage(this.tiles, TILE_LADDER.sx, TILE_LADDER.sy, TILE_W, TILE_H,
+                    ladSX - ladW / 2, ly, ladW, segH);
+                ly += ladW;
+            }
+        } else {
+            ctx.strokeStyle = '#4a5570'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(ladSX - 8, cY); ctx.lineTo(ladSX - 8, grateTop); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(ladSX + 8, cY); ctx.lineTo(ladSX + 8, grateTop); ctx.stroke();
+            ctx.lineWidth = 2;
+            for (let rung = cY + 12; rung < grateTop; rung += 18) {
+                ctx.beginPath(); ctx.moveTo(ladSX - 8, rung); ctx.lineTo(ladSX + 8, rung); ctx.stroke();
+            }
+        }
+
         // ── Room-specific decorative equipment ───────────────
         this.drawRoomDecor(i, rx, cY, fY, roomH, def);
 
@@ -764,13 +863,24 @@ class Game {
                 ctx.beginPath(); ctx.arc(bx + 6, by, 3, 0, Math.PI*2); ctx.fill();
             }
 
-            // Door arch
+            // Lower floor door arch
             ctx.fillStyle = '#111520';
             roundRect(bx - 8, grateTop - roomH * 0.30, 16, roomH * 0.38, 4);
             ctx.fill();
             ctx.strokeStyle = def.accent + '88';
             ctx.lineWidth = 1;
             roundRect(bx - 8, grateTop - roomH * 0.30, 16, roomH * 0.38, 4);
+            ctx.stroke();
+
+            // Upper floor door arch (between ceiling tiles and mid-floor)
+            const ufArchTop = cY + ceilH + 2;
+            const ufArchH   = this.midFloorY - ufArchTop - 2;
+            ctx.fillStyle = '#111520';
+            roundRect(bx - 8, ufArchTop, 16, ufArchH, 4);
+            ctx.fill();
+            ctx.strokeStyle = def.accent + '88';
+            ctx.lineWidth = 1;
+            roundRect(bx - 8, ufArchTop, 16, ufArchH, 4);
             ctx.stroke();
         }
 
