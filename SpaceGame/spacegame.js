@@ -618,12 +618,13 @@ async function startGame() {
     const sheet = await loadImage('assets/platformerPack_character.png');
     menu.classList.add('hidden');
     hud.classList.remove('hidden');
+    canvas.style.pointerEvents = 'auto';   // re-enable touch for in-game buttons
     if (game) game.stop();
     game = new Game(sheet);
     game.start();
 }
 
-document.querySelectorAll('.char-card').forEach(c => c.addEventListener('click', startGame));
+document.querySelectorAll('.menu-character-btn').forEach(c => c.addEventListener('click', startGame));
 
 document.getElementById('retryBtn').addEventListener('click', () => {
     gameOver.classList.add('hidden');
@@ -634,6 +635,7 @@ document.getElementById('menuBtn').addEventListener('click', () => {
     if (game) { game.stop(); game = null; }
     gameOver.classList.add('hidden');
     hud.classList.add('hidden');
+    canvas.style.pointerEvents = 'none';   // let menu receive clicks again
     menu.classList.remove('hidden');
 });
 

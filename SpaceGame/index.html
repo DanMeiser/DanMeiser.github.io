@@ -10,14 +10,23 @@
 <body>
   <div id="gameWrapper">
 
+    <!-- Game Canvas (behind all screens) -->
+    <canvas id="gameCanvas"></canvas>
+
     <!-- Character Select Menu -->
-    <div id="menu">
-      <h1>Space Game</h1>
-      <p class="subtitle">Astronaut sprite inspector</p>
-      <div class="char-row">
-        <div class="char-card" data-char="astronaut">
-          <span style="font-size:3rem">🚀</span>
-          <span>Launch</span>
+    <div id="menu" class="screen">
+      <div class="menu-content">
+        <h1>Space Station</h1>
+        <p class="subtitle">Manage your crew, survive the cosmos</p>
+        <div class="menu-characters">
+          <button class="menu-character-btn" data-char="astronaut">
+            <span style="font-size:3rem;display:block;margin-bottom:8px">🚀</span>
+            <span>Launch</span>
+          </button>
+        </div>
+        <div class="menu-info">
+          <p>Walk between rooms · Press E to interact</p>
+          <p>Keep O₂, Power, Food &amp; Hull alive!</p>
         </div>
       </div>
     </div>
@@ -29,15 +38,14 @@
       <span class="pill" id="livesDisplay">Lives: 3</span>
     </div>
 
-    <!-- Game Canvas -->
-    <canvas id="gameCanvas"></canvas>
-
     <!-- Game Over Overlay -->
-    <div id="gameOver" class="overlay hidden">
-      <h2>GAME OVER</h2>
-      <p id="finalScore">Score: 0</p>
-      <button id="retryBtn">Try Again</button>
-      <button id="menuBtn">Menu</button>
+    <div id="gameOver" class="screen hidden">
+      <div class="game-over-content">
+        <h2>Game Over!</h2>
+        <p id="finalScore">Score: 0</p>
+        <button id="retryBtn" class="btn btn-primary">Try Again</button>
+        <button id="menuBtn" class="btn btn-secondary">Menu</button>
+      </div>
     </div>
 
   </div>
