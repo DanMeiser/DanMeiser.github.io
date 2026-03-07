@@ -17,30 +17,34 @@
 }
 
 @media (max-width: 600px) {
+    /* Fill the safe-area strip with the game bg colour */
+    body {
+        background: #000010;
+        padding-bottom: env(safe-area-inset-bottom, 34px);
+    }
+
     #gameWrapper {
         width: 100vw;
-        height: 100vh;
-        height: 100dvh;
+        /* shrink the game canvas to sit fully above the iOS home bar */
+        height: calc(100dvh - env(safe-area-inset-bottom, 34px));
         max-width: none;
         aspect-ratio: auto;
         border: none;
-        /* push content above iOS home bar */
-        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 }
 
 /* ── Mobile Controls ── */
 #mobileControls {
     position: absolute;
-    bottom: env(safe-area-inset-bottom, 0px);
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 15%;
+    height: 17%;
     z-index: 5;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 10px 10px;
     pointer-events: none;
 }
 
