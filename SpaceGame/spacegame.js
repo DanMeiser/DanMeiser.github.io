@@ -105,6 +105,7 @@ async function startGame() {
     ]);
     menu.classList.add('hidden');
     hud.classList.remove('hidden');
+    canvas.style.pointerEvents = 'auto';   // re-enable touch for in-game controls
     if ('ontouchstart' in window) mobileControls.classList.remove('hidden');
     if (game) game.stop();
     game = new Game(sheet, tiles);
@@ -125,6 +126,7 @@ document.getElementById('menuBtn').addEventListener('click', () => {
     gameOver.classList.add('hidden');
     hud.classList.add('hidden');
     mobileControls.classList.add('hidden');
+    canvas.style.pointerEvents = 'none';   // let menu receive clicks again
     menu.classList.remove('hidden');
 });
 
