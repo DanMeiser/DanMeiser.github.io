@@ -57,13 +57,22 @@ function bindMobileBtn(id, key) {
 bindMobileBtn('mcLeft',  'left');
 bindMobileBtn('mcRight', 'right');
 bindMobileBtn('mcUp',    'up');
+bindMobileBtn('mcJump',  'jump');
 
-// Up button also fires _justPressed.up for jump edge detection
+// Climb button fires _justPressed.up for ladder-grab edge detection
 document.getElementById('mcUp')?.addEventListener('touchstart', e => {
     e.preventDefault(); _justPressed.up = true;
 }, {passive:false});
 document.getElementById('mcUp')?.addEventListener('mousedown', () => {
     _justPressed.up = true;
+});
+
+// Jump button fires _justPressed.jump for jump edge detection
+document.getElementById('mcJump')?.addEventListener('touchstart', e => {
+    e.preventDefault(); _justPressed.jump = true;
+}, {passive:false});
+document.getElementById('mcJump')?.addEventListener('mousedown', () => {
+    _justPressed.jump = true;
 });
 
 // Double-tap run for left/right mobile buttons

@@ -124,7 +124,8 @@ class Game {
 
         // -- Player update ----------------------------------------
         this.player.update(this.floorY, this.midFloorY, this.ceilY, LADDER_WXLIST);
-        _justPressed.up = false;
+        _justPressed.up   = false;
+        _justPressed.jump = false;
         this.player.y   = Math.min(this.player.y, this.floorY); // safety clamp
 
         // -- Camera smooth follow ---------------------------------

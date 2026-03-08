@@ -71,8 +71,8 @@ const STARS = Array.from({ length: 110 }, () => ({
 }));
 
 // -- Input state --------------------------------------------------
-const keys         = { left:false, right:false, up:false, down:false, interact:false, running:false };
-const _justPressed = { interact:false, up:false };
+const keys         = { left:false, right:false, up:false, down:false, jump:false, interact:false, running:false };
+const _justPressed = { interact:false, up:false, jump:false };
 const _doubleTap   = { left:0, right:0 };
 
 window.addEventListener('keydown', e => {
@@ -87,24 +87,28 @@ window.addEventListener('keydown', e => {
         _doubleTap.right = now;
         keys.right = true;
     }
-    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') {
-        if (!keys.up) _justPressed.up = true;
-        keys.up = true;
+    if (e.key === 'ArrowUp') {
+        if (!keys.up)   _justPressed.up   = true;
+        keys.up   = true;
+    }
+    if (e.key === 'w' || e.key === 'W') {
+        if (!keys.jump) _justPressed.jump = true;
+        keys.jump = true;
     }
     if ((e.key === 'e' || e.key === 'E') && !keys.interact) {
         keys.interact = true;
         _justPressed.interact = true;
     }
     if (e.key === 'ArrowDown' || e.key === 's') keys.down = true;
-    if (e.key === ' ') e.preventDefault();
 });
 
 window.addEventListener('keyup', e => {
     if (e.key === 'ArrowLeft'  || e.key === 'a')                   { keys.left    = false; if (!keys.right) keys.running = false; }
     if (e.key === 'ArrowRight' || e.key === 'd')                   { keys.right   = false; if (!keys.left)  keys.running = false; }
-    if (e.key === 'ArrowUp'    || e.key === 'w' || e.key === ' ')    keys.up       = false;
-    if (e.key === 'ArrowDown'  || e.key === 's')                     keys.down     = false;
-    if (e.key === 'e'          || e.key === 'E')                     keys.interact = false;
+    if (e.key === 'ArrowUp')                                          keys.up       = false;
+    if (e.key === 'w' || e.key === 'W')                               keys.jump     = false;
+    if (e.key === 'ArrowDown'  || e.key === 's')                      keys.down     = false;
+    if (e.key === 'e'          || e.key === 'E')                      keys.interact = false;
 });
 
 // ================================================================
@@ -229,7 +233,7 @@ class Player {
                 this.onLadder = false; this.onGround = false;
                 if (keys.left)  { this.x -= spd; this.facing = -1; this.moving = true; }
                 if (keys.right) { this.x += spd; this.facing =  1; this.moving = true; }
-            } else if (_justPressed.up && this.jumpsLeft > 0) {
+            } else if (_justPressed.jump && this.jumpsLeft > 0) {
                 // Jump off ladder
                 this.onLadder = false; this.onGround = false;
                 this.vy = JUMP_VY; this.jumping = true; this.jumpsLeft--;
@@ -269,7 +273,7 @@ class Player {
                 this.y += 3; // nudge past mid-floor to prevent immediate re-land
             } else {
                 // Normal jump
-                if (_justPressed.up && this.jumpsLeft > 0) {
+                if (_justPressed.jump && this.jumpsLeft > 0) {
                     this.vy = JUMP_VY;
                     this.onGround = false; this.jumping = true; this.jumpsLeft--;
                 }
