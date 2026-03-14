@@ -216,22 +216,39 @@ Game.prototype.drawOutside = function(camX) {
     ctx.fillStyle = '#4d9de033';
     ctx.fillRect(rxLeft, grateTop, OUTSIDE_W, 2);
 
-    // Door frame at world x=0
-    const bx = rxRight;
-    const bGrad = ctx.createLinearGradient(bx - 14, 0, bx + 14, 0);
-    bGrad.addColorStop(0,   '#0a0c10'); bGrad.addColorStop(0.3, '#2a3040');
-    bGrad.addColorStop(0.5, '#3a4555'); bGrad.addColorStop(0.7, '#2a3040'); bGrad.addColorStop(1, '#0a0c10');
-    ctx.fillStyle = bGrad;
-    ctx.fillRect(bx - 14, cY, 28, roomH);
-    for (const by of [cY + roomH*0.15, cY + roomH*0.40, cY + roomH*0.65, cY + roomH*0.85]) {
-        ctx.fillStyle = '#4a5570';
-        ctx.beginPath(); ctx.arc(bx - 7, by, 3, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(bx + 7, by, 3, 0, Math.PI*2); ctx.fill();
+    // Door frame at world x=0 (EVA / airlock boundary)
+    const bx  = rxRight;
+    const ebw = 40;
+    const EVA_WALL_TILE = { sx: 312, sy: 416 };
+    // Solid base
+    ctx.fillStyle = '#2a3040';
+    ctx.fillRect(bx - ebw / 2, cY, ebw, roomH);
+    // Tile texture
+    if (this.tiles) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(bx - ebw / 2, cY, ebw, roomH); ctx.clip();
+        let ty = cY;
+        while (ty < cY + roomH) {
+            const segH = Math.min(ebw, cY + roomH - ty);
+            ctx.drawImage(this.tiles, EVA_WALL_TILE.sx, EVA_WALL_TILE.sy, TILE_W, TILE_H,
+                bx - ebw / 2, ty, ebw, segH);
+            ty += ebw;
+        }
+        ctx.restore();
     }
-    ctx.fillStyle = '#0a0f18';
-    roundRect(bx - 9, grateTop - roomH * 0.30, 18, roomH * 0.38, 4); ctx.fill();
-    ctx.strokeStyle = '#4d9de077'; ctx.lineWidth = 1.5;
-    roundRect(bx - 9, grateTop - roomH * 0.30, 18, roomH * 0.38, 4); ctx.stroke();
+    // EVA door opening — top and bottom tile sprites
+    const evaDoorTop = grateTop - roomH * 0.30;
+    const evaDoorH   = roomH * 0.38;
+    const evaDoorMid = evaDoorTop + evaDoorH / 2;
+    if (this.tiles) {
+        ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
+            bx - ebw / 2, evaDoorTop,  ebw, evaDoorH / 2);
+        ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
+            bx - ebw / 2, evaDoorMid, ebw, evaDoorH / 2);
+    } else {
+        ctx.fillStyle = '#0a0f18';
+        ctx.fillRect(bx - ebw / 2, evaDoorTop, ebw, evaDoorH);
+    }
 
     // EVA ZONE label
     const labelX = Math.max(rxLeft + 60, Math.min(rxRight - 60, rxLeft + OUTSIDE_W * 0.4));
@@ -342,33 +359,39 @@ Game.prototype.drawRoom = function(i) {
 
     // Bulkhead dividers (at left edge of every room except room 0)
     if (i > 0) {
-        const bx = rx - 1;
-        const bGrad = ctx.createLinearGradient(bx - 12, 0, bx + 12, 0);
-        bGrad.addColorStop(0,   '#0a0c10'); bGrad.addColorStop(0.3, '#2a3040');
-        bGrad.addColorStop(0.5, '#3a4555'); bGrad.addColorStop(0.7, '#2a3040'); bGrad.addColorStop(1, '#0a0c10');
-        ctx.fillStyle = bGrad;
-        ctx.fillRect(bx - 12, cY, 24, roomH);
-
-        const boltCol = '#4a5570';
-        for (const by of [cY + roomH*0.15, cY + roomH*0.40, cY + roomH*0.65, cY + roomH*0.85]) {
-            ctx.fillStyle = boltCol;
-            ctx.beginPath(); ctx.arc(bx - 6, by, 3, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(bx + 6, by, 3, 0, Math.PI*2); ctx.fill();
+        const bx   = rx - 1;
+        const bw   = 40;  // visual width (physics half=12 is narrower, that's fine)
+        const WALL_TILE = { sx: 312, sy: 416 };
+        // Solid base so wall is always visible even if tile has transparency
+        ctx.fillStyle = '#2a3040';
+        ctx.fillRect(bx - bw / 2, cY, bw, roomH);
+        // Tile texture
+        if (this.tiles) {
+            ctx.save();
+            ctx.beginPath(); ctx.rect(bx - bw / 2, cY, bw, roomH); ctx.clip();
+            let ty = cY;
+            while (ty < cY + roomH) {
+                const segH = Math.min(bw, cY + roomH - ty);
+                ctx.drawImage(this.tiles, WALL_TILE.sx, WALL_TILE.sy, TILE_W, TILE_H,
+                    bx - bw / 2, ty, bw, segH);
+                ty += bw;
+            }
+            ctx.restore();
         }
 
-        // Lower floor arch
-        ctx.fillStyle = '#111520';
-        roundRect(bx - 8, grateTop - roomH * 0.30, 16, roomH * 0.38, 4); ctx.fill();
-        ctx.strokeStyle = def.accent + '88'; ctx.lineWidth = 1;
-        roundRect(bx - 8, grateTop - roomH * 0.30, 16, roomH * 0.38, 4); ctx.stroke();
-
-        // Upper floor arch
-        const ufArchTop = cY + ceilH + 2;
-        const ufArchH   = this.midFloorY - ufArchTop - 2;
-        ctx.fillStyle = '#111520';
-        roundRect(bx - 8, ufArchTop, 16, ufArchH, 4); ctx.fill();
-        ctx.strokeStyle = def.accent + '88'; ctx.lineWidth = 1;
-        roundRect(bx - 8, ufArchTop, 16, ufArchH, 4); ctx.stroke();
+        // Door opening — top and bottom tile sprites
+        const doorTop  = grateTop - roomH * 0.30;
+        const doorH    = roomH * 0.38;
+        const doorMid  = doorTop + doorH / 2;
+        if (this.tiles) {
+            ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
+                bx - bw / 2, doorTop,  bw, doorH / 2);
+            ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
+                bx - bw / 2, doorMid, bw, doorH / 2);
+        } else {
+            ctx.fillStyle = '#111520';
+            ctx.fillRect(bx - bw / 2, doorTop, bw, doorH);
+        }
     }
 
     // Porthole windows (outer rooms only)

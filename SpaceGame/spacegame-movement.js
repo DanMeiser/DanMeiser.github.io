@@ -293,6 +293,36 @@ class Player {
             }
         }
 
+        // -- Room-boundary wall collision (door openings remain passable) ----
+        {
+            const roomH        = floorY - ceilY;
+            const lowerDoorTop = floorY - roomH * 0.38;   // matches lower arch in renderer
+            const pTop   = this.y - this.ph;
+            const pLeft  = this.x - this.pw / 2;
+            const pRight = this.x + this.pw / 2;
+            // Wall at x=0 (airlock/EVA boundary) uses half-width 14 to match visual
+            // Room-to-room bulkheads use half-width 12
+            const walls = [
+                { wx: 0, half: 14 },
+                ...Array.from({ length: SHIP_ROOMS - 1 }, (_, i) => ({ wx: (i + 1) * ROOM_PX, half: 12 }))
+            ];
+            for (const { wx, half } of walls) {
+                const wLeft  = wx - half;
+                const wRight = wx + half;
+                if (pRight > wLeft && pLeft < wRight) {
+                    const inLowerDoor = pTop >= lowerDoorTop;
+                    if (!inLowerDoor) {
+                        // Push player to whichever side has the smaller overlap
+                        if (pRight - wLeft <= wRight - pLeft) {
+                            this.x = wLeft  - this.pw / 2;
+                        } else {
+                            this.x = wRight + this.pw / 2;
+                        }
+                    }
+                }
+            }
+        }
+
         if (this.interactTick > 0) { this.interactTick--; this.interacting = this.interactTick > 0; }
 
         // Walk animation (not while jumping or on ladder)
