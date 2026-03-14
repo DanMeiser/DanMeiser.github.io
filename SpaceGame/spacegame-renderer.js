@@ -7,6 +7,9 @@
    ================================================================ */
 'use strict';
 
+// Uniform tile draw size for all background/floor surfaces
+const BG_TS = 52;
+
 // -- Canvas helper ------------------------------------------------
 function roundRect(x, y, w, h, r) {
     ctx.beginPath();
@@ -134,8 +137,8 @@ Game.prototype.drawHullExterior = function() {
     if (this.tiles) {
         ctx.save();
         ctx.beginPath(); ctx.rect(0, ceilY - hullH, W, hullH); ctx.clip();
-        for (let tx = 0; tx < W; tx += hullH)
-            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, ceilY - hullH, hullH, hullH);
+        for (let tx = 0; tx < W; tx += BG_TS)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, ceilY - hullH, BG_TS, BG_TS);
         ctx.restore();
     } else {
         ctx.fillStyle = '#1c2333';
@@ -147,8 +150,8 @@ Game.prototype.drawHullExterior = function() {
     if (this.tiles) {
         ctx.save();
         ctx.beginPath(); ctx.rect(0, fY, W, hullH); ctx.clip();
-        for (let tx = 0; tx < W; tx += hullH)
-            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, fY, hullH, hullH);
+        for (let tx = 0; tx < W; tx += BG_TS)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, fY, BG_TS, BG_TS);
         ctx.restore();
     } else {
         ctx.fillStyle = '#1c2333';
@@ -211,8 +214,8 @@ Game.prototype.drawOutside = function(camX) {
     if (this.tiles) {
         ctx.save();
         ctx.beginPath(); ctx.rect(rxLeft, grateTop, OUTSIDE_W, floorH); ctx.clip();
-        for (let tx = rxLeft; tx < rxLeft + OUTSIDE_W; tx += floorH)
-            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, grateTop, floorH, floorH);
+        for (let tx = rxLeft; tx < rxLeft + OUTSIDE_W; tx += BG_TS)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, grateTop, BG_TS, BG_TS);
         ctx.restore();
     } else {
         ctx.fillStyle = '#10151f';
@@ -278,12 +281,11 @@ Game.prototype.drawRoom = function(i) {
     ctx.fillStyle = def.bg;
     ctx.fillRect(rx, cY, ROOM_PX, roomH);
     if (this.tiles) {
-        const bgTW = TILE_W * 0.5, bgTH = TILE_H * 0.5;
         ctx.save();
         ctx.beginPath(); ctx.rect(rx, cY, ROOM_PX, roomH); ctx.clip();
-        for (let ty = cY; ty < cY + roomH; ty += bgTH) {
-            for (let tx = rx; tx < rx + ROOM_PX; tx += bgTW)
-                ctx.drawImage(this.tiles, TILES.roomBg.sx, TILES.roomBg.sy, TILE_W, TILE_H, tx, ty, bgTW, bgTH);
+        for (let ty = cY; ty < cY + roomH; ty += BG_TS) {
+            for (let tx = rx; tx < rx + ROOM_PX; tx += BG_TS)
+                ctx.drawImage(this.tiles, TILES.roomBg.sx, TILES.roomBg.sy, TILE_W, TILE_H, tx, ty, BG_TS, BG_TS);
         }
         ctx.restore();
     }
@@ -319,8 +321,8 @@ Game.prototype.drawRoom = function(i) {
     if (this.tiles) {
         ctx.save();
         ctx.beginPath(); ctx.rect(rx, grateTop, ROOM_PX, floorH); ctx.clip();
-        for (let tx = rx; tx < rx + ROOM_PX; tx += floorH)
-            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, grateTop, floorH, floorH);
+        for (let tx = rx; tx < rx + ROOM_PX; tx += BG_TS)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, grateTop, BG_TS, BG_TS);
         ctx.restore();
     } else {
         ctx.fillStyle = def.floor;
@@ -340,8 +342,8 @@ Game.prototype.drawRoom = function(i) {
         if (this.tiles) {
             ctx.save();
             ctx.beginPath(); ctx.rect(seg.x, midFY - midFlH, seg.w, midFlH); ctx.clip();
-            for (let tx = seg.x; tx < seg.x + seg.w; tx += midFlH)
-                ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, midFY - midFlH, midFlH, midFlH);
+            for (let tx = seg.x; tx < seg.x + seg.w; tx += BG_TS)
+                ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, midFY - midFlH, BG_TS, BG_TS);
             ctx.restore();
         } else {
             ctx.fillStyle = def.floor;
