@@ -104,7 +104,8 @@ class Game {
             if (this.stations[0].working) { this.resources.hull += 0.04; this.alienTimer -= 1; }
             if (this.alienTimer <= 0) {
                 this.alienAttack = false;
-                this.addAlert('\u2705 Aliens repelled!', '#2ecc71');
+                this.resources.hull = 100;
+                this.addAlert('\u2705 Aliens repelled! Hull restored!', '#2ecc71');
             }
         }
 
