@@ -176,7 +176,8 @@ class Game {
         if (this.resources.o2 <= 0 || this.resources.hull <= 0) {
             this.stop();
             const reason = this.resources.o2 <= 0 ? 'Oxygen depleted!' : 'Hull destroyed!';
-            finalScoreEl.textContent = 'Day ' + this.day + '  |  Score: ' + this.score + '  |  ' + reason;
+            lossReasonEl.textContent = reason;
+            finalScoreEl.textContent = 'Day ' + this.day + '  |  Score: ' + this.score;
             gameOver.classList.remove('hidden');
         }
     }

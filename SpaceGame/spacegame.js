@@ -17,6 +17,7 @@ const scoreEl        = document.getElementById('scoreDisplay');
 const levelEl        = document.getElementById('levelDisplay');
 const livesEl        = document.getElementById('livesDisplay');
 const finalScoreEl   = document.getElementById('finalScore');
+const lossReasonEl   = document.getElementById('lossReason');
 const mobileControls = document.getElementById('mobileControls');
 
 let game = null;
