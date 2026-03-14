@@ -54,6 +54,9 @@ function draw() {
   c.height = img.naturalHeight * sc;
   const ctx = c.getContext('2d');
   ctx.imageSmoothingEnabled = false;
+  // Dark background so transparent tiles show as dark (matches game)
+  ctx.fillStyle = '#0a1020';
+  ctx.fillRect(0, 0, c.width, c.height);
   ctx.drawImage(img, 0, 0, c.width, c.height);
 
   // Grid overlay

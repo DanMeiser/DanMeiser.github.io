@@ -9,7 +9,8 @@
      ctx.drawImage(tiles, TILES.floor.sx, TILES.floor.sy, 104, 104, dx, dy, dw, dh);
    ================================================================ */
 
-const TILES = {
+// eslint-disable-next-line no-var
+var TILES = {
 
     // ── Row 0 (sy = 0) ──────────────────────────────────────────
     ceilOutLeft:        { sx:    0, sy:   0 },  // col0  — used for EVA zone ceiling (left)
@@ -64,7 +65,7 @@ const TILES = {
     col1_row3:          { sx:  104, sy: 312 },  // col1
     col2_row3:          { sx:  208, sy: 312 },  // col2
     floor:              { sx:  312, sy: 312 },  // col3  — main floor tile
-    col4_row3:          { sx:  416, sy: 312 },  // col4
+    roomBg:             { sx:  416, sy: 312 },  // col4  — room background tile
     col5_row3:          { sx:  520, sy: 312 },  // col5
     col6_row3:          { sx:  624, sy: 312 },  // col6
     col7_row3:          { sx:  728, sy: 312 },  // col7

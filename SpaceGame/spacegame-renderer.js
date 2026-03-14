@@ -130,31 +130,31 @@ Game.prototype.drawHullExterior = function() {
     const ceilY = this.ceilY, fY = this.floorY;
     const hullH = H * 0.07;
 
-    // Top hull band
-    const topGrad = ctx.createLinearGradient(0, ceilY - hullH, 0, ceilY);
-    topGrad.addColorStop(0, '#0d1117');
-    topGrad.addColorStop(1, '#1c2333');
-    ctx.fillStyle = topGrad;
-    ctx.fillRect(0, ceilY - hullH, W, hullH);
-    ctx.fillStyle = '#2a3548';
-    ctx.fillRect(0, ceilY - 4, W, 4);
-    for (let rx = 10; rx < W; rx += 32) {
-        ctx.fillStyle = '#3a4a60';
-        ctx.beginPath(); ctx.arc(rx, ceilY - hullH * 0.35, 3, 0, Math.PI * 2); ctx.fill();
+    // Top hull band — tiled
+    if (this.tiles) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, ceilY - hullH, W, hullH); ctx.clip();
+        for (let tx = 0; tx < W; tx += hullH)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, ceilY - hullH, hullH, hullH);
+        ctx.restore();
+    } else {
+        ctx.fillStyle = '#1c2333';
+        ctx.fillRect(0, ceilY - hullH, W, hullH);
     }
+    ctx.fillStyle = '#2a3548'; ctx.fillRect(0, ceilY - 4, W, 4);
 
-    // Bottom hull band
-    const botGrad = ctx.createLinearGradient(0, fY, 0, fY + hullH);
-    botGrad.addColorStop(0, '#1c2333');
-    botGrad.addColorStop(1, '#0d1117');
-    ctx.fillStyle = botGrad;
-    ctx.fillRect(0, fY, W, hullH);
-    ctx.fillStyle = '#2a3548';
-    ctx.fillRect(0, fY, W, 4);
-    for (let rx = 10; rx < W; rx += 32) {
-        ctx.fillStyle = '#3a4a60';
-        ctx.beginPath(); ctx.arc(rx, fY + hullH * 0.65, 3, 0, Math.PI * 2); ctx.fill();
+    // Bottom hull band — tiled
+    if (this.tiles) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(0, fY, W, hullH); ctx.clip();
+        for (let tx = 0; tx < W; tx += hullH)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, fY, hullH, hullH);
+        ctx.restore();
+    } else {
+        ctx.fillStyle = '#1c2333';
+        ctx.fillRect(0, fY, W, hullH);
     }
+    ctx.fillStyle = '#2a3548'; ctx.fillRect(0, fY, W, 4);
 };
 
 Game.prototype.drawOutside = function(camX) {
@@ -207,12 +207,17 @@ Game.prototype.drawOutside = function(camX) {
     ctx.strokeStyle = '#4d9de033'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(rxLeft, cY + roomH * 0.10); ctx.lineTo(rxRight, cY + roomH * 0.10); ctx.stroke();
 
-    // Floor ledge
-    const floorGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
-    floorGrad.addColorStop(0, '#10151f');
-    floorGrad.addColorStop(1, '#070a10');
-    ctx.fillStyle = floorGrad;
-    ctx.fillRect(rxLeft, grateTop, OUTSIDE_W, floorH);
+    // EVA floor ledge — tiled
+    if (this.tiles) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(rxLeft, grateTop, OUTSIDE_W, floorH); ctx.clip();
+        for (let tx = rxLeft; tx < rxLeft + OUTSIDE_W; tx += floorH)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, grateTop, floorH, floorH);
+        ctx.restore();
+    } else {
+        ctx.fillStyle = '#10151f';
+        ctx.fillRect(rxLeft, grateTop, OUTSIDE_W, floorH);
+    }
     ctx.fillStyle = '#4d9de033';
     ctx.fillRect(rxLeft, grateTop, OUTSIDE_W, 2);
 
@@ -269,17 +274,19 @@ Game.prototype.drawRoom = function(i) {
     const fY    = this.floorY, cY = this.ceilY;
     const roomH = fY - cY;
 
-    // Interior wall gradient
-    const wallGrad = ctx.createLinearGradient(0, cY, 0, fY);
-    wallGrad.addColorStop(0,   def.bg);
-    wallGrad.addColorStop(0.7, def.bg);
-    wallGrad.addColorStop(1,   def.floor);
-    ctx.fillStyle = wallGrad;
+    // Room background — solid base colour + tile overlay
+    ctx.fillStyle = def.bg;
     ctx.fillRect(rx, cY, ROOM_PX, roomH);
-
-    // Top accent strip
-    ctx.fillStyle = def.accent + '44';
-    ctx.fillRect(rx, cY, ROOM_PX, 4);
+    if (this.tiles) {
+        const bgTW = TILE_W * 0.5, bgTH = TILE_H * 0.5;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(rx, cY, ROOM_PX, roomH); ctx.clip();
+        for (let ty = cY; ty < cY + roomH; ty += bgTH) {
+            for (let tx = rx; tx < rx + ROOM_PX; tx += bgTW)
+                ctx.drawImage(this.tiles, TILES.roomBg.sx, TILES.roomBg.sy, TILE_W, TILE_H, tx, ty, bgTW, bgTH);
+        }
+        ctx.restore();
+    }
 
     // Ceiling tiles
     const ceilH = roomH * 0.13;
@@ -300,41 +307,47 @@ Game.prototype.drawRoom = function(i) {
             ctx.fillRect(rx + p * panelW + 2, cY, panelW - 4, ceilH);
         }
     }
-    ctx.fillStyle = def.accent + '55';
-    ctx.fillRect(rx, cY, ROOM_PX, 3);
     ctx.restore();
 
     // Ceiling conduit pipes
     ctx.strokeStyle = '#2a3040'; ctx.lineWidth = 6;
     ctx.beginPath(); ctx.moveTo(rx, cY + roomH * 0.10); ctx.lineTo(rx + ROOM_PX, cY + roomH * 0.10); ctx.stroke();
-    ctx.strokeStyle = def.accent + '55'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(rx, cY + roomH * 0.10); ctx.lineTo(rx + ROOM_PX, cY + roomH * 0.10); ctx.stroke();
 
-    // Main floor
+    // Main floor — tiled
     const floorH   = roomH * 0.08;
     const grateTop = fY - floorH;
-    const grateGrad = ctx.createLinearGradient(0, grateTop, 0, fY);
-    grateGrad.addColorStop(0, def.floor);
-    grateGrad.addColorStop(1, '#0a0a10');
-    ctx.fillStyle = grateGrad;
-    ctx.fillRect(rx, grateTop, ROOM_PX, floorH);
-    ctx.fillStyle = def.accent + '55';
-    ctx.fillRect(rx, grateTop, ROOM_PX, 2);
+    if (this.tiles) {
+        ctx.save();
+        ctx.beginPath(); ctx.rect(rx, grateTop, ROOM_PX, floorH); ctx.clip();
+        for (let tx = rx; tx < rx + ROOM_PX; tx += floorH)
+            ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, grateTop, floorH, floorH);
+        ctx.restore();
+    } else {
+        ctx.fillStyle = def.floor;
+        ctx.fillRect(rx, grateTop, ROOM_PX, floorH);
+    }
 
-    // Mid-floor platform (upper level, split at ladder gap)
+    // Mid-floor platform — tiled (split at ladder gap)
     const midFY   = this.midFloorY;
     const midFlH  = roomH * 0.05;
     const ladSX   = rx + ROOM_PX * 0.25;
     const halfGap = LADDER_GAP / 2;
-    const midGrad = ctx.createLinearGradient(0, midFY - midFlH, 0, midFY);
-    midGrad.addColorStop(0, def.floor);
-    midGrad.addColorStop(1, '#0a0a10');
-    ctx.fillStyle = midGrad;
-    ctx.fillRect(rx,              midFY - midFlH, ladSX - rx - halfGap,            midFlH);
-    ctx.fillRect(ladSX + halfGap, midFY - midFlH, rx + ROOM_PX - ladSX - halfGap, midFlH);
-    ctx.fillStyle = def.accent + '55';
-    ctx.fillRect(rx,              midFY - midFlH, ladSX - rx - halfGap,            2);
-    ctx.fillRect(ladSX + halfGap, midFY - midFlH, rx + ROOM_PX - ladSX - halfGap, 2);
+    const midSegs = [
+        { x: rx,              w: ladSX - rx - halfGap            },
+        { x: ladSX + halfGap, w: rx + ROOM_PX - ladSX - halfGap },
+    ];
+    for (const seg of midSegs) {
+        if (this.tiles) {
+            ctx.save();
+            ctx.beginPath(); ctx.rect(seg.x, midFY - midFlH, seg.w, midFlH); ctx.clip();
+            for (let tx = seg.x; tx < seg.x + seg.w; tx += midFlH)
+                ctx.drawImage(this.tiles, TILES.floor.sx, TILES.floor.sy, TILE_W, TILE_H, tx, midFY - midFlH, midFlH, midFlH);
+            ctx.restore();
+        } else {
+            ctx.fillStyle = def.floor;
+            ctx.fillRect(seg.x, midFY - midFlH, seg.w, midFlH);
+        }
+    }
 
     // Ladder (ceiling to main floor)
     const ladW = Math.round(TILE_W * 0.30);
