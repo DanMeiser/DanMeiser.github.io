@@ -24,19 +24,28 @@ function roundRect(x, y, w, h, r) {
 // ================================================================
 //  Station — draw method
 // ================================================================
-Station.prototype.draw = function(camX) {
+Station.prototype.draw = function(camX, ceilY, tiles) {
     const W   = canvas.width;
     const H   = canvas.height;
     const fY  = H * FLOOR_RATIO;
     const sx  = this.worldX - camX;
-    const sw  = ROOM_PX * 0.17;
-    const sh  = fY * 0.30;
-    const sTop= fY - sh;
+    const sw  = BG_TS;
+    const sh  = BG_TS;
+    const roomH = fY - ceilY;
+    const sTop = fY - roomH * 0.08 - sh - BG_TS;
 
-    // Body
-    const bodyCol = this.broken ? '#3d1212' : (this.working ? '#123d12' : this.def.bg);
-    ctx.fillStyle = bodyCol;
-    roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.fill();
+    // Sprite body
+    if (tiles && TILES.redButton) {
+        ctx.drawImage(tiles, TILES.redButton.sx, TILES.redButton.sy,
+            TILE_W, TILE_H, sx - sw/2, sTop, sw, sh);
+    } else {
+        const bodyCol = this.broken ? '#3d1212' : (this.working ? '#123d12' : this.def.bg);
+        ctx.fillStyle = bodyCol;
+        roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.fill();
+        ctx.font      = (sw * 0.50) + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.def.icon, sx, sTop + sh * 0.58);
+    }
 
     // Border (flashes when attention needed)
     const alert = this.needsAttention && Math.floor(this.flash / 8) % 2 === 0;
@@ -44,14 +53,10 @@ Station.prototype.draw = function(camX) {
     ctx.lineWidth   = alert ? 3 : 1.5;
     roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.stroke();
 
-    // Icon
-    ctx.font      = (sw * 0.50) + 'px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(this.def.icon, sx, sTop + sh * 0.58);
-
     // Station label below
     ctx.fillStyle = this.def.accent;
     ctx.font      = (W * 0.025) + 'px sans-serif';
+    ctx.textAlign = 'center';
     ctx.fillText(this.def.station.label, sx, fY + H * 0.035);
 
     // Work progress bar
@@ -437,7 +442,7 @@ Game.prototype.drawRoom = function(i) {
     */
 
     // Station widget
-    this.stations[i].draw(this.camX);
+    this.stations[i].draw(this.camX, this.ceilY, this.tiles);
 
     // Room name plate
     const plateW = ROOM_PX * 0.44;
@@ -466,22 +471,29 @@ Game.prototype.drawCozyStation = function(camX) {
     const W    = canvas.width;
     const H    = canvas.height;
     const fY   = H * FLOOR_RATIO;
+    const cY   = this.ceilY;
     const sx   = COZY_BTN_WORLD_X - camX;
-    const sw   = ROOM_PX * 0.17;
-    const sh   = fY * 0.30;
-    const sTop = fY - sh;
+    const sw   = BG_TS;
+    const sh   = BG_TS;
+    const sTop = cY + (fY - cY) * 0.28;
 
-    ctx.fillStyle = this.cozyMode ? '#0a2a30' : '#0d1020';
-    roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.fill();
+    // Sprite body
+    if (this.tiles && TILES.greenButton) {
+        ctx.drawImage(this.tiles, TILES.greenButton.sx, TILES.greenButton.sy,
+            TILE_W, TILE_H, sx - sw/2, sTop, sw, sh);
+    } else {
+        ctx.fillStyle = this.cozyMode ? '#0a2a30' : '#0d1020';
+        roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.fill();
+        ctx.font      = (sw * 0.50) + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('☕', sx, sTop + sh * 0.58);
+    }
 
+    // Flash border overlay
     const flash = this.cozyMode && Math.floor(this.cozyFlash / 8) % 2 === 0;
     ctx.strokeStyle = flash ? '#88ccff' : (this.cozyMode ? '#55aacc' : '#334466');
     ctx.lineWidth   = this.cozyMode ? 2.5 : 1.5;
     roundRect(sx - sw/2, sTop, sw, sh, 6); ctx.stroke();
-
-    ctx.font      = (sw * 0.50) + 'px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('\u2615', sx, sTop + sh * 0.58);
 
     ctx.fillStyle = this.cozyMode ? '#88ccff' : '#4d7a9e';
     ctx.font      = (W * 0.025) + 'px sans-serif';
@@ -730,7 +742,7 @@ Game.prototype.draw = function() {
         if (rx + ROOM_PX < -20 || rx > W + 20) continue;
         this.drawRoom(i);
     }
-    this.stations.forEach(s => s.draw(this.camX));
+    this.stations.forEach(s => s.draw(this.camX, this.ceilY, this.tiles));
     this.drawCozyStation(this.camX);
     this.player.draw(this.camX);
 

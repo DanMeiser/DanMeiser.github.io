@@ -103,10 +103,10 @@ var TILES = {
     col7_row5:          { sx:  728, sy: 520 },  // col7
     col8_row5:          { sx:  832, sy: 520 },  // col8
     col9_row5:          { sx:  936, sy: 520 },  // col9
-    col10_row5:         { sx: 1040, sy: 520 },  // col10
+    greenButton:        { sx: 1040, sy: 520 },  // col10 — green button / cozy station
     col11_row5:         { sx: 1144, sy: 520 },  // col11
     col12_row5:         { sx: 1248, sy: 520 },  // col12
-    col13_row5:         { sx: 1352, sy: 520 },  // col13
+    redButton:          { sx: 1352, sy: 520 },  // col13 — red button / room station
 
     // ── Row 6 — partial (sy = 624, only 96px tall) ──────────────
     doorBottom:         { sx:  520, sy: 624 },  // col5  — door bottom sprite
