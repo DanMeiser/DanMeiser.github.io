@@ -236,15 +236,17 @@ Game.prototype.drawOutside = function(camX) {
         }
         ctx.restore();
     }
-    // EVA door opening — top and bottom tile sprites
-    const evaDoorTop = grateTop - roomH * 0.30;
-    const evaDoorH   = roomH * 0.38;
-    const evaDoorMid = evaDoorTop + evaDoorH / 2;
+    // EVA door opening — 1 top tile + 2 bottom tiles
+    const evaDoorTop  = grateTop - roomH * 0.30;
+    const evaDoorH    = roomH * 0.38;
+    const evaThird    = evaDoorH / 3;
     if (this.tiles) {
         ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorTop,  ebw, evaDoorH / 2);
+            bx - ebw / 2, evaDoorTop,              ebw, evaThird);
         ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorMid, ebw, evaDoorH / 2);
+            bx - ebw / 2, evaDoorTop + evaThird,   ebw, evaThird);
+        ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
+            bx - ebw / 2, evaDoorTop + evaThird*2, ebw, evaThird);
     } else {
         ctx.fillStyle = '#0a0f18';
         ctx.fillRect(bx - ebw / 2, evaDoorTop, ebw, evaDoorH);
@@ -379,15 +381,17 @@ Game.prototype.drawRoom = function(i) {
             ctx.restore();
         }
 
-        // Door opening — top and bottom tile sprites
-        const doorTop  = grateTop - roomH * 0.30;
-        const doorH    = roomH * 0.38;
-        const doorMid  = doorTop + doorH / 2;
+        // Door opening — 1 top tile + 2 bottom tiles
+        const doorTop   = grateTop - roomH * 0.30;
+        const doorH     = roomH * 0.38;
+        const third     = doorH / 3;
         if (this.tiles) {
             ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-                bx - bw / 2, doorTop,  bw, doorH / 2);
+                bx - bw / 2, doorTop,           bw, third);
             ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-                bx - bw / 2, doorMid, bw, doorH / 2);
+                bx - bw / 2, doorTop + third,   bw, third);
+            ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
+                bx - bw / 2, doorTop + third*2, bw, third);
         } else {
             ctx.fillStyle = '#111520';
             ctx.fillRect(bx - bw / 2, doorTop, bw, doorH);
