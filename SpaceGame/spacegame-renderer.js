@@ -244,17 +244,15 @@ Game.prototype.drawOutside = function(camX) {
         }
         ctx.restore();
     }
-    // EVA door opening — 1 top tile + 2 bottom tiles
+    // EVA door opening — 2 tiles
     const evaDoorTop  = grateTop - roomH * 0.30;
     const evaDoorH    = roomH * 0.38;
-    const evaThird    = evaDoorH / 3;
+    const evaHalf     = evaDoorH / 2;
     if (this.tiles) {
         ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorTop,              ebw, evaThird);
+            bx - ebw / 2, evaDoorTop,              ebw, evaHalf);
         ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorTop + evaThird,   ebw, evaThird);
-        ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorTop + evaThird*2, ebw, evaThird);
+            bx - ebw / 2, evaDoorTop + evaHalf,    ebw, evaHalf);
     } else {
         ctx.fillStyle = '#0a0f18';
         ctx.fillRect(bx - ebw / 2, evaDoorTop, ebw, evaDoorH);
@@ -372,7 +370,7 @@ Game.prototype.drawRoom = function(i) {
     }
 
     // Room-specific decor
-    this.drawRoomDecor(i, rx, cY, fY, roomH, def);
+    // this.drawRoomDecor(i, rx, cY, fY, roomH, def);
 
     // Bulkhead dividers (at left edge of every room except room 0)
     if (i > 0) {
@@ -396,17 +394,15 @@ Game.prototype.drawRoom = function(i) {
             ctx.restore();
         }
 
-        // Door opening — 1 top tile + 2 bottom tiles
+        // Door opening — 2 tiles
         const doorTop   = grateTop - roomH * 0.30;
         const doorH     = roomH * 0.38;
-        const third     = doorH / 3;
+        const half      = doorH / 2;
         if (this.tiles) {
             ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-                bx - bw / 2, doorTop,           bw, third);
+                bx - bw / 2, doorTop,          bw, half);
             ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-                bx - bw / 2, doorTop + third,   bw, third);
-            ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-                bx - bw / 2, doorTop + third*2, bw, third);
+                bx - bw / 2, doorTop + half,   bw, half);
         } else {
             ctx.fillStyle = '#111520';
             ctx.fillRect(bx - bw / 2, doorTop, bw, doorH);
@@ -414,6 +410,7 @@ Game.prototype.drawRoom = function(i) {
     }
 
     // Porthole windows (outer rooms only)
+    /*
     if (i === 0 || i === SHIP_ROOMS - 1) {
         const wx = i === 0 ? rx + ROOM_PX * 0.15 : rx + ROOM_PX * 0.85;
         const wy = cY + roomH * 0.30;
@@ -437,6 +434,7 @@ Game.prototype.drawRoom = function(i) {
         ctx.fillStyle = 'rgba(180,220,255,0.12)';
         ctx.beginPath(); ctx.ellipse(wx - wr*0.25, wy - wr*0.25, wr*0.35, wr*0.18, -0.5, 0, Math.PI*2); ctx.fill();
     }
+    */
 
     // Station widget
     this.stations[i].draw(this.camX);
@@ -497,6 +495,7 @@ Game.prototype.drawCozyStation = function(camX) {
 };
 
 Game.prototype.drawRoomDecor = function(i, rx, cY, fY, roomH, def) {
+    /*
     const grateTop = fY - roomH * 0.10;
 
     if (def.id === 'airlock') {
@@ -615,6 +614,7 @@ Game.prototype.drawRoomDecor = function(i, rx, cY, fY, roomH, def) {
             }
         }
     }
+    */
 };
 
 Game.prototype.drawResourceBars = function() {
