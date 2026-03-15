@@ -28,7 +28,12 @@ class Game {
         this.cozyFlash    = 0;
         this.camX         = 0;
         this.raf          = null;
+        this.introLocked  = true;
+        this.evaLocked    = true;
+        this.keyVisible   = false;
+        this.nearKey      = false;
         this.onResize();
+        this.addAlert('\uD83D\uDEAA Airlock sealed \u2014 activate the console 3\u00D7 to find the door key!', '#4d9de0');
     }
 
     // -- Layout recalculation (called on resize + each update frame) --
@@ -76,19 +81,19 @@ class Game {
         this.tick++;
 
         // -- Day cycle --------------------------------------------
-        if (this.tick % this.dayLen === 0) {
+        if (!this.introLocked && this.tick % this.dayLen === 0) {
             this.day++;
             this.addAlert('\uD83C\uDF05 Day ' + this.day, '#f1c40f');
         }
 
-        // -- Random events (paused in cozy mode) ------------------
-        if (!this.cozyMode) {
+        // -- Random events (paused in cozy mode or during intro) --
+        if (!this.cozyMode && !this.introLocked) {
             if (this.tick % 1100 === 550) this.triggerBreakdown();
             if (this.tick % 2200 === 0)   this.startAlienAttack();
         }
 
-        // -- Resource depletion (paused in cozy mode) -------------
-        if (!this.cozyMode) {
+        // -- Resource depletion (paused in cozy mode or during intro) --
+        if (!this.cozyMode && !this.introLocked) {
             this.resources.o2    -= BASE_DEPLETE.o2;
             this.resources.power -= BASE_DEPLETE.power;
             this.resources.food  -= BASE_DEPLETE.food;
@@ -108,8 +113,8 @@ class Game {
             }
         }
 
-        // -- Periodic credit earn (paused in cozy mode) -----------
-        if (!this.cozyMode && this.tick % 360 === 0) {
+        // -- Periodic score earn (paused in cozy mode or during intro) --
+        if (!this.cozyMode && !this.introLocked && this.tick % 360 === 0) {
             const healthy = ['o2','power','food','hull'].filter(k => this.resources[k] > 55).length;
             this.score += healthy * 8;
         }
@@ -122,10 +127,12 @@ class Game {
         this.stations.forEach(s => s.update());
 
         // -- Player update ----------------------------------------
-        this.player.update(this.floorY, this.midFloorY, this.ceilY, LADDER_WXLIST);
+        const lockedWallX = this.introLocked ? ROOM_PX : -1;
+        this.player.update(this.floorY, this.midFloorY, this.ceilY, LADDER_WXLIST, lockedWallX);
         _justPressed.up   = false;
         _justPressed.jump = false;
         this.player.y   = Math.min(this.player.y, this.floorY); // safety clamp
+        if (this.introLocked) this.player.x = Math.min(this.player.x, ROOM_PX - 60); // hard wall clamp (60 > wall_half+player_half)
 
         // -- Camera smooth follow ---------------------------------
         const targetCamX = Math.max(-OUTSIDE_W, Math.min(SHIP_W - this.W, this.player.x - this.W / 2));
@@ -138,13 +145,23 @@ class Game {
             if (Math.abs(s.worldX - this.player.x) < ROOM_PX * 0.20) { this.nearStation = s; break; }
         }
 
+        // -- Key item proximity -----------------------------------
+        this.nearKey = this.keyVisible && Math.abs(this.player.x - KEY_WORLD_X) < ROOM_PX * 0.20;
+
         // -- Cozy button proximity --------------------------------
         this.nearCozyBtn = Math.abs(this.player.x - COZY_BTN_WORLD_X) < ROOM_PX * 0.20;
         this.cozyFlash   = (this.cozyFlash + 1) % 60;
 
         // -- Interaction (edge-triggered) -------------------------
         if (_justPressed.interact) {
-            if (this.nearCozyBtn) {
+            if (this.nearKey) {
+                this.introLocked = false;
+                this.keyVisible  = false;
+                this.tick        = 0;  // Day 2 starts dayLen ticks after unlock
+                this.addAlert('\uD83D\uDD13 Door unlocked! Stay alive!', '#2ecc71');
+                this.player.interactTick = 80;
+                this.player.interacting  = true;
+            } else if (this.nearCozyBtn) {
                 this.cozyMode = !this.cozyMode;
                 this.addAlert(
                     this.cozyMode ? '\u2615 Cozy mode ON \u2014 relax!' : '\u26A1 Back to work!',

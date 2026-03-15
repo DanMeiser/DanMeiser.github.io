@@ -43,6 +43,7 @@ const LADDER_WXLIST     = Array.from({ length: SHIP_ROOMS }, (_, i) => i * ROOM_
 const CAM_EASE          = 0.10;
 const OUTSIDE_W         = 600;    // EVA zone extends this far LEFT of the ship (world x -600..0)
 const COZY_BTN_WORLD_X  = ROOM_PX * 0.75;
+const KEY_WORLD_X       = ROOM_PX * 0.82;  // key item spawn position in airlock (world space)
 
 // -- Resource rates (per frame, out of 100) -----------------------
 const BASE_DEPLETE = { o2: 0.007, power: 0.005, food: 0.004 };
@@ -141,7 +142,7 @@ class Station {
     get needsAttention() {
         const r = this.def.station.res;
         if (r === 'food')  return this.cropReady;
-        if (r === 'hull')  return game && game.alienAttack;
+        if (r === 'hull')  return (game && game.alienAttack) || (game && game.introLocked && this.roomIdx === 0);
         if (r === 'score') return true;
         return this.broken;
     }
@@ -165,7 +166,12 @@ class Station {
                 if (this.actionCount >= 3) {
                     this.upgradeLevel++;
                     this.actionCount = 0;
-                    if (game) game.addAlert('\u2B06\uFE0F ' + this.def.label + ' ' + toRoman(this.upgradeLevel) + '!', '#f1c40f');
+                    if (game && game.introLocked && this.roomIdx === 0) {
+                        game.keyVisible = true;
+                        game.addAlert('\uD83D\uDD11 Key found! Collect it to unlock the door!', '#f1c40f');
+                    } else if (game) {
+                        game.addAlert('\u2B06\uFE0F ' + this.def.label + ' ' + toRoman(this.upgradeLevel) + '!', '#f1c40f');
+                    }
                 }
             }
         }
@@ -185,10 +191,10 @@ class Station {
             return '\uD83C\uDF3E Harvested! +25 food';
         }
         if (res === 'hull') {
-            if (!game.alienAttack) return 'No threat detected';
+            if (!game.alienAttack && !game.introLocked) return 'No threat detected';
             this.working   = true;
             this.workTimer = this.def.station.workFrames;
-            return '\uD83D\uDD2B Defending!';
+            return game.introLocked ? '\uD83D\uDEE0\uFE0F Running diagnostics\u2026' : '\uD83D\uDD2B Defending!';
         }
         if (res === 'score') {
             this.working   = true;
@@ -229,7 +235,7 @@ class Player {
         this.interactTick= 0;
     }
 
-    update(floorY, midFloorY, ceilY, ladderWXs) {
+    update(floorY, midFloorY, ceilY, ladderWXs, lockedWallX) {
         this.moving  = false;
         this.running = keys.running;
         const spd    = this.running ? RUN_SPD : MOVE_SPD;
@@ -323,7 +329,9 @@ class Player {
                 const wLeft  = wx - half;
                 const wRight = wx + half;
                 if (pRight > wLeft && pLeft < wRight) {
-                    const inLowerDoor = pTop >= lowerDoorTop;
+                    // Locked wall is fully solid — no door gap passable
+                    const solid       = (lockedWallX === wx);
+                    const inLowerDoor = !solid && (pTop >= lowerDoorTop);
                     if (!inLowerDoor) {
                         // Push player to whichever side has the smaller overlap
                         if (pRight - wLeft <= wRight - pLeft) {
@@ -334,6 +342,11 @@ class Player {
                     }
                 }
             }
+        }
+
+        // Hard barrier for any locked wall — applied after ALL movement and wall physics
+        if (lockedWallX > 0) {
+            this.x = Math.min(this.x, lockedWallX - 12 - this.pw / 2);
         }
 
         if (this.interactTick > 0) { this.interactTick--; this.interacting = this.interactTick > 0; }

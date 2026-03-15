@@ -99,7 +99,7 @@ var TILES = {
     col3_row5:          { sx:  312, sy: 520 },  // col3
     col4_row5:          { sx:  416, sy: 520 },  // col4
     doorTop:            { sx:  520, sy: 520 },  // col5  — door top sprite
-    col6_row5:          { sx:  624, sy: 520 },  // col6
+    lockedDoorTop:      { sx:  624, sy: 520 },  // col6  — locked door top sprite
     col7_row5:          { sx:  728, sy: 520 },  // col7
     col8_row5:          { sx:  832, sy: 520 },  // col8
     col9_row5:          { sx:  936, sy: 520 },  // col9
@@ -110,6 +110,7 @@ var TILES = {
 
     // ── Row 6 — partial (sy = 624, only 96px tall) ──────────────
     doorBottom:         { sx:  520, sy: 624 },  // col5  — door bottom sprite
+    lockedDoorBottom:   { sx:  624, sy: 624 },  // col6  — locked door bottom sprite
     // other col6_row6 tiles exist but are cropped; add as needed
 
 };

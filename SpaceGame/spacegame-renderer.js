@@ -249,16 +249,18 @@ Game.prototype.drawOutside = function(camX) {
         }
         ctx.restore();
     }
-    // EVA door opening — 2 tiles
+    // EVA door — locked sprite or open sprite
     const evaDoorTop  = grateTop - roomH * 0.30 + BG_TS * 1.5;
     const evaDoorDX   = bx - ebw/2 - BG_TS/2;
     if (this.tiles) {
-        ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
+        const tdTop = this.evaLocked ? TILES.lockedDoorTop    : TILES.doorTop;
+        const tdBot = this.evaLocked ? TILES.lockedDoorBottom : TILES.doorBottom;
+        ctx.drawImage(this.tiles, tdTop.sx, tdTop.sy, TILE_W, TILE_H,
             evaDoorDX, evaDoorTop,          BG_TS, BG_TS);
-        ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
+        ctx.drawImage(this.tiles, tdBot.sx, tdBot.sy, TILE_W, TILE_H,
             evaDoorDX, evaDoorTop + BG_TS,  BG_TS, BG_TS);
     } else {
-        ctx.fillStyle = '#0a0f18';
+        ctx.fillStyle = this.evaLocked ? '#1a0a0a' : '#0a0f18';
         ctx.fillRect(evaDoorDX, evaDoorTop, BG_TS, BG_TS * 2);
     }
 
@@ -398,16 +400,19 @@ Game.prototype.drawRoom = function(i) {
             ctx.restore();
         }
 
-        // Door opening — 2 tiles
-        const doorTop = grateTop - roomH * 0.30 + BG_TS * 1.5;
-        const doorDX  = bx - BG_TS/2;
+        // Door — locked sprite or open sprite
+        const doorTop    = grateTop - roomH * 0.30 + BG_TS * 1.5;
+        const doorDX     = bx - BG_TS/2;
+        const doorLocked = i === 1 && this.introLocked;
         if (this.tiles) {
-            ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
+            const tdTop = doorLocked ? TILES.lockedDoorTop    : TILES.doorTop;
+            const tdBot = doorLocked ? TILES.lockedDoorBottom : TILES.doorBottom;
+            ctx.drawImage(this.tiles, tdTop.sx, tdTop.sy, TILE_W, TILE_H,
                 doorDX, doorTop,          BG_TS, BG_TS);
-            ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
+            ctx.drawImage(this.tiles, tdBot.sx, tdBot.sy, TILE_W, TILE_H,
                 doorDX, doorTop + BG_TS,  BG_TS, BG_TS);
         } else {
-            ctx.fillStyle = '#111520';
+            ctx.fillStyle = doorLocked ? '#1a0a0a' : '#111520';
             ctx.fillRect(doorDX, doorTop, BG_TS, BG_TS * 2);
         }
     }
@@ -629,6 +634,33 @@ Game.prototype.drawRoomDecor = function(i, rx, cY, fY, roomH, def) {
     */
 };
 
+Game.prototype.drawIntroKey = function(camX) {
+    if (!this.keyVisible) return;
+    const W  = canvas.width;
+    const H  = canvas.height;
+    const fY = this.floorY;
+    const sw = BG_TS, sh = BG_TS;
+    const kx  = KEY_WORLD_X - camX;
+    const bob = Math.sin(this.tick * 0.07) * 5;
+    const ky  = fY - sh * 1.4 - bob;
+
+    if (this.tiles && TILES.blackKey) {
+        ctx.drawImage(this.tiles, TILES.blackKey.sx, TILES.blackKey.sy,
+            TILE_W, TILE_H, kx - sw / 2, ky, sw, sh);
+    } else {
+        ctx.font      = (sw * 0.75) + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('\uD83D\uDD11', kx, ky + sh * 0.75);
+    }
+
+    if (this.nearKey) {
+        ctx.font      = 'bold ' + (W * 0.028) + 'px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffff88';
+        ctx.fillText('[E] Pick up key', kx, ky - H * 0.025);
+    }
+};
+
 Game.prototype.drawResourceBars = function() {
     const W = this.W, H = this.H;
     const panY  = this.floorY + (H - this.floorY) * 0.08;
@@ -740,6 +772,7 @@ Game.prototype.draw = function() {
     }
     this.stations.forEach(s => s.draw(this.camX, this.ceilY, this.tiles));
     this.drawCozyStation(this.camX);
+    this.drawIntroKey(this.camX);
     this.player.draw(this.camX);
 
     // Cozy mode overlay
