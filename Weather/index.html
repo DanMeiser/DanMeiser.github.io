@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather — Meiser's Market</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
+            background: #07071a;
+            min-height: 100vh;
+            color: #fff;
+            padding: 2rem 1rem 3rem;
+        }
+
+        .page {
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(77, 184, 212, 0.65);
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+            margin-bottom: 2rem;
+        }
+        .back-link:hover { color: #4db8d4; }
+
+        /* ── Loading / Error ── */
+        .status {
+            text-align: center;
+            padding: 5rem 2rem;
+            color: rgba(77, 184, 212, 0.6);
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 3px solid rgba(77, 184, 212, 0.2);
+            border-top-color: #4db8d4;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .status.error { color: rgba(231, 76, 60, 0.8); }
+        .error-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+        /* ── Location header ── */
+        .location {
+            text-align: center;
+            margin-bottom: 1.25rem;
+            animation: fadeUp 0.5s ease-out both;
+        }
+        .city-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.4rem, 5vw, 2rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #a8d8f0 0%, #4db8d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 12px rgba(77, 184, 212, 0.4));
+        }
+        .region-name {
+            font-size: 0.88rem;
+            color: rgba(150, 200, 255, 0.5);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        /* ── Current weather card ── */
+        .current-card {
+            background: rgba(13, 59, 94, 0.3);
+            border: 1px solid rgba(77, 184, 212, 0.18);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            margin-bottom: 0.85rem;
+            animation: fadeUp 0.5s 0.05s ease-out both;
+        }
+        .current-icon { font-size: 4rem; line-height: 1; margin-bottom: 0.5rem; }
+        .current-temp {
+            font-size: clamp(4.5rem, 16vw, 6.5rem);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        .current-unit { font-size: 0.4em; vertical-align: super; color: rgba(255,255,255,0.5); }
+        .current-condition {
+            font-size: 1.15rem;
+            color: rgba(150, 210, 255, 0.8);
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+        }
+
+        /* ── Stat cards ── */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.65rem;
+            margin-bottom: 1.25rem;
+            animation: fadeUp 0.5s 0.1s ease-out both;
+        }
+        .stat-card {
+            background: rgba(13, 59, 94, 0.22);
+            border: 1px solid rgba(77, 184, 212, 0.13);
+            border-radius: 14px;
+            padding: 1rem 0.6rem;
+            text-align: center;
+        }
+        .stat-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+        .stat-value { font-size: 1.2rem; font-weight: 700; color: #4db8d4; }
+        .stat-label {
+            font-size: 0.72rem;
+            color: rgba(150, 200, 255, 0.45);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            margin-top: 0.15rem;
+        }
+
+        /* ── 7-day forecast ── */
+        .forecast-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(150, 200, 255, 0.4);
+            margin-bottom: 0.55rem;
+            padding-left: 4px;
+            animation: fadeUp 0.5s 0.15s ease-out both;
+        }
+        .forecast {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.45rem;
+            animation: fadeUp 0.5s 0.2s ease-out both;
+        }
+        .day-card {
+            background: rgba(13, 59, 94, 0.22);
+            border: 1px solid rgba(77, 184, 212, 0.12);
+            border-radius: 12px;
+            padding: 0.6rem 0.25rem;
+            text-align: center;
+        }
+        .day-card.today {
+            background: rgba(13, 59, 94, 0.5);
+            border-color: rgba(77, 184, 212, 0.45);
+        }
+        .day-name {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: rgba(150, 200, 255, 0.55);
+            margin-bottom: 0.3rem;
+        }
+        .day-card.today .day-name { color: #4db8d4; }
+        .day-icon { font-size: 1.2rem; margin-bottom: 0.25rem; }
+        .day-hi { font-size: 0.85rem; font-weight: 700; }
+        .day-lo { font-size: 0.75rem; color: rgba(150, 200, 255, 0.45); margin-top: 0.1rem; }
+
+        .updated {
+            text-align: center;
+            margin-top: 1.75rem;
+            font-size: 0.75rem;
+            color: rgba(150, 200, 255, 0.3);
+            letter-spacing: 0.05em;
+            animation: fadeUp 0.5s 0.25s ease-out both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        #weather { display: none; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <a href="../" class="back-link">&#8592; Meiser's Market</a>
+
+        <div class="status" id="loading">
+            <div class="spinner"></div>
+            Locating you&hellip;
+        </div>
+
+        <div class="status error" id="errorState" style="display:none">
+            <div class="error-icon">&#9888;&#65039;</div>
+            <div id="errorMsg">Unable to load weather.</div>
+        </div>
+
+        <div id="weather">
+            <div class="location">
+                <div class="city-name" id="cityName"></div>
+                <div class="region-name" id="regionName"></div>
+            </div>
+
+            <div class="current-card">
+                <div class="current-icon" id="currentIcon"></div>
+                <div class="current-temp" id="currentTemp"></div>
+                <div class="current-condition" id="currentCondition"></div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-icon">&#127777;&#65039;</div>
+                    <div class="stat-value" id="feelsLike"></div>
+                    <div class="stat-label">Feels Like</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128167;</div>
+                    <div class="stat-value" id="humidity"></div>
+                    <div class="stat-label">Humidity</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128168;</div>
+                    <div class="stat-value" id="wind"></div>
+                    <div class="stat-label">Wind</div>
+                </div>
+            </div>
+
+            <div class="forecast-label">7-Day Forecast</div>
+            <div class="forecast" id="forecastRow"></div>
+
+            <div class="updated" id="updated"></div>
+        </div>
+    </div>
+
+    <script>
+        'use strict';
+
+        const WMO = {
+            0:  ['Clear Sky',            '☀️'],
+            1:  ['Mainly Clear',         '🌤️'],
+            2:  ['Partly Cloudy',        '⛅'],
+            3:  ['Overcast',             '☁️'],
+            45: ['Foggy',                '🌫️'],
+            48: ['Icy Fog',              '🌫️'],
+            51: ['Light Drizzle',        '🌦️'],
+            53: ['Drizzle',              '🌦️'],
+            55: ['Heavy Drizzle',        '🌧️'],
+            61: ['Light Rain',           '🌧️'],
+            63: ['Rain',                 '🌧️'],
+            65: ['Heavy Rain',           '🌧️'],
+            71: ['Light Snow',           '🌨️'],
+            73: ['Snow',                 '❄️'],
+            75: ['Heavy Snow',           '❄️'],
+            77: ['Snow Grains',          '🌨️'],
+            80: ['Light Showers',        '🌦️'],
+            81: ['Showers',              '🌧️'],
+            82: ['Heavy Showers',        '⛈️'],
+            85: ['Snow Showers',         '🌨️'],
+            86: ['Heavy Snow Showers',   '❄️'],
+            95: ['Thunderstorm',         '⛈️'],
+            96: ['Thunderstorm w/ Hail', '⛈️'],
+            99: ['Thunderstorm w/ Hail', '⛈️'],
+        };
+
+        function wmo(code) { return WMO[code] || ['Unknown', '🌡️']; }
+
+        function showError(msg) {
+            document.getElementById('loading').style.display    = 'none';
+            document.getElementById('errorMsg').textContent     = msg;
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        async function getGeo() {
+            const errors = [];
+
+            // 1. ipapi.co — works on localhost, free, no key
+            try {
+                const r = await fetch('https://ipapi.co/json/');
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d.city && d.latitude) {
+                        return { city: d.city, region: d.region, country_code: d.country_code,
+                                 latitude: d.latitude, longitude: d.longitude, tzId: d.timezone || 'auto' };
+                    }
+                    errors.push('ipapi.co: ' + (d.reason || 'bad response'));
+                }
+            } catch (e) { errors.push('ipapi.co: ' + e.message); }
+
+            // 2. ipinfo.io — works on localhost, free, no key for basic fields
+            try {
+                const r = await fetch('https://ipinfo.io/json');
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d.city && d.loc) {
+                        const [lat, lon] = d.loc.split(',').map(Number);
+                        const region = d.region || d.country || '';
+                        return { city: d.city, region, country_code: d.country || '',
+                                 latitude: lat, longitude: lon, tzId: d.timezone || 'auto' };
+                    }
+                    errors.push('ipinfo.io: bad response');
+                }
+            } catch (e) { errors.push('ipinfo.io: ' + e.message); }
+
+            // 3. ip-api.com — may be blocked on localhost but worth trying last
+            try {
+                const r = await fetch('http://ip-api.com/json/?fields=status,city,regionName,countryCode,lat,lon,timezone');
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d.status === 'success') {
+                        return { city: d.city, region: d.regionName, country_code: d.countryCode,
+                                 latitude: d.lat, longitude: d.lon, tzId: d.timezone };
+                    }
+                    errors.push('ip-api.com: ' + d.message);
+                }
+            } catch (e) { errors.push('ip-api.com: ' + e.message); }
+
+            throw new Error('Location failed: ' + errors.join(' | '));
+        }
+
+        async function loadWeather() {
+            try {
+                // Step 1: IP-based geolocation (no key, no permission prompt)
+                const { city, region, country_code, latitude, longitude, tzId } = await getGeo();
+
+                // Step 2: Forecast from Open-Meteo (free, no key)
+                const wxUrl = 'https://api.open-meteo.com/v1/forecast'
+                    + '?latitude='  + latitude
+                    + '&longitude=' + longitude
+                    + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m'
+                    + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+                    + '&temperature_unit=fahrenheit'
+                    + '&wind_speed_unit=mph'
+                    + '&timezone=' + encodeURIComponent(tzId)
+                    + '&forecast_days=7';
+
+                const wxRes = await fetch(wxUrl);
+                if (!wxRes.ok) throw new Error('Weather service unavailable');
+                const wx = await wxRes.json();
+
+                render(city, region, country_code, wx);
+            } catch (e) {
+                showError(e.message || 'Unable to load weather data.');
+            }
+        }
+
+        function render(city, region, countryCode, wx) {
+            const c = wx.current;
+            const d = wx.daily;
+            const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const [condLabel, condIcon] = wmo(c.weather_code);
+
+            document.getElementById('cityName').textContent = city;
+            document.getElementById('regionName').textContent = region + ' \u00B7 ' + countryCode;
+            document.getElementById('currentIcon').textContent = condIcon;
+            document.getElementById('currentTemp').innerHTML =
+                Math.round(c.temperature_2m) + '<span class="current-unit">\u00B0F</span>';
+            document.getElementById('currentCondition').textContent = condLabel;
+            document.getElementById('feelsLike').textContent = Math.round(c.apparent_temperature) + '\u00B0';
+            document.getElementById('humidity').textContent  = c.relative_humidity_2m + '%';
+            document.getElementById('wind').textContent      = Math.round(c.wind_speed_10m) + ' mph';
+
+            document.getElementById('forecastRow').innerHTML = d.time.map((dateStr, i) => {
+                const dayIdx = new Date(dateStr + 'T12:00:00').getDay();
+                const [, icon] = wmo(d.weather_code[i]);
+                const isToday = i === 0;
+                return '<div class="day-card' + (isToday ? ' today' : '') + '">'
+                    + '<div class="day-name">' + (isToday ? 'Today' : DAYS[dayIdx]) + '</div>'
+                    + '<div class="day-icon">' + icon + '</div>'
+                    + '<div class="day-hi">' + Math.round(d.temperature_2m_max[i]) + '\u00B0</div>'
+                    + '<div class="day-lo">' + Math.round(d.temperature_2m_min[i]) + '\u00B0</div>'
+                    + '</div>';
+            }).join('');
+
+            const now = new Date();
+            document.getElementById('updated').textContent =
+                'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('weather').style.display = 'block';
+        }
+
+        loadWeather();
+    </script>
+</body>
+</html>
