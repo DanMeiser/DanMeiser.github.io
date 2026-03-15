@@ -55,12 +55,21 @@ const ROOM_DEFS = [
     { id:'farm',    label:'Hydroponics',   icon:'\uD83C\uDF31', bg:'#0a1a0a', floor:'#153015', accent:'#4caf50',
       station:{ label:'Grow Pods',        action:'Harvest',  res:'food',    workFrames:60  } },
     { id:'command', label:'Command Deck',  icon:'\uD83D\uDEF8', bg:'#150a28', floor:'#28144a', accent:'#9b59b6',
-      station:{ label:'Upgrade Console',  action:'Upgrade',  res:'credits', workFrames:120 } },
+      station:{ label:'Nav Console',      action:'Chart',    res:'score',   workFrames:120 } },
     { id:'engine',  label:'Engine Room',   icon:'\u26A1',       bg:'#280a0a', floor:'#421414', accent:'#e74c3c',
       station:{ label:'Reactor Core',     action:'Repair',   res:'power',   workFrames:90  } },
     { id:'lifesup', label:'Life Support',  icon:'\uD83D\uDCA8', bg:'#0a2828', floor:'#144040', accent:'#1abc9c',
       station:{ label:'O\u2082 Generator', action:'Repair',  res:'o2',      workFrames:90  } },
 ];
+
+function toRoman(n) {
+    const nums = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+    const syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+    let s = '';
+    for (let i = 0; i < nums.length && n > 0; i++)
+        while (n >= nums[i]) { s += syms[i]; n -= nums[i]; }
+    return s;
+}
 
 // -- Starfield (world-space positions) ----------------------------
 const STARS = Array.from({ length: 110 }, () => ({
@@ -119,19 +128,21 @@ class Station {
         this.roomIdx   = roomIdx;
         this.def       = ROOM_DEFS[roomIdx];
         this.worldX    = roomIdx * ROOM_PX + ROOM_PX * 0.5;
-        this.broken    = false;
-        this.working   = false;
-        this.workTimer = 0;
-        this.cropReady = false;
-        this.growTimer = 900 + Math.random() * 600;
-        this.flash     = 0;
+        this.broken       = false;
+        this.working      = false;
+        this.workTimer    = 0;
+        this.cropReady    = false;
+        this.growTimer    = 900 + Math.random() * 600;
+        this.flash        = 0;
+        this.actionCount  = 0;
+        this.upgradeLevel = 0;
     }
 
     get needsAttention() {
         const r = this.def.station.res;
-        if (r === 'food')    return this.cropReady;
-        if (r === 'hull')    return game && game.alienAttack;
-        if (r === 'credits') return true;
+        if (r === 'food')  return this.cropReady;
+        if (r === 'hull')  return game && game.alienAttack;
+        if (r === 'score') return true;
         return this.broken;
     }
 
@@ -150,6 +161,12 @@ class Station {
                 this.broken    = false;
                 this.cropReady = false;
                 this.growTimer = 900 + Math.random() * 600;
+                this.actionCount++;
+                if (this.actionCount >= 3) {
+                    this.upgradeLevel++;
+                    this.actionCount = 0;
+                    if (game) game.addAlert('\u2B06\uFE0F ' + this.def.label + ' ' + toRoman(this.upgradeLevel) + '!', '#f1c40f');
+                }
             }
         }
         this.flash = (this.flash + 1) % 60;
@@ -173,15 +190,11 @@ class Station {
             this.workTimer = this.def.station.workFrames;
             return '\uD83D\uDD2B Defending!';
         }
-        if (res === 'credits') {
-            if (resources.credits < 10) return 'Need 10 credits';
-            resources.credits -= 10;
-            const pick = ['o2','power','food'][Math.floor(Math.random()*3)];
-            resources[pick] = Math.min(100, resources[pick] + 20);
+        if (res === 'score') {
             this.working   = true;
             this.workTimer = this.def.station.workFrames;
-            game.score    += 50;
-            return '\u2B06\uFE0F Upgraded ' + pick.toUpperCase() + '!';
+            game.score    += 20;
+            return '\uD83D\uDCE1 Charting course! +20 score';
         }
         if (!this.broken) return 'System OK';
         this.working   = true;

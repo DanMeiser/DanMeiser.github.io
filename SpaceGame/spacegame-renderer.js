@@ -453,11 +453,13 @@ Game.prototype.drawRoom = function(i) {
     ctx.font      = 'bold ' + (W * 0.028) + 'px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = def.accent;
-    ctx.fillText(def.label, rx + ROOM_PX / 2, plateY + roomH * 0.085);
+    const lvl = this.stations[i].upgradeLevel;
+    const roomLabel = lvl > 0 ? def.label + ' ' + toRoman(lvl) : def.label;
+    ctx.fillText(roomLabel, rx + ROOM_PX / 2, plateY + roomH * 0.085);
 
     // Interaction hint
     if (this.nearStation === this.stations[i]) {
-        const canAct = this.nearStation.needsAttention || this.nearStation.def.station.res === 'credits';
+        const canAct = this.nearStation.needsAttention;
         ctx.font      = 'bold ' + (W * 0.028) + 'px monospace';
         ctx.fillStyle = '#ffff88';
         ctx.fillText(canAct ? '[E] ' + def.station.action : '[E] Check',
@@ -671,10 +673,6 @@ Game.prototype.drawResourceBars = function() {
         ctx.fillStyle = fill;
         ctx.fillText(Math.floor(val * 100) + '%', b.x + barW - 2, bY + barH + 14);
     }
-    ctx.fillStyle = '#f1c40f';
-    ctx.font      = 'bold ' + (W * 0.030) + 'px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText('Credits: ' + Math.floor(this.resources.credits), W - W * 0.01, bY + barH * 0.55);
     ctx.fillStyle = '#6688aa';
     ctx.font      = (W * 0.024) + 'px monospace';
     ctx.textAlign = 'right';

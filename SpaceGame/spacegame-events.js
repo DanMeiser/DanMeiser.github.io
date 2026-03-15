@@ -12,7 +12,7 @@ class Game {
         this.tiles        = tiles;
         this.stations     = ROOM_DEFS.map((_, i) => new Station(i));
         this.player       = new Player(sheet);
-        this.resources    = { o2:80, power:90, food:65, hull:100, credits:5 };
+        this.resources    = { o2:80, power:90, food:65, hull:100 };
         this.score        = 0;
         this.day          = 1;
         this.tick         = 0;
@@ -78,8 +78,7 @@ class Game {
         // -- Day cycle --------------------------------------------
         if (this.tick % this.dayLen === 0) {
             this.day++;
-            this.resources.credits = Math.min(99, this.resources.credits + 4);
-            this.addAlert('\uD83C\uDF05 Day ' + this.day + ' \u2014 +4 credits', '#f1c40f');
+            this.addAlert('\uD83C\uDF05 Day ' + this.day, '#f1c40f');
         }
 
         // -- Random events (paused in cozy mode) ------------------
@@ -112,7 +111,6 @@ class Game {
         // -- Periodic credit earn (paused in cozy mode) -----------
         if (!this.cozyMode && this.tick % 360 === 0) {
             const healthy = ['o2','power','food','hull'].filter(k => this.resources[k] > 55).length;
-            this.resources.credits = Math.min(99, this.resources.credits + healthy);
             this.score += healthy * 8;
         }
 
