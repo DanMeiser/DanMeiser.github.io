@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather — Meiser's Market</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
 
@@ -18,7 +20,7 @@
         }
 
         .page {
-            max-width: 540px;
+            max-width: 760px;
             margin: 0 auto;
         }
 
@@ -131,6 +133,48 @@
             margin-top: 0.15rem;
         }
 
+        /* ── Radar ── */
+        .radar-section {
+            margin-top: 1.4rem;
+            animation: fadeUp 0.5s 0.25s ease-out both;
+        }
+        #radarMap {
+            height: 340px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(77, 184, 212, 0.22);
+            background: #0a1628;
+        }
+        .leaflet-container { background: #0a1628 !important; }
+        .radar-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.6rem;
+        }
+        #radarPlay {
+            background: rgba(13, 59, 94, 0.5);
+            border: 1px solid rgba(77, 184, 212, 0.35);
+            border-radius: 8px;
+            color: #4db8d4;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.35rem 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        #radarPlay:hover { background: rgba(77, 184, 212, 0.18); border-color: #4db8d4; }
+        #radarPlay:disabled { opacity: 0.4; cursor: default; }
+        #radarTime {
+            font-size: 0.78rem;
+            color: rgba(150, 200, 255, 0.5);
+            letter-spacing: 0.05em;
+        }
+        .radar-circle { stroke: #4db8d4 !important; fill: rgba(77,184,212,0.06) !important; }
+
         /* ── 7-day forecast ── */
         .forecast-label {
             font-size: 0.75rem;
@@ -235,6 +279,15 @@
             <div class="forecast" id="forecastRow"></div>
 
             <div class="updated" id="updated"></div>
+
+            <div class="radar-section">
+                <div class="forecast-label">Radar</div>
+                <div id="radarMap"></div>
+                <div class="radar-controls">
+                    <button id="radarPlay" disabled>&#9654; Animate</button>
+                    <span id="radarTime"></span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -343,11 +396,91 @@
                 if (!wxRes.ok) throw new Error('Weather service unavailable');
                 const wx = await wxRes.json();
 
-                render(city, region, country_code, wx);
+                renderWithRadar(city, region, country_code, wx, latitude, longitude);
             } catch (e) {
                 showError(e.message || 'Unable to load weather data.');
             }
         }
+
+        // ── Radar ──────────────────────────────────────────────────────────────
+        let radarMap = null;
+        let radarLayers = [];
+        let radarFrameIdx = 0;
+        let radarPlaying = false;
+        let radarTimer = null;
+
+        async function initRadar(lat, lon) {
+            if (radarMap) return;
+
+            radarMap = L.map('radarMap', { zoomControl: true, attributionControl: true })
+                        .setView([lat, lon], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 18,
+            }).addTo(radarMap);
+
+            // 100-mile radius circle (1 mile ≈ 1609.34 m)
+            L.circle([lat, lon], {
+                radius: 160934,
+                className: 'radar-circle',
+                weight: 1.5,
+                dashArray: '6 4',
+            }).addTo(radarMap);
+
+            // Fetch RainViewer frame list
+            try {
+                const rv = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+                const data = await rv.json();
+                const pastFrames = (data.radar && data.radar.past) ? data.radar.past : [];
+                if (!pastFrames.length) return;
+
+                // Create a Leaflet tile layer for each frame (but don't add yet)
+                radarLayers = pastFrames.map(frame =>
+                    L.tileLayer('https://tilecache.rainviewer.com' + frame.path +
+                        '/256/{z}/{x}/{y}/2/1_1.png', {
+                        opacity: 0.6,
+                        zIndex: 10,
+                    })
+                );
+
+                // Show the latest frame immediately
+                radarFrameIdx = radarLayers.length - 1;
+                radarLayers[radarFrameIdx].addTo(radarMap);
+                updateRadarTime(pastFrames, radarFrameIdx);
+
+                const playBtn = document.getElementById('radarPlay');
+                playBtn.disabled = false;
+                playBtn.addEventListener('click', () => {
+                    if (radarPlaying) {
+                        radarPlaying = false;
+                        clearInterval(radarTimer);
+                        playBtn.textContent = '\u25B6 Animate';
+                    } else {
+                        radarPlaying = true;
+                        playBtn.textContent = '\u23F8 Stop';
+                        radarTimer = setInterval(() => {
+                            radarLayers[radarFrameIdx].removeFrom(radarMap);
+                            radarFrameIdx = (radarFrameIdx + 1) % radarLayers.length;
+                            radarLayers[radarFrameIdx].addTo(radarMap);
+                            updateRadarTime(pastFrames, radarFrameIdx);
+                        }, 700);
+                    }
+                });
+
+                function updateRadarTime(frames, idx) {
+                    const ts = new Date(frames[idx].time * 1000);
+                    document.getElementById('radarTime').textContent =
+                        ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+                        ' · ' +
+                        ts.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                }
+
+            } catch (e) {
+                document.getElementById('radarTime').textContent = 'Radar unavailable';
+            }
+        }
+        // ───────────────────────────────────────────────────────────────────────
 
         function render(city, region, countryCode, wx) {
             const c = wx.current;
@@ -383,6 +516,12 @@
 
             document.getElementById('loading').style.display = 'none';
             document.getElementById('weather').style.display = 'block';
+        }
+
+        function renderWithRadar(city, region, countryCode, wx, lat, lon) {
+            render(city, region, countryCode, wx);
+            // Defer map init slightly so the container is visible
+            setTimeout(() => initRadar(lat, lon), 100);
         }
 
         loadWeather();
