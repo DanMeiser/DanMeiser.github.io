@@ -235,16 +235,16 @@ Game.prototype.drawOutside = function(camX) {
     const EVA_WALL_TILE = { sx: 312, sy: 416 };
     // Solid base
     ctx.fillStyle = '#2a3040';
-    ctx.fillRect(bx - ebw / 2, cY, ebw, roomH);
+    ctx.fillRect(bx - ebw, cY, ebw, roomH);
     // Tile texture
     if (this.tiles) {
         ctx.save();
-        ctx.beginPath(); ctx.rect(bx - ebw / 2, cY, ebw, roomH); ctx.clip();
+        ctx.beginPath(); ctx.rect(bx - ebw, cY, ebw, roomH); ctx.clip();
         let ty = cY;
         while (ty < cY + roomH) {
             const segH = Math.min(ebw, cY + roomH - ty);
             ctx.drawImage(this.tiles, EVA_WALL_TILE.sx, EVA_WALL_TILE.sy, TILE_W, TILE_H,
-                bx - ebw / 2, ty, ebw, segH);
+                bx - ebw, ty, ebw, segH);
             ty += ebw;
         }
         ctx.restore();
@@ -255,12 +255,12 @@ Game.prototype.drawOutside = function(camX) {
     const evaHalf     = evaDoorH / 2;
     if (this.tiles) {
         ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorTop,              ebw, evaHalf);
+            bx - ebw, evaDoorTop,              ebw, evaHalf);
         ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-            bx - ebw / 2, evaDoorTop + evaHalf,    ebw, evaHalf);
+            bx - ebw, evaDoorTop + evaHalf,    ebw, evaHalf);
     } else {
         ctx.fillStyle = '#0a0f18';
-        ctx.fillRect(bx - ebw / 2, evaDoorTop, ebw, evaDoorH);
+        ctx.fillRect(bx - ebw, evaDoorTop, ebw, evaDoorH);
     }
 
     // EVA ZONE label
