@@ -133,6 +133,43 @@
             margin-top: 0.15rem;
         }
 
+        /* ── AQI / Pollen ── */
+        .aq-section {
+            margin-top: 1.25rem;
+            animation: fadeUp 0.5s 0.18s ease-out both;
+        }
+        .aq-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.65rem;
+        }
+        .aq-card {
+            background: rgba(13, 59, 94, 0.22);
+            border: 1px solid rgba(77, 184, 212, 0.13);
+            border-radius: 14px;
+            padding: 0.85rem 0.4rem;
+            text-align: center;
+        }
+        .aq-icon  { font-size: 1.4rem; margin-bottom: 0.3rem; }
+        .aq-value { font-size: 1.1rem; font-weight: 700; }
+        .aq-label {
+            font-size: 0.68rem;
+            color: rgba(150, 200, 255, 0.45);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            margin-top: 0.15rem;
+        }
+        .aq-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border-radius: 6px;
+            padding: 0.1rem 0.45rem;
+            margin-top: 0.3rem;
+        }
+
         /* ── Radar ── */
         .radar-section {
             margin-top: 1.4rem;
@@ -278,6 +315,36 @@
             <div class="forecast-label">7-Day Forecast</div>
             <div class="forecast" id="forecastRow"></div>
 
+            <div class="aq-section" id="aqSection" style="display:none">
+                <div class="forecast-label">Air Quality &amp; Allergies</div>
+                <div class="aq-grid">
+                    <div class="aq-card">
+                        <div class="aq-icon">&#128165;</div>
+                        <div class="aq-value" id="aqAqi"></div>
+                        <div class="aq-label">US AQI</div>
+                        <div class="aq-badge" id="aqAqiBadge"></div>
+                    </div>
+                    <div class="aq-card">
+                        <div class="aq-icon">&#127807;</div>
+                        <div class="aq-value" id="aqTree"></div>
+                        <div class="aq-label">Tree Pollen</div>
+                        <div class="aq-badge" id="aqTreeBadge"></div>
+                    </div>
+                    <div class="aq-card">
+                        <div class="aq-icon">&#127808;</div>
+                        <div class="aq-value" id="aqGrass"></div>
+                        <div class="aq-label">Grass Pollen</div>
+                        <div class="aq-badge" id="aqGrassBadge"></div>
+                    </div>
+                    <div class="aq-card">
+                        <div class="aq-icon">&#127810;</div>
+                        <div class="aq-value" id="aqWeed"></div>
+                        <div class="aq-label">Weed Pollen</div>
+                        <div class="aq-badge" id="aqWeedBadge"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="updated" id="updated"></div>
 
             <div class="radar-section">
@@ -381,7 +448,7 @@
                 // Step 1: IP-based geolocation (no key, no permission prompt)
                 const { city, region, country_code, latitude, longitude, tzId } = await getGeo();
 
-                // Step 2: Forecast from Open-Meteo (free, no key)
+                // Step 2: Weather + Air Quality fetched in parallel
                 const wxUrl = 'https://api.open-meteo.com/v1/forecast'
                     + '?latitude='  + latitude
                     + '&longitude=' + longitude
@@ -392,14 +459,97 @@
                     + '&timezone=' + encodeURIComponent(tzId)
                     + '&forecast_days=7';
 
-                const wxRes = await fetch(wxUrl);
+                const aqUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality'
+                    + '?latitude='  + latitude
+                    + '&longitude=' + longitude
+                    + '&current=us_aqi,pm10,pm2_5'
+                    + '&timezone=' + encodeURIComponent(tzId);
+
+                const pollenUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality'
+                    + '?latitude='  + latitude
+                    + '&longitude=' + longitude
+                    + '&hourly=birch_pollen,grass_pollen,ragweed_pollen'
+                    + '&timezone=' + encodeURIComponent(tzId)
+                    + '&forecast_days=1';
+
+                const [wxRes, aqRes, pollenRes] = await Promise.all([fetch(wxUrl), fetch(aqUrl), fetch(pollenUrl)]);
                 if (!wxRes.ok) throw new Error('Weather service unavailable');
-                const wx = await wxRes.json();
+                const wx     = await wxRes.json();
+                const aq     = aqRes.ok     ? await aqRes.json()     : null;
+                const pollen = pollenRes.ok ? await pollenRes.json() : null;
 
                 renderWithRadar(city, region, country_code, wx, latitude, longitude);
+                renderAQ(aq, pollen);
             } catch (e) {
                 showError(e.message || 'Unable to load weather data.');
             }
+        }
+
+        function aqiLabel(v) {
+            if (v <= 50)  return ['Good',             '#22c55e'];
+            if (v <= 100) return ['Moderate',         '#eab308'];
+            if (v <= 150) return ['Unhealthy (sens)', '#f97316'];
+            if (v <= 200) return ['Unhealthy',        '#ef4444'];
+            if (v <= 300) return ['Very Unhealthy',   '#a855f7'];
+            return               ['Hazardous',        '#be123c'];
+        }
+        function pollenLabel(v) {
+            if (v == null || isNaN(v)) return ['–',         'rgba(150,200,255,0.3)'];
+            if (v < 10)  return ['Low',       '#22c55e'];
+            if (v < 50)  return ['Moderate',  '#eab308'];
+            if (v < 200) return ['High',      '#f97316'];
+            return               ['Very High', '#ef4444'];
+        }
+        function setBadge(id, label, color) {
+            const el = document.getElementById(id);
+            el.textContent = label;
+            el.style.background = color + '22';
+            el.style.color = color;
+        }
+        function renderAQ(aq, pollen) {
+            const NA = 'N/A';
+            const dimColor = 'rgba(150,200,255,0.3)';
+
+            const aqi = aq?.current?.us_aqi;
+            if (aqi != null) {
+                document.getElementById('aqAqi').textContent = aqi;
+                const [lbl, col] = aqiLabel(aqi);
+                setBadge('aqAqiBadge', lbl, col);
+                document.getElementById('aqAqi').style.color = col;
+            } else {
+                document.getElementById('aqAqi').textContent = NA;
+                document.getElementById('aqAqi').style.color = dimColor;
+                setBadge('aqAqiBadge', 'Unavailable', dimColor);
+            }
+
+            // Use the first available hourly pollen value (current hour)
+            const now = new Date();
+            const hourIdx = now.getHours();
+            function pollenVal(arr) {
+                if (!arr || !arr.length) return null;
+                const v = arr[Math.min(hourIdx, arr.length - 1)];
+                return (v == null || isNaN(v)) ? null : v;
+            }
+            const tree  = pollenVal(pollen?.hourly?.birch_pollen);
+            const grass = pollenVal(pollen?.hourly?.grass_pollen);
+            const weed  = pollenVal(pollen?.hourly?.ragweed_pollen);
+
+            const fmt = v => (v == null) ? NA : Math.round(v);
+
+            document.getElementById('aqTree').textContent  = fmt(tree);
+            document.getElementById('aqGrass').textContent = fmt(grass);
+            document.getElementById('aqWeed').textContent  = fmt(weed);
+
+            [[tree, 'aqTreeBadge'], [grass, 'aqGrassBadge'], [weed, 'aqWeedBadge']].forEach(([v, id]) => {
+                if (v == null) setBadge(id, 'Unavailable', dimColor);
+                else { const [lbl, col] = pollenLabel(v); setBadge(id, lbl, col); }
+            });
+
+            [['aqTree', tree], ['aqGrass', grass], ['aqWeed', weed]].forEach(([id, v]) => {
+                document.getElementById(id).style.color = v == null ? dimColor : '#fff';
+            });
+
+            document.getElementById('aqSection').style.display = 'block';
         }
 
         // ── Radar ──────────────────────────────────────────────────────────────
