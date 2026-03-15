@@ -236,6 +236,12 @@ class Player {
     }
 
     update(floorY, midFloorY, ceilY, ladderWXs, lockedWallX) {
+        // Apply locked wall barrier immediately — catch anything from previous frame
+        if (lockedWallX > 0) {
+            this.x = Math.min(this.x, lockedWallX - 60);
+            this.x = Math.max(this.x, 60); // also block EVA exit
+        }
+
         this.moving  = false;
         this.running = keys.running;
         const spd    = this.running ? RUN_SPD : MOVE_SPD;
@@ -252,6 +258,7 @@ class Player {
                 this.onLadder = false; this.onGround = false;
                 if (keys.left)  { this.x -= spd; this.facing = -1; this.moving = true; }
                 if (keys.right) { this.x += spd; this.facing =  1; this.moving = true; }
+                if (lockedWallX > 0) this.x = Math.max(Math.min(this.x, lockedWallX - 60), 60);
             } else if (_justPressed.jump && this.jumpsLeft > 0) {
                 // Jump off ladder
                 this.onLadder = false; this.onGround = false;
@@ -279,6 +286,7 @@ class Player {
             if (keys.left)  { this.x -= spd; this.facing=-1; this.moving=true; }
             if (keys.right) { this.x += spd; this.facing= 1; this.moving=true; }
             this.x = Math.max(-OUTSIDE_W + this.pw/2, Math.min(SHIP_W - this.pw/2, this.x));
+            if (lockedWallX > 0) this.x = Math.max(Math.min(this.x, lockedWallX - 60), 60);
 
             const onLowerFloor = this.onGround && Math.abs(this.y - floorY)    < 5;
             const onUpperFloor = this.onGround && Math.abs(this.y - midFloorY) < 5;
@@ -346,7 +354,7 @@ class Player {
 
         // Hard barrier for any locked wall — applied after ALL movement and wall physics
         if (lockedWallX > 0) {
-            this.x = Math.min(this.x, lockedWallX - 12 - this.pw / 2);
+            this.x = Math.max(Math.min(this.x, lockedWallX - 12 - this.pw / 2), 60);
         }
 
         if (this.interactTick > 0) { this.interactTick--; this.interacting = this.interactTick > 0; }

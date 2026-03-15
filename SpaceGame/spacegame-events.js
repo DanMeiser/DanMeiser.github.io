@@ -132,7 +132,10 @@ class Game {
         _justPressed.up   = false;
         _justPressed.jump = false;
         this.player.y   = Math.min(this.player.y, this.floorY); // safety clamp
-        if (this.introLocked) this.player.x = Math.min(this.player.x, ROOM_PX - 60); // hard wall clamp (60 > wall_half+player_half)
+        if (this.introLocked) {
+            this.player.x = Math.min(this.player.x, ROOM_PX - 60); // block right exit
+            this.player.x = Math.max(this.player.x, 60);           // block EVA exit
+        }
 
         // -- Camera smooth follow ---------------------------------
         const targetCamX = Math.max(-OUTSIDE_W, Math.min(SHIP_W - this.W, this.player.x - this.W / 2));
