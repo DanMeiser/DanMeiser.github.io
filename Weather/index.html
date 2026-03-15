@@ -432,22 +432,30 @@
             try {
                 const rv = await fetch('https://api.rainviewer.com/public/weather-maps.json');
                 const data = await rv.json();
-                const pastFrames = (data.radar && data.radar.past) ? data.radar.past : [];
+                const pastFrames     = (data.radar && data.radar.past)     ? data.radar.past     : [];
+                const nowcastFrames  = (data.radar && data.radar.nowcast)  ? data.radar.nowcast  : [];
                 if (!pastFrames.length) return;
 
+                // Merge past + nowcast into one sequence; tag each with its type
+                const allFrames = [
+                    ...pastFrames.map(f => ({ ...f, isForecast: false })),
+                    ...nowcastFrames.map(f => ({ ...f, isForecast: true })),
+                ];
+                const pastCount = pastFrames.length;
+
                 // Create a Leaflet tile layer for each frame (but don't add yet)
-                radarLayers = pastFrames.map(frame =>
+                radarLayers = allFrames.map(frame =>
                     L.tileLayer('https://tilecache.rainviewer.com' + frame.path +
                         '/256/{z}/{x}/{y}/2/1_1.png', {
-                        opacity: 0.6,
+                        opacity: frame.isForecast ? 0.45 : 0.6,
                         zIndex: 10,
                     })
                 );
 
-                // Show the latest frame immediately
-                radarFrameIdx = radarLayers.length - 1;
+                // Show the latest *past* frame immediately
+                radarFrameIdx = pastCount - 1;
                 radarLayers[radarFrameIdx].addTo(radarMap);
-                updateRadarTime(pastFrames, radarFrameIdx);
+                updateRadarTime(allFrames, radarFrameIdx);
 
                 const playBtn = document.getElementById('radarPlay');
                 playBtn.disabled = false;
@@ -463,17 +471,18 @@
                             radarLayers[radarFrameIdx].removeFrom(radarMap);
                             radarFrameIdx = (radarFrameIdx + 1) % radarLayers.length;
                             radarLayers[radarFrameIdx].addTo(radarMap);
-                            updateRadarTime(pastFrames, radarFrameIdx);
+                            updateRadarTime(allFrames, radarFrameIdx);
                         }, 700);
                     }
                 });
 
                 function updateRadarTime(frames, idx) {
-                    const ts = new Date(frames[idx].time * 1000);
+                    const frame = frames[idx];
+                    const ts = new Date(frame.time * 1000);
+                    const timeStr = ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        + ' · ' + ts.toLocaleDateString([], { month: 'short', day: 'numeric' });
                     document.getElementById('radarTime').textContent =
-                        ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
-                        ' · ' +
-                        ts.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                        frame.isForecast ? '\u23F3 Forecast: ' + timeStr : timeStr;
                 }
 
             } catch (e) {
