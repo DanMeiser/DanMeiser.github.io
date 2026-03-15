@@ -432,8 +432,9 @@
             try {
                 const rv = await fetch('https://api.rainviewer.com/public/weather-maps.json');
                 const data = await rv.json();
-                const pastFrames     = (data.radar && data.radar.past)     ? data.radar.past     : [];
-                const nowcastFrames  = (data.radar && data.radar.nowcast)  ? data.radar.nowcast  : [];
+                const host           = data.host || 'https://tilecache.rainviewer.com';
+                const pastFrames     = (data.radar && data.radar.past)    ? data.radar.past    : [];
+                const nowcastFrames  = (data.radar && data.radar.nowcast) ? data.radar.nowcast : [];
                 if (!pastFrames.length) return;
 
                 // Merge past + nowcast into one sequence; tag each with its type
@@ -444,13 +445,19 @@
                 const pastCount = pastFrames.length;
 
                 // Create a Leaflet tile layer for each frame (but don't add yet)
-                radarLayers = allFrames.map(frame =>
-                    L.tileLayer('https://tilecache.rainviewer.com' + frame.path +
+                radarLayers = allFrames.map(frame => {
+                    const layer = L.tileLayer(host + frame.path +
                         '/256/{z}/{x}/{y}/2/1_1.png', {
                         opacity: frame.isForecast ? 0.45 : 0.6,
                         zIndex: 10,
-                    })
-                );
+                    });
+                    layer.on('tileerror', e => { e.tile.style.display = 'none'; });
+                    return layer;
+                });
+
+                if (!nowcastFrames.length) {
+                    document.getElementById('radarTime').textContent = 'Forecast unavailable for this area';
+                }
 
                 // Show the latest *past* frame immediately
                 radarFrameIdx = pastCount - 1;

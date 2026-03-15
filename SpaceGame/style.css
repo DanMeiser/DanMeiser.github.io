@@ -1,6 +1,23 @@
 /* Space Game — local container overrides only.
    All menu / button / overlay styles come from ../css/style.css */
 
+#backHome {
+    display: inline-block;
+    position: absolute;
+    top: 0.75rem;
+    left: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    z-index: 10001;
+    pointer-events: auto;
+}
+#backHome:hover { color: #fff; }
+
 #gameWrapper {
     position: relative;
     width: min(600px, 66.667vh);
