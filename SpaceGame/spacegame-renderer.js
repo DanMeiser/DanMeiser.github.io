@@ -250,17 +250,16 @@ Game.prototype.drawOutside = function(camX) {
         ctx.restore();
     }
     // EVA door opening — 2 tiles
-    const evaDoorTop  = grateTop - roomH * 0.30;
-    const evaDoorH    = roomH * 0.38;
-    const evaHalf     = evaDoorH / 2;
+    const evaDoorTop  = grateTop - roomH * 0.30 + BG_TS * 1.5;
+    const evaDoorDX   = bx - ebw/2 - BG_TS/2;
     if (this.tiles) {
         ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-            bx - ebw, evaDoorTop,              ebw, evaHalf);
+            evaDoorDX, evaDoorTop,          BG_TS, BG_TS);
         ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-            bx - ebw, evaDoorTop + evaHalf,    ebw, evaHalf);
+            evaDoorDX, evaDoorTop + BG_TS,  BG_TS, BG_TS);
     } else {
         ctx.fillStyle = '#0a0f18';
-        ctx.fillRect(bx - ebw, evaDoorTop, ebw, evaDoorH);
+        ctx.fillRect(evaDoorDX, evaDoorTop, BG_TS, BG_TS * 2);
     }
 
     // EVA ZONE label
@@ -400,17 +399,16 @@ Game.prototype.drawRoom = function(i) {
         }
 
         // Door opening — 2 tiles
-        const doorTop   = grateTop - roomH * 0.30;
-        const doorH     = roomH * 0.38;
-        const half      = doorH / 2;
+        const doorTop = grateTop - roomH * 0.30 + BG_TS * 1.5;
+        const doorDX  = bx - BG_TS/2;
         if (this.tiles) {
             ctx.drawImage(this.tiles, 520, 520, TILE_W, TILE_H,
-                bx - bw / 2, doorTop,          bw, half);
+                doorDX, doorTop,          BG_TS, BG_TS);
             ctx.drawImage(this.tiles, 520, 624, TILE_W, TILE_H,
-                bx - bw / 2, doorTop + half,   bw, half);
+                doorDX, doorTop + BG_TS,  BG_TS, BG_TS);
         } else {
             ctx.fillStyle = '#111520';
-            ctx.fillRect(bx - bw / 2, doorTop, bw, doorH);
+            ctx.fillRect(doorDX, doorTop, BG_TS, BG_TS * 2);
         }
     }
 
