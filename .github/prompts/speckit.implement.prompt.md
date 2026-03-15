@@ -2,9 +2,9 @@
 ---
 agent: speckit.implement
 ---
-# Implementation Guide - Flappy Family
+# Implementation Guide
 
-## Code Organization Pattern
+## Flappy Family / General Games Pattern
 
 ### Game Class Responsibilities
 ```
@@ -17,47 +17,44 @@ Game
 └── UI Updates
 ```
 
-### Asset Management Pattern
-```
-AssetLoader
-├── Image preloading with fallbacks
-├── Sound preloading with error handling
-├── Asset caching
-└── Lazy loading capability
-```
-
-### Physics Implementation
-```
-Bird Physics
-├── Gravity constant (0.6)
-├── Jump power (-12 velocity)
-├── Terminal velocity (10)
-├── Rotation angle based on velocity
-└── Collision bounding box
-```
-
-## Module Import Order
+### Module Import Order (Flappy Family)
 1. `utils.js` - Asset loader, score manager, helpers
 2. `bird.js` - Bird class definition
 3. `pipe.js` - Pipe class definition
 4. `game.js` - Game class and initialization
 
-## Key Patterns to Follow
+### Key Patterns to Follow
+- NEVER use `ctx.roundRect()` — always use custom `roundRect(x, y, w, h, r)` helper built with `arcTo()`
+- Use AABB collision detection: check both X and Y overlap
+- Save/load high scores via `localStorage` keyed per character per game
 
-### Adding New Features
-1. Define constants at top of game.js
-2. Add state to Game constructor
-3. Implement update logic in Game.update()
-4. Implement render logic in Game.draw()
-5. Add event listeners in setupEventListeners()
+---
 
-### Collision Detection
-- Use AABB (Axis-Aligned Bounding Box) method
-- `bird.collidesWith(rect)` for simple checks
-- `pipe.checkCollision(bird)` for pipe collisions
-- Always check both X and Y overlap
+## SpaceGame Pattern
 
-### Save/Load Functionality
+### Script Load Order
+```
+tilesheet.js → spacegame-movement.js → spacegame-events.js → spacegame-renderer.js → spacegame.js
+```
+
+### Rendering Rules
+- All tile draws use `BG_TS = 52` for destination size, `TILE_W = TILE_H = 104` for source crop
+- All named tiles live in `TILES` (tilesheet.js) — never hardcode `sx/sy` in renderer except for hardcoded door coords
+- Station widgets (red button): `BG_TS × BG_TS`, positioned `fY - roomH*0.08 - BG_TS*1.5` from top
+- Cozy station (green button): same sizing, `cY + (fY-cY)*0.28` from top
+- Door tiles: exactly `BG_TS × BG_TS` square, centered on wall `bx`
+- Walls tiled vertically in `ebw`-sized segments clipped to room height
+
+### Adding a New Tile
+1. Open `tileinspector.html` (localhost:3000/SpaceGame/tileinspector.html) to find coordinates
+2. Add named entry to `TILES` in `tilesheet.js`
+3. Reference via `TILES.myTile.sx / .sy` in renderer
+
+### Adding a New Room Feature
+1. Add draw logic to `drawRoom()` or a new `drawXxx()` method
+2. Call from `Game.prototype.draw` in the correct layer order
+3. Keep commented-out legacy procedural code inside `/* */` blocks until replaced by sprites
+```
 ```javascript
 // Save
 ScoreManager.setHighScore(score);

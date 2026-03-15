@@ -4,43 +4,57 @@ agent: speckit.constitution
 ---
 # Project Constitution
 
-This file outlines the non-negotiable rules, principles, and constraints that must be adhered to throughout the development of the "Flappy Family" game using Spec Kit.
+This file outlines the non-negotiable rules, principles, and constraints for the Meiser's Market gaming site.
 
 ## Core Principles
 
-*   **Technology Stack:** The project must exclusively use **JavaScript (ES6+)** for all game logic and **Canvas API** for rendering.
-*   **GitHub Pages Compatible:** The project must run entirely in the browser with no build step required. All assets and code must be statically served.
-*   **No External Frameworks:** Do not introduce any additional game engines or complex frameworks beyond vanilla JavaScript and Canvas unless explicitly approved in a separate specification.
-*   **File Structure:**
-    *   `index.html`: Single-page HTML entry point with meta tags and game container.
-    *   `js/game.js`: Main game loop and initialization logic.
-    *   `js/bird.js`, `js/pipe.js`, `js/base.js`: Modules to encapsulate game object classes (if modularized).
-    *   `css/style.css`: All styling for the game UI.
-    *   `assets/`: Directory for all images (`.png`, `.jpg`), sounds (`.wav`, `.mp3`, `.ogg`), and fonts (`.ttf`).
-*   **Coding Style:** Adhere to modern JavaScript conventions (ES6+) with clear, readable code. Use meaningful variable and function names.
-*   **Modularity:** The code should be modular with clear separation of concerns. Consider using ES6 modules if complexity warrants it, but keep it simple.
-*   **Game Assets:** Use image and sound assets located in the `assets/` directory. No external web requests for assets during runtime unless explicitly documented.
-*   **User Input:** The spacebar (or click/touch) should be used for the bird's "flap" action and for restarting the game after a game over.
-*   **Error Handling:** Implement basic error handling for asset loading to prevent the game from crashing if files are missing.
-*   **Responsive Design:** The game should be playable on desktop browsers. Consider mobile responsiveness if specified.
-*   **Performance:** Target smooth 60 FPS gameplay. Optimize rendering and physics calculations.
-*   **Git Commits:** Every completed task must have its own commit, following the project's defined commit message template.
+- **Technology Stack**: Exclusively vanilla **JavaScript (ES6+)** and **Canvas API**. No build step. No frameworks.
+- **GitHub Pages Compatible**: All assets and code statically served. Asset paths must be relative.
+- **No External Frameworks**: No game engines or complex libraries beyond vanilla JS.
+- **Coding Style**: ES6+ conventions, meaningful names, clear separation of concerns.
+- **Performance**: Target 60 FPS. Optimize rendering and physics.
+- **NEVER use `ctx.roundRect()`** — always use a custom `roundRect(x, y, w, h, r)` helper built with `arcTo()` for cross-browser compatibility.
 
-## Game Logic Constraints
+## File Structure
 
-*   **Gravity and Physics:** The game must simulate gravity, making the bird fall automatically unless the player flaps.
-*   **Collision Detection:** Collision with pipes or the ground must result in an immediate game over state.
-*   **Scoring:** A score counter must be visible on the screen and increment each time the bird successfully passes a pair of pipes.
-*   **Randomization:** Pipes should be generated randomly with varying vertical positions but a fixed gap between the top and bottom pipes.
-*   **Multiple Characters:** Support for multiple playable characters (at minimum 3: Calvin, Bailey, and Lilly) with different visual representations.
-*   **Multi-Game Site:** The site hosts 6 games: Flappy Family, CactoCrash, Cannon Ball, Minefield, Pac Family, and Family Fling. Each game is self-contained in its own subdirectory.
+```
+index.html                  — site homepage
+games/index.html            — games hub
+css/style.css               — shared UI/menu styles
+assets/                     — shared character sprites, sounds
+<GameName>/
+  index.html
+  <gamename>.js             — self-contained engine (or split files)
+  style.css
+SpaceGame/
+  index.html
+  tilesheet.js              — TILES named coordinate map
+  spacegame-movement.js
+  spacegame-events.js
+  spacegame-renderer.js
+  spacegame.js              — entry point
+  tileinspector.html        — dev tool
+  charinspector.html        — dev tool
+  assets/
+    platformPack_tilesheet.png
+    platformerPack_character.png
+```
 
-## GitHub Pages Deployment
+## Viewport / Container Rules
+- Desktop: `width: min(600px, 66.667vh)`, `aspect-ratio: 1/1.5`
+- Mobile (`max-width: 600px`): `width: 100vw`, `height: 100vh` then `height: 100dvh` (dvh MUST come after vh)
+- `aspect-ratio: auto`, no border on mobile
 
-*   The project must be deployable to GitHub Pages with minimal configuration.
-*   `index.html` must be in the project root or configured in GitHub Pages settings.
-*   All asset paths must be relative and compatible with both local development and GitHub Pages URLs.
+## SpaceGame-Specific Rules
+- All tile draws use `BG_TS = 52` destination size, `TILE_W = TILE_H = 104` source crop
+- Every named sprite coordinate lives in `TILES` in `tilesheet.js` — no bare `sx/sy` literals in renderer unless unavoidable
+- Script load order must be: `tilesheet.js → spacegame-movement.js → spacegame-events.js → spacegame-renderer.js → spacegame.js`
+- Commented-out procedural drawing code stays inside `/* */` blocks until replaced by sprites
+- Use `tileinspector.html` (dev server port 3000) to locate tile coordinates before naming them
 
-Any deviation from this constitution requires explicit documentation and approval. The AI agent will use these rules as the single source of truth for the project's implementation.
+## Git / Commit Rules
+- Every completed task must have its own commit
+- Follow the project's defined commit message template
 
+Any deviation from this constitution requires explicit documentation.
 ```

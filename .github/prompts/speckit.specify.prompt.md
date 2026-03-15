@@ -16,8 +16,79 @@ Meiser's Market is a GitHub Pages gaming site hosting multiple JavaScript-based 
 - **Minefield** (`Minefield/`): Minesweeper/character-style game
 - **Pac Family** (`PacFamily/`): Pac-Man-style maze game
 - **Family Fling** (`FamilyFling/`): Angry Birds-style slingshot physics game
+- **SpaceGame** (`SpaceGame/`): Side-scrolling spaceship management game (I.S.S. Meiser)
 - **Shared Assets** (`assets/`): Character sprites, backgrounds, sounds
 - **Shared CSS** (`css/style.css`): Unified menu/UI styling used by all games
+
+## Homepage Requirements
+- [ ] Single "Play Games" card linking to `games/`
+- [ ] Purple gradient background matching game menus
+- [ ] Glass-morphism card design with hover effects
+- [ ] Responsive layout
+
+## Games Hub Requirements (`games/index.html`)
+- [ ] Card-style links to each game with icons and labels
+- [ ] Same purple gradient background and glass-morphism card style as homepage
+- [ ] "← danmeiser.github.io" back link at the bottom
+- [ ] Responsive layout
+
+## Shared UI/Menu Requirements (applies to ALL games)
+- [ ] Dark semi-transparent overlay with backdrop blur for menus
+- [ ] Character selection with Calvin, Bailey, and Lilly avatar buttons
+- [ ] High score display per character on main menu (yellow text, #ffeb3b)
+- [ ] How to Play instructions section with rounded background
+- [ ] Home button linking to https://danmeiser.github.io/games/ (the games hub)
+- [ ] Gradient primary buttons, white-bordered secondary buttons
+- [ ] Bounce animation on title, slide-in animation on character cards
+- [ ] Consistent styling via shared css/style.css
+- [ ] Game-specific overrides in local style.css only for container dimensions
+
+## Viewport / Container Sizing Rules (applies to ALL games)
+- [ ] Desktop: `width: min(600px, 66.667vh)` with `aspect-ratio: 1/1.5` so the container height never exceeds 100vh
+- [ ] Mobile (max-width 600px): `width: 100vw`, `height: 100vh` (fallback) then `height: 100dvh` (override) — `dvh` MUST be listed after `vh` so it wins on modern browsers
+- [ ] `100dvh` (dynamic viewport height) prevents the mobile browser address bar from clipping the bottom of the game
+- [ ] `aspect-ratio: auto` and no border on mobile
+- [ ] NEVER use `ctx.roundRect()` — always use a custom `roundRect(x, y, w, h, r)` helper built with `arcTo()` for cross-browser compatibility
+
+## SpaceGame Feature Requirements (`SpaceGame/`)
+
+### Overview
+- Side-scrolling 2D spaceship management game set aboard I.S.S. Meiser
+- 5 rooms: Airlock, Farm, Command, Engine, Life Support
+- EVA zone to the left of room 0 (airlock)
+- Player can walk, jump, climb ladders, and interact with stations
+
+### Rendering Architecture
+- `tilesheet.js`: Named tile coordinate map (`TILES`) for `platformPack_tilesheet.png` (1472×720px, 104×104px tiles)
+- `spacegame-renderer.js`: All canvas drawing, prototype methods on `Station`, `Player`, `Game`
+- `spacegame-movement.js`: Physics, collision, player/camera movement
+- `spacegame-events.js`: Input handling, game events, alien attacks
+- `spacegame.js`: Entry point, image loading, game init
+- Script load order: `tilesheet.js` → `spacegame-movement.js` → `spacegame-events.js` → `spacegame-renderer.js` → `spacegame.js`
+
+### Key Constants
+- `BG_TS = 52` — uniform draw size for all background/floor tiles
+- `TILE_W = TILE_H = 104` — source tile size on spritesheet
+- `ROOM_PX = 380` — pixel width of each room
+- `SHIP_ROOMS = 5` — number of rooms
+- `FLOOR_RATIO` — canvas fraction where floor sits
+
+### Sprite Naming (tilesheet.js)
+- `TILES.floor`, `TILES.roomBg`, `TILES.wall`, `TILES.ladder`
+- `TILES.ceilLeft/Mid/Right`, `TILES.ceilOutLeft/Right`
+- `TILES.doorTop` (sx=520,sy=520), `TILES.doorBottom` (sx=520,sy=624)
+- `TILES.redButton` (sx=1352,sy=520) — room station widget
+- `TILES.greenButton` (sx=1040,sy=520) — cozy station widget
+
+### Gameplay Systems
+- [ ] Resource bars: O2, Power, Food, Hull (deplete over time)
+- [ ] Stations: each room has one interactive station (red button sprite)
+- [ ] Cozy Mode: toggleable ambient mode (green button sprite, flash border)
+- [ ] Alien attacks: periodic threat requiring player response
+- [ ] Credits economy
+- [ ] Day counter
+- [ ] EVA zone with airlock door
+```
 
 ## Homepage Requirements
 - [ ] Single "Play Games" card linking to `games/`
