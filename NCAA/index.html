@@ -242,13 +242,67 @@
         }
         .source-note a { color:rgba(199,125,255,0.5); text-decoration:none; }
         .source-note a:hover { color:#c77dff; }
+
+        /* ── Weight controls ── */
+        .weight-panel {
+            background: rgba(199,125,255,0.05); border: 1px solid rgba(199,125,255,0.2);
+            border-radius: 14px; padding: 1.1rem 1.3rem 1rem; margin-bottom: 1.75rem;
+        }
+        .weight-panel h3 {
+            font-family: 'Orbitron', sans-serif; font-size: 0.78rem;
+            color: #c77dff; letter-spacing: 0.1em; margin-bottom: 0.95rem;
+        }
+        .weight-grid { display: flex; flex-direction: column; gap: 0.65rem; }
+        .weight-row {
+            display: grid; grid-template-columns: 150px 1fr;
+            grid-template-rows: auto auto; gap: 0.3rem 0.75rem; align-items: center;
+        }
+        @media(max-width:520px){ .weight-row { grid-template-columns: 1fr; } }
+        .weight-label {
+            font-size: 0.82rem; font-weight: 600; color: rgba(220,200,255,0.85);
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .weight-pct {
+            font-family: monospace; font-size: 0.78rem; color: #c77dff;
+            background: rgba(199,125,255,0.13); padding: 1px 7px;
+            border-radius: 6px; min-width: 40px; text-align: center; flex-shrink: 0;
+        }
+        .weight-slider {
+            -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: rgba(199,125,255,0.25);
+            outline: none; cursor: pointer; width: 100%;
+        }
+        .weight-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%; background: #c77dff; cursor: pointer;
+        }
+        .weight-slider::-moz-range-thumb {
+            width: 16px; height: 16px; border-radius: 50%; background: #c77dff; cursor: pointer; border: none;
+        }
+        .weight-desc {
+            grid-column: 1 / -1; font-size: 0.71rem;
+            color: rgba(200,180,255,0.4); letter-spacing: 0.02em; padding-left: 1px;
+        }
+        .weight-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 0.85rem; padding-top: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.07); flex-wrap: wrap; gap: 0.5rem;
+        }
+        .weight-total-lbl { font-size: 0.72rem; color: rgba(200,180,255,0.4); font-family: monospace; }
+        #weight-reset {
+            background: rgba(199,125,255,0.1); border: 1px solid rgba(199,125,255,0.28);
+            border-radius: 7px; color: #c77dff; font-family: 'Rajdhani', sans-serif;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+            text-transform: uppercase; padding: 0.28rem 0.8rem; cursor: pointer; transition: background 0.2s;
+        }
+        #weight-reset:hover { background: rgba(199,125,255,0.22); }
     </style>
 </head>
 <body>
 <div class="page" id="app">
     <a href="../" class="back-link">← Back to Meiser's Market</a>
     <h1>2026 NCAA Bracket</h1>
-    <p class="subtitle">Upset-Optimized Picks · Powered by KenPom Efficiency, Tempo &amp; Matchup Analytics</p>
+    <p class="subtitle">Blended Model Picks &mdash; KenPom 50% &bull; Feature Combo 25% &bull; MM Regression 25% &bull; Adjust weights below</p>
 
     <!-- Legend -->
     <div class="legend">
@@ -259,14 +313,46 @@
 
     <!-- Strategy -->
     <div class="strategy-box">
-        <h3>📊 ANALYTICAL METHOD — NO BETTING LINES USED</h3>
+        <h3>📊 BLENDED ANALYTICAL MODEL — 4 SIGNALS, ADJUSTABLE WEIGHTS</h3>
         <p>
-            Every pick is driven by <strong>KenPom adjusted efficiency ratings</strong> (AdjO = points scored per 100 possessions, AdjD = points allowed per 100 possessions),
-            <strong>tempo rank</strong> (pace-of-play mismatches), <strong>turnover rate</strong>, and <strong>coach tournament experience</strong>.
-            <strong>Win probability</strong> is estimated from KenPom rank differential and adjusted for specific matchup factors such as
-            defensive vulnerability, hot shooting, and veteran rosters — not sportsbook lines.
-            Teams ranked top-20 in <em>both</em> AdjO and AdjD have reached 22 of the last 28 Final Fours.
+            Picks are driven by a <strong>blended model</strong> combining four independent signals, each contributing a weighted share to the final win probability.
+            <strong>KenPom (default 50%)</strong> uses adjusted efficiency margins — points scored and allowed per 100 possessions, pace-adjusted.
+            <strong>Feature Combination (25%)</strong> layers in tempo mismatches, turnover rate, four-factor matchup analysis (eFG%, ORB%, FTR), and coach tournament experience.
+            <strong>MM Regression (25%)</strong> blends historic seed-based upset rates with efficiency to capture March-specific pressure patterns.
+            <strong>Seed History (default 0%)</strong> uses pure 40-year historical win rates by seed matchup — no team quality adjustment.
+            Use the sliders below to shift the model toward any signal and see picks update in real time.
         </p>
+    </div>
+
+    <!-- Model Weights -->
+    <div class="weight-panel">
+        <h3>⚙️ MODEL WEIGHTS — DRAG TO ADJUST PREDICTION MIX</h3>
+        <div class="weight-grid">
+            <div class="weight-row">
+                <label class="weight-label" for="w-kp">KenPom <span class="weight-pct" id="pct-kp">50%</span></label>
+                <input type="range" id="w-kp" min="0" max="100" value="50" class="weight-slider">
+                <div class="weight-desc">Adjusted efficiency margins — points per 100 possessions on offense &amp; defense</div>
+            </div>
+            <div class="weight-row">
+                <label class="weight-label" for="w-feat">Feature Combo <span class="weight-pct" id="pct-feat">25%</span></label>
+                <input type="range" id="w-feat" min="0" max="100" value="25" class="weight-slider">
+                <div class="weight-desc">Tempo mismatch, turnover rate, four-factor matchup (eFG%/ORB%/FTR), coach experience</div>
+            </div>
+            <div class="weight-row">
+                <label class="weight-label" for="w-mm">MM Regression <span class="weight-pct" id="pct-mm">25%</span></label>
+                <input type="range" id="w-mm" min="0" max="100" value="25" class="weight-slider">
+                <div class="weight-desc">March-specific model: seed upset rates blended with efficiency for tournament context</div>
+            </div>
+            <div class="weight-row">
+                <label class="weight-label" for="w-seed">Seed History <span class="weight-pct" id="pct-seed">0%</span></label>
+                <input type="range" id="w-seed" min="0" max="100" value="0" class="weight-slider">
+                <div class="weight-desc">Pure 40-year historical win rates by seed matchup — ignores individual team quality</div>
+            </div>
+        </div>
+        <div class="weight-footer">
+            <span class="weight-total-lbl">Picks &amp; probabilities update live as you drag</span>
+            <button id="weight-reset">&#8635; Reset to Default</button>
+        </div>
     </div>
 
     <!-- Summary stats rendered by JS -->
@@ -563,6 +649,87 @@ const BRACKET = {
 };
 
 /* ─────────────────────────────────────────────────────────────────────
+   MODEL WEIGHTS  (driven by sliders)
+───────────────────────────────────────────────────────────────────── */
+let WEIGHTS = { kp: 50, feat: 25, mm: 25, seed: 0 };
+
+/* ─────────────────────────────────────────────────────────────────────
+   SIGNAL COMPUTATION
+───────────────────────────────────────────────────────────────────── */
+// Historical seed win rates (lower seed = better team).  Key = "lo,hi", value = lo-seed win %.
+function seedBaseWin(s1, s2) {
+    if (s1 === s2) return 0.5;
+    const lo = Math.min(s1, s2), hi = Math.max(s1, s2);
+    const tbl = {
+        '1,2':0.620,'1,3':0.720,'1,4':0.750,'1,5':0.850,'1,6':0.800,'1,7':0.870,
+        '1,8':0.770,'1,9':0.840,'1,10':0.900,'1,11':0.880,'1,12':0.920,'1,13':0.960,
+        '1,14':0.975,'1,15':0.985,'1,16':0.987,
+        '2,3':0.590,'2,4':0.660,'2,5':0.640,'2,6':0.680,'2,7':0.610,'2,8':0.590,
+        '2,9':0.580,'2,10':0.730,'2,11':0.700,'2,12':0.760,'2,13':0.840,'2,14':0.900,
+        '2,15':0.940,'2,16':0.980,
+        '3,4':0.545,'3,5':0.560,'3,6':0.600,'3,7':0.580,'3,8':0.580,'3,9':0.570,
+        '3,10':0.600,'3,11':0.640,'3,12':0.700,'3,13':0.750,'3,14':0.850,'3,15':0.920,
+        '4,5':0.580,'4,6':0.570,'4,7':0.580,'4,8':0.570,'4,9':0.570,'4,10':0.580,
+        '4,11':0.600,'4,12':0.644,'4,13':0.791,'4,14':0.860,
+        '5,6':0.530,'5,7':0.540,'5,8':0.520,'5,9':0.510,'5,10':0.530,
+        '5,11':0.520,'5,12':0.644,'5,13':0.720,
+        '6,7':0.520,'6,8':0.510,'6,9':0.510,'6,10':0.510,'6,11':0.630,'6,12':0.600,
+        '7,8':0.510,'7,9':0.510,'7,10':0.600,'7,11':0.540,
+        '8,9':0.505,'8,10':0.510,'8,11':0.520,
+        '9,10':0.505,'9,11':0.510,'10,11':0.505,
+    };
+    const rate = tbl[`${lo},${hi}`] !== undefined
+        ? tbl[`${lo},${hi}`]
+        : Math.min(0.97, 0.5 + (hi - lo) * 0.028);
+    return s1 === lo ? rate : 1 - rate;
+}
+
+// Returns {kp, feat, mm, seed} win probabilities from t1's perspective (0–1).
+function computeSignals(n1, n2, s1, s2) {
+    const d1 = T[n1] || null, d2 = T[n2] || null;
+
+    // Signal 1 — KenPom rank differential → logistic probability
+    let kp = d1 && d2
+        ? 1 / (1 + Math.exp(-(d2.kp - d1.kp) * 0.028))
+        : seedBaseWin(s1, s2);
+
+    // Signal 2 — Feature combo: AdjO vs AdjD matchup (rank-based)
+    let feat = 0.5;
+    if (d1 && d2) {
+        const oEdge = d2.adjD - d1.adjO; // pos = t1 offense dominates t2 defense
+        const dEdge = d2.adjO - d1.adjD; // pos = t1 defense dominates t2 offense
+        feat = 1 / (1 + Math.exp(-(oEdge + dEdge) * 0.0065));
+    } else feat = seedBaseWin(s1, s2);
+
+    // Signal 3 — MM regression: seed base (70%) + KenPom (30%)
+    let mm = seedBaseWin(s1, s2);
+    if (d1 && d2) {
+        const kpP = 1 / (1 + Math.exp(-(d2.kp - d1.kp) * 0.025));
+        mm = Math.min(0.99, Math.max(0.01, mm * 0.70 + kpP * 0.30));
+    }
+
+    // Signal 4 — Pure historical seed win rates
+    const seed = seedBaseWin(s1, s2);
+
+    return { kp, feat, mm, seed };
+}
+
+function blendedProb(signals, W) {
+    const tot = W.kp + W.feat + W.mm + W.seed;
+    if (!tot) return 0.5;
+    return (signals.kp * W.kp + signals.feat * W.feat +
+            signals.mm * W.mm  + signals.seed * W.seed) / tot;
+}
+
+function initSignals() {
+    const add = g => { g.signals = computeSignals(g.t1[1], g.t2[1], g.t1[0], g.t2[0]); };
+    BRACKET.firstFour.forEach(add);
+    BRACKET.regions.forEach(r => { r.r64.forEach(add); r.r32.forEach(add); r.s16.forEach(add); add(r.e8); });
+    BRACKET.finalFour.forEach(add);
+    add(BRACKET.championship);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────────────────────────────────── */
 function seedClass(s) {
@@ -599,14 +766,20 @@ function statsChips(name) {
    RENDERERS
 ───────────────────────────────────────────────────────────────────── */
 function renderR64Card(g) {
-    const [s1, n1] = g.t1, [s2, n2] = g.t2;
-    const isPickT1 = g.pick === n1;
+    const bp        = blendedProb(g.signals, WEIGHTS);
+    const [s1, n1]  = g.t1, [s2, n2] = g.t2;
+    const isPickT1  = bp >= 0.5;
+    const dynPick   = isPickT1 ? n1 : n2;
+    const winProb   = Math.round((isPickT1 ? bp : 1 - bp) * 100);
+    const wSeed     = isPickT1 ? s1 : s2;
+    const lSeed     = isPickT1 ? s2 : s1;
+    const dynUpset  = wSeed > lSeed;
+    const dynHot    = bp >= 0.43 && bp <= 0.57;
     const w1 = isPickT1 ? 'winner' : 'loser';
     const w2 = isPickT1 ? 'loser'  : 'winner';
-    const cardClass = g.hot ? 'is-hot' : g.upset ? 'is-pick' : '';
-    const b = badge(g.upset, g.hot);
-    const ps = pickStyle(g.upset, g.hot);
-    const pickPct = isPickT1 ? g.prob : (100 - g.prob);
+    const cardClass = dynHot ? 'is-hot' : dynUpset ? 'is-pick' : '';
+    const b  = badge(dynUpset, dynHot);
+    const ps = pickStyle(dynUpset, dynHot);
     return `<div class="game-card ${cardClass}">
         ${b ? `<div class="card-badge">${b}</div>` : ''}
         <div class="matchup">
@@ -625,21 +798,27 @@ function renderR64Card(g) {
         <div class="pick-divider"></div>
         <div class="pick-row">
             <span class="pick-lbl">PICK</span>
-            <span class="pick-team ${ps}">${g.pick}</span>
-            <span class="pick-prob">~${pickPct}% win probability</span>
+            <span class="pick-team ${ps}">${dynPick}</span>
+            <span class="pick-prob">~${winProb}% win probability</span>
         </div>
         <div class="key-factor">⚡ ${g.factor}</div>
     </div>`;
 }
 
 function renderLaterCard(g, showSeeds) {
-    const [s1, n1] = g.t1, [s2, n2] = g.t2;
-    const isPickT1 = g.pick === n1;
+    const bp        = blendedProb(g.signals, WEIGHTS);
+    const [s1, n1]  = g.t1, [s2, n2] = g.t2;
+    const isPickT1  = bp >= 0.5;
+    const dynPick   = isPickT1 ? n1 : n2;
+    const wSeed     = isPickT1 ? s1 : s2;
+    const lSeed     = isPickT1 ? s2 : s1;
+    const dynUpset  = wSeed > lSeed;
+    const dynHot    = bp >= 0.43 && bp <= 0.57;
     const w1 = isPickT1 ? 'winner' : 'loser';
     const w2 = isPickT1 ? 'loser'  : 'winner';
-    const cardClass = g.hot ? 'is-hot' : g.upset ? 'is-pick' : '';
-    const b = badge(g.upset, g.hot);
-    const ps = pickStyle(g.upset, g.hot);
+    const cardClass = dynHot ? 'is-hot' : dynUpset ? 'is-pick' : '';
+    const b  = badge(dynUpset, dynHot);
+    const ps = pickStyle(dynUpset, dynHot);
     return `<div class="game-card ${cardClass}">
         ${b ? `<div class="card-badge">${b}</div>` : ''}
         <div class="matchup">
@@ -656,7 +835,7 @@ function renderLaterCard(g, showSeeds) {
         <div class="pick-divider"></div>
         <div class="pick-row">
             <span class="pick-lbl">PICK</span>
-            <span class="pick-team ${ps}">${g.pick}</span>
+            <span class="pick-team ${ps}">${dynPick}</span>
         </div>
         <div class="key-factor">⚡ ${g.reason}</div>
     </div>`;
@@ -689,17 +868,17 @@ function renderRegion(r) {
 ───────────────────────────────────────────────────────────────────── */
 function computeStats() {
     let total = 0, upsets = 0, hot = 0;
-    BRACKET.regions.forEach(r => {
-        [...r.r64, ...r.r32, ...r.s16, r.e8].forEach(g => {
-            total++;
-            if (g.upset) upsets++;
-            if (g.hot) hot++;
-        });
-    });
-    [...BRACKET.finalFour].forEach(g => {
+    const all = [];
+    BRACKET.regions.forEach(r => all.push(...r.r64, ...r.r32, ...r.s16, r.e8));
+    BRACKET.finalFour.forEach(g => all.push(g));
+    all.forEach(g => {
+        const bp = blendedProb(g.signals, WEIGHTS);
+        const isPickT1 = bp >= 0.5;
+        const wSeed = isPickT1 ? g.t1[0] : g.t2[0];
+        const lSeed = isPickT1 ? g.t2[0] : g.t1[0];
         total++;
-        if (g.upset) upsets++;
-        if (g.hot) hot++;
+        if (wSeed > lSeed) upsets++;
+        if (bp >= 0.43 && bp <= 0.57) hot++;
     });
     return { total, upsets, hot };
 }
@@ -709,13 +888,21 @@ function computeStats() {
 ───────────────────────────────────────────────────────────────────── */
 function renderAll() {
     const { total, upsets, hot } = computeStats();
+    const c         = BRACKET.championship;
+    const champBP   = blendedProb(c.signals, WEIGHTS);
+    const champTeam = champBP >= 0.5 ? c.t1[1] : c.t2[1];
+    const champSeed = champBP >= 0.5 ? c.t1[0] : c.t2[0];
+
+    // Clear previous render
+    document.getElementById('summary-bar').innerHTML  = '';
+    document.getElementById('bracket-root').innerHTML = '';
 
     // Summary bar
     document.getElementById('summary-bar').innerHTML = `
         <div class="stat-card"><div class="stat-num orange">${upsets}</div><div class="stat-label">Upset Picks</div></div>
-        <div class="stat-card"><div class="stat-num red">${hot}</div><div class="stat-label">Hot Upsets</div></div>
+        <div class="stat-card"><div class="stat-num red">${hot}</div><div class="stat-label">Near Coin-Flips</div></div>
         <div class="stat-card"><div class="stat-num green">${total - upsets}</div><div class="stat-label">Chalk Picks</div></div>
-        <div class="stat-card"><div class="stat-num gold">Duke</div><div class="stat-label">Champion Pick</div></div>
+        <div class="stat-card"><div class="stat-num gold">${champTeam}</div><div class="stat-label">Champion Pick</div></div>
     `;
 
     // Bracket
@@ -730,31 +917,52 @@ function renderAll() {
     // Regions
     BRACKET.regions.forEach(r => { root.innerHTML += renderRegion(r); });
 
-    // Final Four
-    const c = BRACKET.championship;
+    // Final Four + Championship
     root.innerHTML += `<div class="champ-section">
         <h2>🏟 FINAL FOUR &amp; NATIONAL CHAMPIONSHIP — INDIANAPOLIS</h2>
         <div class="ff-grid">
             ${BRACKET.finalFour.map(g => renderLaterCard(g, true)).join('')}
         </div>
         <div class="games-grid one-col" style="margin:0 auto 1.5rem;">
-            ${renderLaterCard({
-                t1: BRACKET.championship.t1,
-                t2: BRACKET.championship.t2,
-                pick: BRACKET.championship.pick,
-                upset: false, hot: false,
-                reason: BRACKET.championship.why
-            }, true)}
+            ${renderLaterCard({...c, reason: c.why}, true)}
         </div>
         <div class="champ-card" style="max-width:380px;margin:0 auto;">
             <div class="trophy">🏆</div>
             <div class="champ-lbl">2026 NATIONAL CHAMPION</div>
-            <div class="champ-team">${c.pick}</div>
-            <div class="champ-seed">${c.seed}</div>
+            <div class="champ-team">${champTeam}</div>
+            <div class="champ-seed">#${champSeed} Seed</div>
             <div class="champ-why">${c.why}</div>
         </div>
     </div>`;
 }
+
+// ── Initialize & wire up sliders ──────────────────────────────────────
+initSignals();
+
+function updateWeightPcts() {
+    const tot = WEIGHTS.kp + WEIGHTS.feat + WEIGHTS.mm + WEIGHTS.seed || 1;
+    ['kp', 'feat', 'mm', 'seed'].forEach(k => {
+        document.getElementById('pct-' + k).textContent =
+            Math.round(WEIGHTS[k] / tot * 100) + '%';
+    });
+}
+
+['kp', 'feat', 'mm', 'seed'].forEach(k => {
+    document.getElementById('w-' + k).addEventListener('input', function () {
+        WEIGHTS[k] = +this.value;
+        updateWeightPcts();
+        renderAll();
+    });
+});
+
+document.getElementById('weight-reset').addEventListener('click', function () {
+    WEIGHTS = { kp: 50, feat: 25, mm: 25, seed: 0 };
+    ['kp', 'feat', 'mm', 'seed'].forEach(k => {
+        document.getElementById('w-' + k).value = WEIGHTS[k];
+    });
+    updateWeightPcts();
+    renderAll();
+});
 
 renderAll();
 </script>
