@@ -724,9 +724,57 @@ function blendedProb(signals, W) {
 function initSignals() {
     const add = g => { g.signals = computeSignals(g.t1[1], g.t2[1], g.t1[0], g.t2[0]); };
     BRACKET.firstFour.forEach(add);
-    BRACKET.regions.forEach(r => { r.r64.forEach(add); r.r32.forEach(add); r.s16.forEach(add); add(r.e8); });
-    BRACKET.finalFour.forEach(add);
-    add(BRACKET.championship);
+    BRACKET.regions.forEach(r => r.r64.forEach(add));
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   BRACKET SIMULATION  — derives R32+ by cascading R64 model winners
+───────────────────────────────────────────────────────────────────── */
+function gameWinner(game) {
+    const bp = blendedProb(game.signals, WEIGHTS);
+    return bp >= 0.5
+        ? { name: game.t1[1], seed: game.t1[0] }
+        : { name: game.t2[1], seed: game.t2[0] };
+}
+function makeGame(t1, t2) {
+    const signals = computeSignals(t1.name, t2.name, t1.seed, t2.seed);
+    return { t1: [t1.seed, t1.name], t2: [t2.seed, t2.name], signals, reason: null };
+}
+function autoReason(g) {
+    const bp     = blendedProb(g.signals, WEIGHTS);
+    const winner = bp >= 0.5 ? { seed: g.t1[0], name: g.t1[1] } : { seed: g.t2[0], name: g.t2[1] };
+    const loser  = bp >= 0.5 ? { seed: g.t2[0], name: g.t2[1] } : { seed: g.t1[0], name: g.t1[1] };
+    const dW = T[winner.name], dL = T[loser.name];
+    const pct = Math.round((bp >= 0.5 ? bp : 1 - bp) * 100);
+    if (dW && dL)
+        return `${winner.name} (KP #${dW.kp}, Off #${dW.adjO}, Def #${dW.adjD}) over ${loser.name} (KP #${dL.kp}) — ~${pct}% blended model`;
+    return `${winner.name} advances on blended model edge (~${pct}%)`;
+}
+let SIM = null;
+function runSimulation() {
+    const simRegions = BRACKET.regions.map(region => {
+        // Round of 64 winners
+        const r64W = region.r64.map(gameWinner);
+        // Round of 32: pair [0v1, 2v3, 4v5, 6v7]
+        const r32  = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1]));
+        const r32W = r32.map(gameWinner);
+        // Sweet 16: pair [0v1, 2v3]
+        const s16  = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1]));
+        const s16W = s16.map(gameWinner);
+        // Elite 8
+        const e8   = makeGame(s16W[0], s16W[1]);
+        const e8W  = gameWinner(e8);
+        return { ...region, r32, s16, e8, e8W };
+    });
+    // Final Four: East(0) vs Midwest(2), West(1) vs South(3)
+    const ff1  = makeGame(simRegions[0].e8W, simRegions[2].e8W);
+    const ff2  = makeGame(simRegions[1].e8W, simRegions[3].e8W);
+    const ff1W = gameWinner(ff1);
+    const ff2W = gameWinner(ff2);
+    // Championship
+    const champ  = makeGame(ff1W, ff2W);
+    const champW = gameWinner(champ);
+    SIM = { regions: simRegions, finalFour: [ff1, ff2], championship: champ, champion: champW };
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -837,7 +885,7 @@ function renderLaterCard(g, showSeeds) {
             <span class="pick-lbl">PICK</span>
             <span class="pick-team ${ps}">${dynPick}</span>
         </div>
-        <div class="key-factor">⚡ ${g.reason}</div>
+        <div class="key-factor">⚡ ${g.reason || autoReason(g)}</div>
     </div>`;
 }
 
@@ -869,8 +917,9 @@ function renderRegion(r) {
 function computeStats() {
     let total = 0, upsets = 0, hot = 0;
     const all = [];
-    BRACKET.regions.forEach(r => all.push(...r.r64, ...r.r32, ...r.s16, r.e8));
-    BRACKET.finalFour.forEach(g => all.push(g));
+    SIM.regions.forEach(r => all.push(...r.r64, ...r.r32, ...r.s16, r.e8));
+    SIM.finalFour.forEach(g => all.push(g));
+    all.push(SIM.championship);
     all.forEach(g => {
         const bp = blendedProb(g.signals, WEIGHTS);
         const isPickT1 = bp >= 0.5;
@@ -887,11 +936,10 @@ function computeStats() {
    MAIN RENDER
 ───────────────────────────────────────────────────────────────────── */
 function renderAll() {
+    runSimulation();
     const { total, upsets, hot } = computeStats();
-    const c         = BRACKET.championship;
-    const champBP   = blendedProb(c.signals, WEIGHTS);
-    const champTeam = champBP >= 0.5 ? c.t1[1] : c.t2[1];
-    const champSeed = champBP >= 0.5 ? c.t1[0] : c.t2[0];
+    const champTeam = SIM.champion.name;
+    const champSeed = SIM.champion.seed;
 
     // Clear previous render
     document.getElementById('summary-bar').innerHTML  = '';
@@ -915,23 +963,23 @@ function renderAll() {
     </div>`;
 
     // Regions
-    BRACKET.regions.forEach(r => { root.innerHTML += renderRegion(r); });
+    SIM.regions.forEach(r => { root.innerHTML += renderRegion(r); });
 
     // Final Four + Championship
     root.innerHTML += `<div class="champ-section">
         <h2>🏟 FINAL FOUR &amp; NATIONAL CHAMPIONSHIP — INDIANAPOLIS</h2>
         <div class="ff-grid">
-            ${BRACKET.finalFour.map(g => renderLaterCard(g, true)).join('')}
+            ${SIM.finalFour.map(g => renderLaterCard(g, true)).join('')}
         </div>
         <div class="games-grid one-col" style="margin:0 auto 1.5rem;">
-            ${renderLaterCard({...c, reason: c.why}, true)}
+            ${renderLaterCard(SIM.championship, true)}
         </div>
         <div class="champ-card" style="max-width:380px;margin:0 auto;">
             <div class="trophy">🏆</div>
             <div class="champ-lbl">2026 NATIONAL CHAMPION</div>
             <div class="champ-team">${champTeam}</div>
             <div class="champ-seed">#${champSeed} Seed</div>
-            <div class="champ-why">${c.why}</div>
+            <div class="champ-why">${autoReason(SIM.championship)}</div>
         </div>
     </div>`;
 }
