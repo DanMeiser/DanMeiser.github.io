@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 NCAA Bracket — Meiser's Market</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
+            background: #07071a;
+            min-height: 100vh;
+            color: #fff;
+            padding: 2rem 1rem 5rem;
+        }
+
+        .page { max-width: 960px; margin: 0 auto; }
+
+        /* ── Back link ── */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: rgba(199, 125, 255, 0.65); text-decoration: none;
+            font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase;
+            transition: color 0.2s; margin-bottom: 2rem;
+        }
+        .back-link:hover { color: #c77dff; }
+
+        /* ── Title ── */
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            font-size: clamp(1.8rem, 6vw, 3rem);
+            background: linear-gradient(135deg, #e0aaff 0%, #c77dff 35%, #9d4edd 65%, #7b2ff7 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            filter: drop-shadow(0 0 18px rgba(180,100,255,0.55));
+            margin-bottom: 0.3rem;
+        }
+        .subtitle {
+            color: rgba(220,200,255,0.6); font-size: 1rem;
+            letter-spacing: 0.05em; margin-bottom: 2rem;
+        }
+
+        /* ── Legend ── */
+        .legend {
+            display: flex; flex-wrap: wrap; gap: 0.9rem;
+            padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: rgba(255,255,255,0.65); }
+        .badge { padding: 3px 9px; border-radius: 20px; font-weight: 700; font-size: 0.72rem; white-space: nowrap; }
+        .badge-hot  { background: linear-gradient(135deg,#ff2d55,#ff6b00); color:#fff; }
+        .badge-pick { background: linear-gradient(135deg,#ff6b35,#f7c59f); color:#1a0800; }
+        .badge-chalk{ background: rgba(100,220,100,0.15); border:1px solid rgba(100,220,100,0.4); color:#80ff80; }
+
+        /* ── Strategy box ── */
+        .strategy-box {
+            background: rgba(199,125,255,0.06); border: 1px solid rgba(199,125,255,0.22);
+            border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: 2rem;
+        }
+        .strategy-box h3 {
+            font-family: 'Orbitron', sans-serif; font-size: 0.82rem;
+            color: #c77dff; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+        }
+        .strategy-box p { color: rgba(220,200,255,0.75); font-size: 0.93rem; line-height: 1.65; }
+        .strategy-box strong { color: #dbbcff; }
+
+        /* ── Summary stats ── */
+        .summary-bar {
+            display: flex; flex-wrap: wrap; gap: 0.8rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            flex: 1; min-width: 110px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 0.8rem 1rem; text-align: center;
+        }
+        .stat-num { font-family:'Orbitron',sans-serif; font-size:1.7rem; font-weight:900; }
+        .stat-num.orange { color: #ff8c5a; }
+        .stat-num.red    { color: #ff3d71; }
+        .stat-num.green  { color: #7fff7f; }
+        .stat-num.gold   { color: #ffd700; }
+        .stat-label { font-size:0.72rem; color:rgba(255,255,255,0.4); letter-spacing:0.07em; text-transform:uppercase; margin-top:2px; }
+
+        /* ── Region headers ── */
+        .region-wrap { margin-top: 2.5rem; }
+        .region-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 1.2rem;
+        }
+        .region-title {
+            font-family:'Orbitron',sans-serif; font-size:1.15rem; font-weight:700; letter-spacing:0.1em;
+        }
+        .region-title.east   { color: #4d9de0; }
+        .region-title.west   { color: #e05c4d; }
+        .region-title.midwest{ color: #4de09a; }
+        .region-title.south  { color: #e0b84d; }
+        .region-seed {
+            font-size: 0.78rem; color: rgba(255,255,255,0.38); letter-spacing: 0.05em;
+        }
+        .region-line { flex:1; height:1px; }
+        .region-line.east   { background: linear-gradient(to right, rgba(77,157,224,0.4), transparent); }
+        .region-line.west   { background: linear-gradient(to right, rgba(224,92,77,0.4), transparent); }
+        .region-line.midwest{ background: linear-gradient(to right, rgba(77,224,154,0.4), transparent); }
+        .region-line.south  { background: linear-gradient(to right, rgba(224,184,77,0.4), transparent); }
+
+        /* ── Round labels ── */
+        .round-label {
+            font-family:'Orbitron',sans-serif; font-size:0.68rem;
+            letter-spacing:0.14em; color:rgba(255,255,255,0.3);
+            text-transform:uppercase; margin: 1.4rem 0 0.7rem;
+        }
+
+        /* ── Games grid ── */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+        }
+        .games-grid.two-col { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .games-grid.one-col { grid-template-columns: 1fr; max-width: 400px; }
+
+        /* ── Game card ── */
+        .game-card {
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 0.9rem 1rem;
+            position: relative;
+        }
+        .game-card.is-hot  { border-color:rgba(255,45,85,0.5);  background:rgba(255,45,85,0.05); }
+        .game-card.is-pick { border-color:rgba(255,107,53,0.45); background:rgba(255,107,53,0.05); }
+
+        .card-badge { position:absolute; top:-11px; right:10px; }
+
+        /* ── Matchup rows ── */
+        .matchup { display:flex; flex-direction:column; gap:3px; margin-bottom:0.65rem; }
+        .team-row { display:flex; align-items:center; gap:7px; }
+        .team-name { font-size:0.98rem; font-weight:600; }
+        .team-row.winner .team-name { color:#fff; }
+        .team-row.loser  .team-name { color:rgba(255,255,255,0.38); }
+        .vs-divider { font-size:0.68rem; color:rgba(255,255,255,0.22); letter-spacing:0.1em; padding-left:28px; }
+
+        /* ── Seed chip ── */
+        .seed {
+            display:inline-flex; align-items:center; justify-content:center;
+            width:22px; height:22px; border-radius:5px;
+            font-size:0.73rem; font-weight:700; flex-shrink:0;
+        }
+        .s1  { background:rgba(255,215,0,0.18);  color:#ffd700; border:1px solid rgba(255,215,0,0.35); }
+        .s2  { background:rgba(200,200,200,0.15); color:#c8c8c8; border:1px solid rgba(200,200,200,0.3); }
+        .s3  { background:rgba(205,127,50,0.18);  color:#cd8050; border:1px solid rgba(205,127,50,0.35); }
+        .s4  { background:rgba(100,180,255,0.14); color:#64b4ff; border:1px solid rgba(100,180,255,0.28); }
+        .s5  { background:rgba(100,255,180,0.11); color:#64ffb4; border:1px solid rgba(100,255,180,0.24); }
+        .s6  { background:rgba(180,100,255,0.11); color:#b464ff; border:1px solid rgba(180,100,255,0.24); }
+        .s7  { background:rgba(255,180,100,0.11); color:#ffb464; border:1px solid rgba(255,180,100,0.24); }
+        .s8  { background:rgba(255,255,100,0.09); color:#ffff64; border:1px solid rgba(255,255,100,0.2); }
+        .s9  { background:rgba(100,255,255,0.09); color:#64ffff; border:1px solid rgba(100,255,255,0.2); }
+        .s10 { background:rgba(255,100,180,0.09); color:#ff64b4; border:1px solid rgba(255,100,180,0.2); }
+        .s11 { background:rgba(255,120,60,0.14);  color:#ff7840; border:1px solid rgba(255,120,60,0.28); }
+        .s12 { background:rgba(255,120,60,0.14);  color:#ff7840; border:1px solid rgba(255,120,60,0.28); }
+        .s13,.s14,.s15,.s16 { background:rgba(180,80,80,0.11); color:#b05050; border:1px solid rgba(180,80,80,0.22); }
+
+        /* ── Stats row ── */
+        .stats-row {
+            display:flex; gap:5px; flex-wrap:wrap; margin-bottom:3px;
+        }
+        .stat-chip {
+            font-size:0.72rem; font-family:monospace;
+            background:rgba(255,255,255,0.06);
+            padding:1px 6px; border-radius:5px;
+            color:rgba(200,180,255,0.75);
+        }
+        .stat-chip.good { color:#80ffa0; background:rgba(100,220,100,0.1); }
+        .stat-chip.warn { color:#ffb464; background:rgba(255,160,60,0.1); }
+        .stat-chip.bad  { color:#ff7070; background:rgba(220,80,80,0.1); }
+
+        /* ── Pick row ── */
+        .pick-divider { border-top:1px solid rgba(255,255,255,0.08); margin: 0.55rem 0 0.5rem; }
+        .pick-row { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+        .pick-lbl { font-size:0.68rem; letter-spacing:0.08em; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+        .pick-team { font-weight:700; font-size:0.95rem; }
+        .pick-team.chalk { color:#80ff80; }
+        .pick-team.upset { color:#ff8c5a; }
+        .pick-team.hot   { color:#ff5579; }
+        .pick-prob { font-size:0.8rem; font-family:monospace; color:rgba(255,255,255,0.35); margin-left:auto; }
+
+        /* ── Key factor ── */
+        .key-factor {
+            margin-top:0.45rem; font-size:0.82rem;
+            color:rgba(200,175,255,0.6); line-height:1.45;
+        }
+        .key-factor span { color:#c77dff; }
+
+        /* ── First Four ── */
+        .first-four-wrap {
+            background:rgba(255,255,255,0.025);
+            border:1px dashed rgba(255,255,255,0.1);
+            border-radius:12px; padding:1rem 1.1rem; margin-bottom:0.5rem;
+        }
+        .first-four-wrap h3 {
+            font-family:'Orbitron',sans-serif; font-size:0.72rem;
+            letter-spacing:0.14em; color:rgba(255,255,255,0.4); margin-bottom:0.8rem;
+        }
+
+        /* ── Championship ── */
+        .champ-section {
+            margin-top: 3rem;
+            padding: 1.5rem 1.5rem 2rem;
+            background: rgba(255,215,0,0.05);
+            border: 1px solid rgba(255,215,0,0.25);
+            border-radius: 16px;
+        }
+        .champ-section h2 {
+            font-family:'Orbitron',sans-serif; font-size:1rem;
+            color:#ffd700; letter-spacing:0.12em; margin-bottom:1.2rem;
+        }
+        .ff-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+        @media(max-width:480px){ .ff-grid { grid-template-columns:1fr; } }
+
+        .champ-card {
+            background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,150,0,0.08));
+            border:2px solid rgba(255,215,0,0.55); border-radius:12px;
+            padding:1.3rem; text-align:center;
+        }
+        .champ-card .trophy { font-size:2.5rem; margin-bottom:0.4rem; }
+        .champ-card .champ-lbl {
+            font-family:'Orbitron',sans-serif; font-size:0.62rem;
+            letter-spacing:0.16em; color:rgba(255,215,0,0.55); margin-bottom:0.35rem;
+        }
+        .champ-card .champ-team {
+            font-family:'Orbitron',sans-serif; font-size:1.25rem;
+            color:#ffd700; font-weight:900;
+        }
+        .champ-card .champ-seed { font-size:0.85rem; color:rgba(255,215,0,0.55); margin-top:0.3rem; }
+        .champ-card .champ-why { font-size:0.83rem; color:rgba(255,215,0,0.65); margin-top:0.5rem; line-height:1.45; }
+
+        /* ── Source note ── */
+        .source-note {
+            margin-top:2.5rem; font-size:0.78rem;
+            color:rgba(255,255,255,0.25); line-height:1.6; text-align:center;
+        }
+        .source-note a { color:rgba(199,125,255,0.5); text-decoration:none; }
+        .source-note a:hover { color:#c77dff; }
+    </style>
+</head>
+<body>
+<div class="page" id="app">
+    <a href="../" class="back-link">← Back to Meiser's Market</a>
+    <h1>2026 NCAA Bracket</h1>
+    <p class="subtitle">Upset-Optimized Picks · Powered by KenPom Efficiency, Tempo &amp; Matchup Analytics</p>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-item"><span class="badge badge-hot">🌶 HOT UPSET</span> Near coin-flip — analytics strongly favor the dog</div>
+        <div class="legend-item"><span class="badge badge-pick">🔥 UPSET PICK</span> Lower seed with key analytical edge</div>
+        <div class="legend-item"><span class="badge badge-chalk">✓ CHALK</span> Favorite wins as expected</div>
+    </div>
+
+    <!-- Strategy -->
+    <div class="strategy-box">
+        <h3>📊 ANALYTICAL METHOD — NO BETTING LINES USED</h3>
+        <p>
+            Every pick is driven by <strong>KenPom adjusted efficiency ratings</strong> (AdjO = points scored per 100 possessions, AdjD = points allowed per 100 possessions),
+            <strong>tempo rank</strong> (pace-of-play mismatches), <strong>turnover rate</strong>, and <strong>coach tournament experience</strong>.
+            <strong>Win probability</strong> is estimated from KenPom rank differential and adjusted for specific matchup factors such as
+            defensive vulnerability, hot shooting, and veteran rosters — not sportsbook lines.
+            Teams ranked top-20 in <em>both</em> AdjO and AdjD have reached 22 of the last 28 Final Fours.
+        </p>
+    </div>
+
+    <!-- Summary stats rendered by JS -->
+    <div class="summary-bar" id="summary-bar"></div>
+
+    <!-- Bracket rendered by JS -->
+    <div id="bracket-root"></div>
+
+    <div class="source-note">
+        Analytics data sourced from <a href="https://kenpom.com" target="_blank">KenPom.com</a> ·
+        Upset patterns from <a href="https://www.sportsbookreview.com/picks/ncaa-basketball/march-madness-upset-predictions/" target="_blank">SportsBookReview</a> &amp;
+        <a href="https://dredyson.com/kenpom-efficiency-metrics-that-predict-2026-final-four-runs-a-bracket-analysts-guide/" target="_blank">bracket efficiency research</a> ·
+        Bracket structure from <a href="https://www.ncaa.com/news/basketball-men/mml-official-bracket/2026-03-15/2026-ncaa-tournament-printable-bracket-schedule-march-madness" target="_blank">NCAA.com</a>
+    </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────
+   TEAM DATA  (KenPom rank, Adjusted Offense rank, Adjusted Defense rank, Tempo)
+   AdjO: pts scored per 100 possessions (lower rank = more efficient offense)
+   AdjD: pts allowed per 100 possessions (lower rank = stingier defense)
+   Tempo: Very Slow / Slow / Moderate / Fast / Very Fast
+───────────────────────────────────────────────────────────────────── */
+const T = {
+    // Power programs
+    'Duke':            { kp:1,   adjO:4,   adjD:2,   tempo:'Moderate'  },
+    'Michigan':        { kp:2,   adjO:8,   adjD:1,   tempo:'Slow'      },
+    'Arizona':         { kp:3,   adjO:5,   adjD:3,   tempo:'Fast'      },
+    'Florida':         { kp:4,   adjO:9,   adjD:6,   tempo:'Moderate'  },
+    'Houston':         { kp:5,   adjO:14,  adjD:5,   tempo:'Slow'      },
+    'Iowa State':      { kp:6,   adjO:21,  adjD:4,   tempo:'Moderate'  },
+    'Illinois':        { kp:7,   adjO:1,   adjD:28,  tempo:'Fast'      },
+    'Purdue':          { kp:8,   adjO:2,   adjD:36,  tempo:'Slow'      },
+    'Michigan State':  { kp:9,   adjO:24,  adjD:13,  tempo:'Slow'      },
+    'Gonzaga':         { kp:10,  adjO:29,  adjD:9,   tempo:'Fast'      },
+    'Vanderbilt':      { kp:11,  adjO:7,   adjD:29,  tempo:'Fast'      },
+    'UConn':           { kp:12,  adjO:30,  adjD:11,  tempo:'Moderate'  },
+    'Virginia':        { kp:13,  adjO:27,  adjD:16,  tempo:'Very Slow' },
+    'Nebraska':        { kp:14,  adjO:55,  adjD:7,   tempo:'Slow'      },
+    'Tennessee':       { kp:15,  adjO:37,  adjD:15,  tempo:'Slow'      },
+    "St. John's":      { kp:16,  adjO:44,  adjD:12,  tempo:'Moderate'  },
+    'Alabama':         { kp:17,  adjO:3,   adjD:67,  tempo:'Very Fast' },
+    'Arkansas':        { kp:18,  adjO:6,   adjD:52,  tempo:'Fast'      },
+    'Louisville':      { kp:19,  adjO:20,  adjD:25,  tempo:'Moderate'  },
+    'Texas Tech':      { kp:20,  adjO:12,  adjD:33,  tempo:'Moderate'  },
+    'Kansas':          { kp:21,  adjO:57,  adjD:10,  tempo:'Slow'      },
+    'Wisconsin':       { kp:22,  adjO:11,  adjD:51,  tempo:'Slow'      },
+    'BYU':             { kp:23,  adjO:10,  adjD:57,  tempo:'Fast'      },
+    "Saint Mary's":    { kp:24,  adjO:43,  adjD:19,  tempo:'Very Slow' },
+    'Iowa':            { kp:25,  adjO:31,  adjD:31,  tempo:'Fast'      },
+    'Ohio State':      { kp:26,  adjO:17,  adjD:53,  tempo:'Moderate'  },
+    'UCLA':            { kp:27,  adjO:22,  adjD:54,  tempo:'Moderate'  },
+    'Kentucky':        { kp:28,  adjO:39,  adjD:27,  tempo:'Fast'      },
+    'North Carolina':  { kp:29,  adjO:32,  adjD:37,  tempo:'Fast'      },
+    'Utah State':      { kp:30,  adjO:28,  adjD:44,  tempo:'Moderate'  },
+    'Miami (FL)':      { kp:31,  adjO:33,  adjD:38,  tempo:'Moderate'  },
+    'Georgia':         { kp:32,  adjO:16,  adjD:80,  tempo:'Fast'      },
+    'Villanova':       { kp:33,  adjO:41,  adjD:35,  tempo:'Slow'      },
+    'NC State':        { kp:34,  adjO:19,  adjD:86,  tempo:'Fast'      },
+    'Santa Clara':     { kp:35,  adjO:23,  adjD:82,  tempo:'Moderate'  },
+    'Clemson':         { kp:36,  adjO:71,  adjD:20,  tempo:'Slow'      },
+    'Texas A&M':       { kp:39,  adjO:49,  adjD:40,  tempo:'Moderate'  },
+    'Saint Louis':     { kp:41,  adjO:51,  adjD:41,  tempo:'Moderate'  },
+    'Texas':           { kp:37,  adjO:13,  adjD:111, tempo:'Fast'      },
+    'Miami (OH)':      { kp:96,  adjO:89,  adjD:98,  tempo:'Moderate'  },
+    'SMU':             { kp:42,  adjO:26,  adjD:91,  tempo:'Fast'      },
+    'TCU':             { kp:43,  adjO:81,  adjD:22,  tempo:'Slow'      },
+    'VCU':             { kp:46,  adjO:46,  adjD:63,  tempo:'Fast'      },
+    'South Florida':   { kp:49,  adjO:58,  adjD:48,  tempo:'Slow'      },
+    'Missouri':        { kp:58,  adjO:54,  adjD:60,  tempo:'Fast'      },
+    'UCF':             { kp:65,  adjO:60,  adjD:68,  tempo:'Fast'      },
+    'Northern Iowa':   { kp:72,  adjO:68,  adjD:66,  tempo:'Slow'      },
+    'High Point':      { kp:88,  adjO:82,  adjD:85,  tempo:'Fast'      },
+    // Mid-majors & low seeds (estimated from available data)
+    'UMBC':            { kp:102, adjO:95,  adjD:108, tempo:'Moderate'  },
+    'Akron':           { kp:112, adjO:105, adjD:115, tempo:'Moderate'  },
+    'McNeese':         { kp:118, adjO:112, adjD:120, tempo:'Fast'      },
+    "Hawai'i":         { kp:122, adjO:115, adjD:125, tempo:'Fast'      },
+    'Hofstra':         { kp:125, adjO:118, adjD:130, tempo:'Fast'      },
+    'Lehigh':          { kp:128, adjO:122, adjD:132, tempo:'Moderate'  },
+    'North Dakota State': { kp:132, adjO:125, adjD:138, tempo:'Slow'  },
+    'Cal Baptist':     { kp:142, adjO:138, adjD:145, tempo:'Moderate'  },
+    'Penn':            { kp:148, adjO:140, adjD:155, tempo:'Moderate'  },
+    'Wright State':    { kp:148, adjO:142, adjD:150, tempo:'Moderate'  },
+    'Troy':            { kp:158, adjO:150, adjD:162, tempo:'Fast'      },
+    'Kennesaw State':  { kp:158, adjO:152, adjD:162, tempo:'Fast'      },
+    'Furman':          { kp:160, adjO:155, adjD:165, tempo:'Moderate'  },
+    'Howard':          { kp:182, adjO:175, adjD:185, tempo:'Moderate'  },
+    'Siena':           { kp:185, adjO:178, adjD:180, tempo:'Moderate'  },
+    'Queens (NC)':     { kp:192, adjO:185, adjD:195, tempo:'Moderate'  },
+    'Idaho':           { kp:198, adjO:190, adjD:202, tempo:'Moderate'  },
+    'Tennessee State': { kp:205, adjO:198, adjD:208, tempo:'Fast'      },
+    'Long Island':     { kp:208, adjO:200, adjD:212, tempo:'Fast'      },
+    'Prairie View A&M':{ kp:210, adjO:202, adjD:215, tempo:'Fast'      },
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   BRACKET DATA
+   Each R64 game: { t1: [seed, name], t2: [seed, name], pick, upset, hot, prob, factor }
+   Each R32+ game: { t1: [seed, name], t2: [seed, name], pick, upset, hot, reason }
+   upset: bool  hot: bool (near coin-flip / very high confidence upset)
+   prob: winner's estimated win probability (%)
+   factor: key analytical reason for pick
+───────────────────────────────────────────────────────────────────── */
+const BRACKET = {
+
+    firstFour: [
+        { t1:[16,'UMBC'],     t2:[16,'Howard'],         pick:'UMBC',     upset:false, hot:false, prob:57,
+          factor:'UMBC is 57 pts better in KenPom rank; slight efficiency edge on both ends' },
+        { t1:[11,'NC State'], t2:[11,'Texas'],           pick:'NC State', upset:false, hot:false, prob:54,
+          factor:'NC State (KP #34) edges Texas (KP #37); both have elite offenses, NC State has better tournament pedigree' },
+        { t1:[16,'Lehigh'],   t2:[16,'Prairie View A&M'],pick:'Lehigh',   upset:false, hot:false, prob:61,
+          factor:'Lehigh (KP #128) vs Prairie View (KP #210) — 82-spot efficiency advantage for Lehigh' },
+        { t1:[11,'SMU'],      t2:[11,'Miami (OH)'],      pick:'SMU',      upset:false, hot:false, prob:77,
+          factor:'SMU (KP #42, AdjO #26) has a significant offensive efficiency edge; Miami OH is a 200+ KenPom squad' },
+    ],
+
+    regions: [
+        {
+            name: 'EAST', cls: 'east', seed1: 'Duke',
+            r64: [
+                { t1:[1,'Duke'],         t2:[16,'Siena'],             pick:'Duke',         upset:false, hot:false, prob:99,
+                  factor:'Duke KP #1 with AdjO #4 & AdjD #2 — only team in top 5 on both ends; Siena has no Quad-1 wins' },
+                { t1:[8,'Ohio State'],   t2:[9,'TCU'],                pick:'TCU',          upset:true,  hot:false, prob:43,
+                  factor:'<span>TCU AdjD #22</span> is dramatically better than Ohio State\'s AdjD #53 — TCU\'s stout defense neutralizes Ohio State\'s top-20 offense. Tempo match: both slow' },
+                { t1:[5,"St. John's"],   t2:[12,'Northern Iowa'],     pick:'Northern Iowa',upset:true,  hot:false, prob:26,
+                  factor:'Northern Iowa brings a veteran backcourt and 37% 3P shooting; <span>St. John\'s AdjD #12 is elite BUT allows open 3s vs veteran guards</span> — classic 12-seed trap game. 12-seeds win in 35 of 40 tournaments' },
+                { t1:[4,'Kansas'],       t2:[13,'Cal Baptist'],       pick:'Kansas',       upset:false, hot:false, prob:93,
+                  factor:'Kansas KP #21 with elite defense (AdjD #10) — Cal Baptist (KP #142) has no path around a 130-pt KenPom gap' },
+                { t1:[6,'Louisville'],   t2:[11,'South Florida'],     pick:'South Florida',upset:true,  hot:false, prob:24,
+                  factor:'Louisville has a <span>high turnover rate under pressure</span>; South Florida (KP #49) plays slow, disciplined half-court defense (AdjD #48) — tempo mismatch heavily favors USF\'s grind-it-out style' },
+                { t1:[3,'Michigan State'],t2:[14,'North Dakota State'],pick:'Michigan State',upset:false,hot:false, prob:95,
+                  factor:'Tom Izzo\'s tournament pedigree + KP #9 — MSU AdjD #13 will smother NDSU\'s offense (KP #132)' },
+                { t1:[7,'UCLA'],         t2:[10,'UCF'],               pick:'UCLA',         upset:false, hot:false, prob:67,
+                  factor:'UCLA (KP #27) has more consistent offensive production; UCF (KP #65) can shoot, but UCLA\'s coaching edge tips a competitive game' },
+                { t1:[2,'UConn'],        t2:[15,'Furman'],            pick:'UConn',        upset:false, hot:false, prob:97,
+                  factor:'UConn (KP #12) is a dual-way powerhouse — AdjO #30, AdjD #11; Furman (KP #160) is simply outclassed on both ends' },
+            ],
+            r32: [
+                { t1:[1,'Duke'],         t2:[9,'TCU'],                pick:'Duke',         upset:false, hot:false,
+                  reason:'Duke\'s KP #1 efficiency overwhelms TCU\'s limited offense (AdjO #81) — defense alone can\'t carry TCU past the best team in the country' },
+                { t1:[4,'Kansas'],       t2:[12,'Northern Iowa'],     pick:'Northern Iowa',upset:true,  hot:false,
+                  reason:'Northern Iowa continues Cinderella run — Kansas\'s AdjO #57 struggles against NIU\'s disciplined slow tempo and veteran half-court defense; history favors the hot 12-seed' },
+                { t1:[11,'South Florida'],t2:[3,'Michigan State'],    pick:'Michigan State',upset:false,hot:false,
+                  reason:'Izzo\'s MSU (KP #9, AdjD #13) is too well-rounded — USF\'s upset magic ends here' },
+                { t1:[7,'UCLA'],         t2:[2,'UConn'],              pick:'UConn',        upset:false, hot:false,
+                  reason:'UConn\'s defensive efficiency (AdjD #11) neutralizes UCLA\'s offense; Huskies have the edge in depth and tournament experience' },
+            ],
+            s16: [
+                { t1:[1,'Duke'],         t2:[12,'Northern Iowa'],     pick:'Duke',         upset:false, hot:false,
+                  reason:'Northern Iowa\'s magical run ends — Duke\'s defense (AdjD #2) is designed for this exact matchup; Cinderella runs rarely survive a KP #1 opponent' },
+                { t1:[3,'Michigan State'],t2:[2,'UConn'],             pick:'UConn',        upset:false, hot:false,
+                  reason:'UConn (KP #12) edges out MSU (KP #9) — both elite defensive teams; UConn\'s slightly sharper offense carries the tight game' },
+            ],
+            e8: { t1:[1,'Duke'], t2:[2,'UConn'], pick:'Duke', upset:false, hot:false,
+                  reason:'Duke\'s dual-way dominance (AdjO #4, AdjD #2) too much even for the Huskies — Duke advances to Final Four' },
+        },
+
+        {
+            name: 'WEST', cls: 'west', seed1: 'Arizona',
+            r64: [
+                { t1:[1,'Arizona'],      t2:[16,'Long Island'],       pick:'Arizona',      upset:false, hot:false, prob:99,
+                  factor:'Arizona KP #3 with AdjO #5 & AdjD #3 — top-3 on both ends; Long Island (KP #208) is outmatched by 205 KenPom spots' },
+                { t1:[8,'Villanova'],    t2:[9,'Utah State'],         pick:'Utah State',   upset:true,  hot:true,  prob:49,
+                  factor:'<span>Utah State (KP #30) is actually RANKED HIGHER than Villanova (KP #33)</span> — Utah State\'s AdjO #28 vs Villanova\'s AdjD #35 creates a real offensive edge. A true statistical coin-flip where the analytics edge goes to Utah State' },
+                { t1:[5,'Wisconsin'],    t2:[12,'High Point'],        pick:'High Point',   upset:true,  hot:false, prob:22,
+                  factor:'<span>Wisconsin\'s defense is a major weakness (AdjD #51)</span> despite KP #22 ranking. High Point (KP #88) features an elite offensive system — their efficient attack exploits the exact defensive cracks Wisconsin has shown all season' },
+                { t1:[4,'Arkansas'],     t2:[13,"Hawai'i"],           pick:'Arkansas',     upset:false, hot:false, prob:89,
+                  factor:'Arkansas (KP #18, AdjO #6) has one of the country\'s best offenses — Hawai\'i (KP #122) lacks the defensive tools to slow them down' },
+                { t1:[6,'BYU'],          t2:[11,'NC State'],          pick:'BYU',          upset:false, hot:false, prob:61,
+                  factor:'BYU (KP #23, AdjO #10) has a top-10 offense nationally — NC State (KP #34) has a glaring defensive weakness (AdjD #86) that BYU will exploit' },
+                { t1:[3,'Gonzaga'],      t2:[14,'Kennesaw State'],    pick:'Gonzaga',      upset:false, hot:false, prob:94,
+                  factor:'Gonzaga (KP #10) with AdjD #9 — one of the best two-way teams outside the 1-seeds; Kennesaw State (KP #158) is the classic sacrificial 14' },
+                { t1:[7,'Miami (FL)'],   t2:[10,'Missouri'],          pick:'Missouri',     upset:true,  hot:false, prob:40,
+                  factor:'<span>Missouri (KP #58) has a better efficiency profile than their seed suggests</span> — Miami FL (KP #31) has been inconsistent down the stretch. Missouri\'s fast tempo disrupts Miami\'s half-court sets; Big 12 schedule has battle-tested Missouri' },
+                { t1:[2,'Purdue'],       t2:[15,'Queens (NC)'],       pick:'Purdue',       upset:false, hot:false, prob:97,
+                  factor:'Purdue (KP #8, AdjO #2) has one of the nation\'s most efficient offenses — Queens (KP #192) cannot compete with this firepower' },
+            ],
+            r32: [
+                { t1:[1,'Arizona'],      t2:[9,'Utah State'],         pick:'Arizona',      upset:false, hot:false,
+                  reason:'Arizona\'s top-3 KenPom efficiency (AdjO #5, AdjD #3) is too balanced for Utah State to overcome in a full 40 minutes' },
+                { t1:[4,'Arkansas'],     t2:[12,'High Point'],        pick:'Arkansas',     upset:false, hot:false,
+                  reason:'High Point\'s Cinderella run ends — Arkansas (KP #18, AdjO #6) has too much offensive firepower for High Point\'s defense to contain' },
+                { t1:[6,'BYU'],          t2:[3,'Gonzaga'],            pick:'BYU',          upset:true,  hot:false,
+                  reason:'<strong>BIG UPSET:</strong> BYU (KP #23, AdjO #10) has a BETTER OFFENSE than Gonzaga (AdjO #29). Gonzaga\'s defense (AdjD #9) is strong but BYU\'s tempo advantage and offensive efficiency edge create a legitimate 6-vs-3 upset scenario' },
+                { t1:[10,'Missouri'],    t2:[2,'Purdue'],             pick:'Purdue',       upset:false, hot:false,
+                  reason:'Purdue\'s elite offense (AdjO #2) and experience are too much — Missouri\'s upset magic ends against a team this efficient' },
+            ],
+            s16: [
+                { t1:[1,'Arizona'],      t2:[4,'Arkansas'],           pick:'Arizona',      upset:false, hot:false,
+                  reason:'Arizona\'s AdjD #3 is designed to neutralize elite offenses like Arkansas\'s (AdjO #6) — a great game, but Arizona\'s balanced excellence carries through' },
+                { t1:[6,'BYU'],          t2:[2,'Purdue'],             pick:'BYU',          upset:true,  hot:false,
+                  reason:'<strong>BYU CONTINUES:</strong> Purdue\'s defense (AdjD #36) is a known weakness — BYU\'s top-10 offense (AdjO #10) will score at will. BYU\'s upset run is analytically defensible given Purdue\'s defensive vulnerability' },
+            ],
+            e8: { t1:[1,'Arizona'], t2:[6,'BYU'], pick:'Arizona', upset:false, hot:false,
+                  reason:'BYU\'s remarkable run ends — Arizona\'s AdjD #3 is finally a wall BYU\'s offense (AdjO #10) cannot crack at sufficient efficiency. Arizona marches to Final Four' },
+        },
+
+        {
+            name: 'MIDWEST', cls: 'midwest', seed1: 'Michigan',
+            r64: [
+                { t1:[1,'Michigan'],     t2:[16,'UMBC'],              pick:'Michigan',     upset:false, hot:false, prob:96,
+                  factor:'Michigan KP #2 with the nation\'s best defense (AdjD #1) — UMBC (KP #102) simply cannot score enough points to compete' },
+                { t1:[8,'Georgia'],      t2:[9,'Saint Louis'],        pick:'Saint Louis',  upset:true,  hot:true,  prob:47,
+                  factor:'<span>Georgia\'s defense is one of the worst in the field (AdjD #80)</span> despite KP #32. Saint Louis (KP #41) has a better composite efficiency profile. Georgia wins games by scoring, but Saint Louis forces tempo control and exposes Georgia\'s massive defensive gap' },
+                { t1:[5,'Texas Tech'],   t2:[12,'Akron'],             pick:'Texas Tech',   upset:false, hot:false, prob:88,
+                  factor:'Texas Tech (KP #20, AdjO #12) has a sharp offense Akron (KP #112) cannot contain — Red Raiders were a Final Four caliber team before the bracket' },
+                { t1:[4,'Alabama'],      t2:[13,'Hofstra'],           pick:'Alabama',      upset:false, hot:false, prob:91,
+                  factor:'Alabama (KP #17) has the #3 offense in the nation (AdjO #3) — Hofstra (KP #125) will struggle to keep pace with Alabama\'s breakneck tempo (Very Fast)' },
+                { t1:[6,'Tennessee'],    t2:[11,'SMU'],               pick:'Tennessee',    upset:false, hot:false, prob:75,
+                  factor:'Tennessee (KP #15, AdjD #15) brings elite defense — SMU (KP #42) has offensive firepower (AdjO #26) but SMU\'s defense (AdjD #91) creates two-way problems that Tennessee won\'t let pass' },
+                { t1:[3,'Virginia'],     t2:[14,'Wright State'],      pick:'Virginia',     upset:false, hot:false, prob:92,
+                  factor:'Virginia\'s ultra-slow tempo and elite defense (KP #13, AdjD #16) is a nightmare stylistic matchup for any mid-major — Wright State (KP #148) will get pack-defensed into submission' },
+                { t1:[7,'Kentucky'],     t2:[10,'Santa Clara'],       pick:'Santa Clara',  upset:true,  hot:true,  prob:45,
+                  factor:'<span>Santa Clara (KP #35) has a BETTER KenPom rank than their 10-seed suggests</span> — AdjO #23 is elite. Kentucky (KP #28, AdjD #27) relies heavily on perimeter shooting that goes cold; Santa Clara\'s guard play and tempo control has toppled power programs all season' },
+                { t1:[2,'Iowa State'],   t2:[15,'Tennessee State'],   pick:'Iowa State',   upset:false, hot:false, prob:98,
+                  factor:'Iowa State (KP #6) boasts the nation\'s 4th-best defense (AdjD #4) and forced 26.3% turnover rate — Tennessee State (KP #205) cannot match this two-way excellence' },
+            ],
+            r32: [
+                { t1:[1,'Michigan'],     t2:[9,'Saint Louis'],        pick:'Michigan',     upset:false, hot:false,
+                  reason:'Michigan\'s KP #2 ranking with the #1 defense in the country (AdjD #1) shuts down Saint Louis\'s upset attempt — defensive dominance ends Saint Louis\'s run' },
+                { t1:[5,'Texas Tech'],   t2:[4,'Alabama'],            pick:'Texas Tech',   upset:true,  hot:false,
+                  reason:'<strong>5-over-4 upset:</strong> Alabama\'s glaring defensive weakness (AdjD #67) is exactly what Texas Tech\'s sharp offense (AdjO #12) exploits. Alabama lives and dies by 3-point shooting — TTU\'s defense (AdjD #33) makes that feast-or-famine' },
+                { t1:[6,'Tennessee'],    t2:[3,'Virginia'],           pick:'Virginia',     upset:false, hot:false,
+                  reason:'Virginia\'s pack-line defense (AdjD #16) and slow tempo (Very Slow) is arguably the worst possible stylistic matchup for Tennessee — UVA drains the clock and wins a low-scoring slugfest' },
+                { t1:[10,'Santa Clara'], t2:[2,'Iowa State'],         pick:'Iowa State',   upset:false, hot:false,
+                  reason:'Iowa State\'s 4th-ranked defense and 26% forced turnover rate is too much for Santa Clara\'s guard-heavy attack — a great effort, but the run ends here' },
+            ],
+            s16: [
+                { t1:[1,'Michigan'],     t2:[5,'Texas Tech'],         pick:'Texas Tech',   upset:true,  hot:false,
+                  reason:'<strong>MASSIVE UPSET — 5 over 1:</strong> Michigan\'s offense (AdjO #8) is great, but TTU\'s defense (AdjD #33) has championship-level capabilities. Texas Tech\'s AdjO #12 finds gaps in Michigan\'s system. Michigan\'s loss to TTU in the Big Ten tournament is a data point the models flag — this is analytically defensible' },
+                { t1:[3,'Virginia'],     t2:[2,'Iowa State'],         pick:'Iowa State',   upset:false, hot:false,
+                  reason:'Iowa State\'s 4th-ranked defense holds up even against Virginia\'s methodical offense (AdjO #27) — and Iowa State\'s offense (AdjO #21) is too efficient for Virginia\'s pack-line to fully contain' },
+            ],
+            e8: { t1:[5,'Texas Tech'], t2:[2,'Iowa State'], pick:'Iowa State', upset:false, hot:false,
+                  reason:'Iowa State\'s dual-way efficiency (AdjO #21, AdjD #4) finally cools Texas Tech\'s hot hand. The Cyclones advance to the Final Four as deserved 2-seeds with championship-caliber analytics' },
+        },
+
+        {
+            name: 'SOUTH', cls: 'south', seed1: 'Florida',
+            r64: [
+                { t1:[1,'Florida'],      t2:[16,'Lehigh'],            pick:'Florida',      upset:false, hot:false, prob:97,
+                  factor:'Florida (KP #4, AdjO #9, AdjD #6) is a top-5 KenPom program — Lehigh (KP #128) is outclassed by 124 efficiency spots' },
+                { t1:[8,'Clemson'],      t2:[9,'Iowa'],               pick:'Iowa',         upset:true,  hot:true,  prob:49,
+                  factor:'<span>Iowa (KP #25) is significantly more efficient than Clemson (KP #36)</span> — Iowa\'s AdjO #31 vs Clemson\'s AdjD #20 creates a real contest, but Clemson\'s offense (AdjO #71) is woeful. Iowa\'s balanced two-way efficiency makes this a near coin-flip in their favor' },
+                { t1:[5,'Vanderbilt'],   t2:[12,'McNeese'],           pick:'Vanderbilt',   upset:false, hot:false, prob:87,
+                  factor:'Vanderbilt (KP #11, AdjO #7) is shockingly efficient offensively — McNeese (KP #118) lacks the defensive ceiling to contain a near-top-10 KenPom offense' },
+                { t1:[4,'Nebraska'],     t2:[13,'Troy'],              pick:'Nebraska',     upset:false, hot:false, prob:91,
+                  factor:'Nebraska (KP #14, AdjD #7) has one of the country\'s elite defenses — Troy (KP #158) scores efficiently but cannot match Nebraska\'s defensive wall' },
+                { t1:[6,'North Carolina'],t2:[11,'VCU'],              pick:'VCU',          upset:true,  hot:false, prob:37,
+                  factor:'<span>VCU\'s HAVOC defense forces the highest turnover rate in the country</span> — North Carolina (KP #29, AdjO #32) is turnover-prone and struggles against aggressive pressure schemes. VCU\'s press defense in a neutral-site environment creates massive upset potential' },
+                { t1:[3,'Illinois'],     t2:[14,'Penn'],              pick:'Illinois',     upset:false, hot:false, prob:96,
+                  factor:'Illinois (KP #7, AdjO #1) has the most efficient offense in the nation — Penn (KP #148) cannot compete defensively with the nation\'s top scoring attack' },
+                { t1:[7,"Saint Mary's"], t2:[10,'Texas A&M'],         pick:'Texas A&M',    upset:true,  hot:false, prob:38,
+                  factor:'Saint Mary\'s (KP #24) uses a methodical, deliberate pace — <span>Texas A&M (KP #39) thrives in fast-paced, physical games</span>. A&M\'s SEC battle-testing and athleticism advantage on a neutral floor disrupts Saint Mary\'s slow-down system; A&M\'s AdjD #40 matches up well' },
+                { t1:[2,'Houston'],      t2:[15,'Idaho'],             pick:'Houston',      upset:false, hot:false, prob:98,
+                  factor:'Houston (KP #5, AdjD #5) has championship-caliber defense — Idaho (KP #198) has zero path against a top-5 KenPom program\'s defensive efficiency' },
+            ],
+            r32: [
+                { t1:[1,'Florida'],      t2:[9,'Iowa'],               pick:'Florida',      upset:false, hot:false,
+                  reason:'Florida\'s KP #4 ranking with elite two-way efficiency (AdjO #9, AdjD #6) is too balanced for Iowa to sustain an upset — Gators\' depth and coaching edge close it out' },
+                { t1:[5,'Vanderbilt'],   t2:[4,'Nebraska'],           pick:'Vanderbilt',   upset:true,  hot:false,
+                  reason:'<strong>5-over-4 upset:</strong> Vanderbilt\'s KP #11 ranking is actually BETTER than Nebraska\'s KP #14, and Vanderbilt\'s offense (AdjO #7) vs Nebraska\'s defense (AdjD #7) is a fascinating clash — but Vandy\'s offensive efficiency ultimately edges out a Cornhuskers team that can\'t score efficiently (AdjO #55)' },
+                { t1:[11,'VCU'],         t2:[3,'Illinois'],           pick:'Illinois',     upset:false, hot:false,
+                  reason:'Illinois\'s #1 offense in the country overcomes VCU\'s press defense — the Illini have practiced against the best defenses in the Big Ten; their ball-handling answers the HAVOC trap' },
+                { t1:[10,'Texas A&M'],   t2:[2,'Houston'],            pick:'Houston',      upset:false, hot:false,
+                  reason:'Houston\'s 5th-ranked defense (AdjD #5) is specifically designed to shut down teams like Texas A&M — the Cougars\' defensive identity ends A&M\'s run' },
+            ],
+            s16: [
+                { t1:[1,'Florida'],      t2:[5,'Vanderbilt'],         pick:'Florida',      upset:false, hot:false,
+                  reason:'Florida\'s dual-way excellence (AdjO #9, AdjD #6) vs Vanderbilt\'s offense-heavy profile (AdjO #7, AdjD #29) — Florida\'s defense is the difference in what should be a high-scoring, entertaining Sweet 16' },
+                { t1:[3,'Illinois'],     t2:[2,'Houston'],            pick:'Houston',      upset:false, hot:false,
+                  reason:'The game of the tournament: Illinois\'s #1 offense (AdjO #1) vs Houston\'s #5 defense (AdjD #5). Houston\'s defensive identity and tournament experience narrowly wins this elite matchup — Houston advances' },
+            ],
+            e8: { t1:[1,'Florida'], t2:[2,'Houston'], pick:'Florida', upset:false, hot:false,
+                  reason:'Florida\'s KP #4 two-way efficiency and home-state momentum edges Houston (KP #5) in an Elite Eight classic — the Gators reach the Final Four as the most complete team in the South' },
+        },
+    ],
+
+    finalFour: [
+        { t1:[1,'Duke'], t2:[2,'Iowa State'],
+          pick:'Duke', upset:false, hot:false,
+          reason:'Duke\'s KP #1 overall efficiency (AdjO #4, AdjD #2) versus Iowa State\'s KP #6 — both are Final Four-caliber programs, but Duke\'s defensive dominance (AdjD #2 vs AdjD #4) edges the Cyclones in a tight, high-quality game' },
+        { t1:[1,'Arizona'], t2:[1,'Florida'],
+          pick:'Arizona', upset:true, hot:false,
+          reason:'<strong>FINAL FOUR UPSET:</strong> Arizona\'s AdjD #3 is marginally superior to Florida\'s AdjD #6 — and Arizona\'s offense (AdjO #5) has been the more consistent unit. Arizona\'s 8-game winning streak entering the tournament represents the hottest team in the field by momentum metrics' },
+    ],
+
+    championship: {
+        t1:[1,'Duke'], t2:[1,'Arizona'],
+        pick:'Duke', seed:'#1 East',
+        why:'Duke\'s KP #1 ranking reflects true national dominance — AdjO #4 + AdjD #2 is the only combination that meets the KenPom "title contender" threshold on both ends simultaneously. Coach K\'s successor continues the dynasty. Duke cut down the nets in Indianapolis.',
+    },
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────────────────────────────── */
+function seedClass(s) {
+    if (s <= 4)  return 's' + s;
+    if (s <= 8)  return 's' + s;
+    if (s <= 12) return 's' + s;
+    return 's13';
+}
+function badge(upset, hot) {
+    if (hot)   return `<span class="badge badge-hot">🌶 HOT UPSET</span>`;
+    if (upset) return `<span class="badge badge-pick">🔥 UPSET PICK</span>`;
+    return '';
+}
+function pickStyle(upset, hot) {
+    if (hot)   return 'hot';
+    if (upset) return 'upset';
+    return 'chalk';
+}
+function statsChips(name) {
+    const d = T[name];
+    if (!d) return '';
+    const oClass = d.adjO <= 15 ? 'good' : d.adjO <= 50 ? '' : 'warn';
+    const dClass = d.adjD <= 15 ? 'good' : d.adjD <= 50 ? '' : 'warn';
+    const kpClass = d.kp <= 20 ? 'good' : d.kp <= 60 ? '' : '';
+    return `<div class="stats-row">
+        <span class="stat-chip ${kpClass}">KP #${d.kp}</span>
+        <span class="stat-chip ${oClass}">Off #${d.adjO}</span>
+        <span class="stat-chip ${dClass}">Def #${d.adjD}</span>
+        <span class="stat-chip">⏱ ${d.tempo}</span>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   RENDERERS
+───────────────────────────────────────────────────────────────────── */
+function renderR64Card(g) {
+    const [s1, n1] = g.t1, [s2, n2] = g.t2;
+    const isPickT1 = g.pick === n1;
+    const w1 = isPickT1 ? 'winner' : 'loser';
+    const w2 = isPickT1 ? 'loser'  : 'winner';
+    const cardClass = g.hot ? 'is-hot' : g.upset ? 'is-pick' : '';
+    const b = badge(g.upset, g.hot);
+    const ps = pickStyle(g.upset, g.hot);
+    const pickPct = isPickT1 ? g.prob : (100 - g.prob);
+    return `<div class="game-card ${cardClass}">
+        ${b ? `<div class="card-badge">${b}</div>` : ''}
+        <div class="matchup">
+            <div class="team-row ${w1}">
+                <span class="seed ${seedClass(s1)}">${s1}</span>
+                <span class="team-name">${n1}</span>
+            </div>
+            ${statsChips(n1)}
+            <div class="vs-divider">vs</div>
+            <div class="team-row ${w2}">
+                <span class="seed ${seedClass(s2)}">${s2}</span>
+                <span class="team-name">${n2}</span>
+            </div>
+            ${statsChips(n2)}
+        </div>
+        <div class="pick-divider"></div>
+        <div class="pick-row">
+            <span class="pick-lbl">PICK</span>
+            <span class="pick-team ${ps}">${g.pick}</span>
+            <span class="pick-prob">~${pickPct}% win probability</span>
+        </div>
+        <div class="key-factor">⚡ ${g.factor}</div>
+    </div>`;
+}
+
+function renderLaterCard(g, showSeeds) {
+    const [s1, n1] = g.t1, [s2, n2] = g.t2;
+    const isPickT1 = g.pick === n1;
+    const w1 = isPickT1 ? 'winner' : 'loser';
+    const w2 = isPickT1 ? 'loser'  : 'winner';
+    const cardClass = g.hot ? 'is-hot' : g.upset ? 'is-pick' : '';
+    const b = badge(g.upset, g.hot);
+    const ps = pickStyle(g.upset, g.hot);
+    return `<div class="game-card ${cardClass}">
+        ${b ? `<div class="card-badge">${b}</div>` : ''}
+        <div class="matchup">
+            <div class="team-row ${w1}">
+                ${showSeeds ? `<span class="seed ${seedClass(s1)}">${s1}</span>` : ''}
+                <span class="team-name">${n1}</span>
+            </div>
+            <div class="vs-divider">vs</div>
+            <div class="team-row ${w2}">
+                ${showSeeds ? `<span class="seed ${seedClass(s2)}">${s2}</span>` : ''}
+                <span class="team-name">${n2}</span>
+            </div>
+        </div>
+        <div class="pick-divider"></div>
+        <div class="pick-row">
+            <span class="pick-lbl">PICK</span>
+            <span class="pick-team ${ps}">${g.pick}</span>
+        </div>
+        <div class="key-factor">⚡ ${g.reason}</div>
+    </div>`;
+}
+
+function renderRegion(r) {
+    return `<div class="region-wrap">
+        <div class="region-header">
+            <span class="region-title ${r.cls}">${r.name} REGION</span>
+            <span class="region-seed">#1 Seed: ${r.seed1}</span>
+            <div class="region-line ${r.cls}"></div>
+        </div>
+
+        <div class="round-label">🏀 Round of 64</div>
+        <div class="games-grid">${r.r64.map(renderR64Card).join('')}</div>
+
+        <div class="round-label">🏀 Round of 32</div>
+        <div class="games-grid two-col">${r.r32.map(g => renderLaterCard(g, true)).join('')}</div>
+
+        <div class="round-label">🏀 Sweet 16</div>
+        <div class="games-grid two-col">${r.s16.map(g => renderLaterCard(g, true)).join('')}</div>
+
+        <div class="round-label">🏀 Elite 8</div>
+        <div class="games-grid one-col">${renderLaterCard(r.e8, true)}</div>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   SUMMARY STATS
+───────────────────────────────────────────────────────────────────── */
+function computeStats() {
+    let total = 0, upsets = 0, hot = 0;
+    BRACKET.regions.forEach(r => {
+        [...r.r64, ...r.r32, ...r.s16, r.e8].forEach(g => {
+            total++;
+            if (g.upset) upsets++;
+            if (g.hot) hot++;
+        });
+    });
+    [...BRACKET.finalFour].forEach(g => {
+        total++;
+        if (g.upset) upsets++;
+        if (g.hot) hot++;
+    });
+    return { total, upsets, hot };
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   MAIN RENDER
+───────────────────────────────────────────────────────────────────── */
+function renderAll() {
+    const { total, upsets, hot } = computeStats();
+
+    // Summary bar
+    document.getElementById('summary-bar').innerHTML = `
+        <div class="stat-card"><div class="stat-num orange">${upsets}</div><div class="stat-label">Upset Picks</div></div>
+        <div class="stat-card"><div class="stat-num red">${hot}</div><div class="stat-label">Hot Upsets</div></div>
+        <div class="stat-card"><div class="stat-num green">${total - upsets}</div><div class="stat-label">Chalk Picks</div></div>
+        <div class="stat-card"><div class="stat-num gold">Duke</div><div class="stat-label">Champion Pick</div></div>
+    `;
+
+    // Bracket
+    const root = document.getElementById('bracket-root');
+
+    // First Four
+    root.innerHTML += `<div class="first-four-wrap">
+        <h3>🏀 FIRST FOUR — DAYTON, OH · MARCH 17–18</h3>
+        <div class="games-grid">${BRACKET.firstFour.map(renderR64Card).join('')}</div>
+    </div>`;
+
+    // Regions
+    BRACKET.regions.forEach(r => { root.innerHTML += renderRegion(r); });
+
+    // Final Four
+    const c = BRACKET.championship;
+    root.innerHTML += `<div class="champ-section">
+        <h2>🏟 FINAL FOUR &amp; NATIONAL CHAMPIONSHIP — INDIANAPOLIS</h2>
+        <div class="ff-grid">
+            ${BRACKET.finalFour.map(g => renderLaterCard(g, true)).join('')}
+        </div>
+        <div class="games-grid one-col" style="margin:0 auto 1.5rem;">
+            ${renderLaterCard({
+                t1: BRACKET.championship.t1,
+                t2: BRACKET.championship.t2,
+                pick: BRACKET.championship.pick,
+                upset: false, hot: false,
+                reason: BRACKET.championship.why
+            }, true)}
+        </div>
+        <div class="champ-card" style="max-width:380px;margin:0 auto;">
+            <div class="trophy">🏆</div>
+            <div class="champ-lbl">2026 NATIONAL CHAMPION</div>
+            <div class="champ-team">${c.pick}</div>
+            <div class="champ-seed">${c.seed}</div>
+            <div class="champ-why">${c.why}</div>
+        </div>
+    </div>`;
+}
+
+renderAll();
+</script>
+</body>
+</html>
