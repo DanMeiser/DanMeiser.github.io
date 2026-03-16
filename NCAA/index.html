@@ -320,6 +320,7 @@
             <strong>Feature Combination (25%)</strong> layers in tempo mismatches, turnover rate, four-factor matchup analysis (eFG%, ORB%, FTR), and coach tournament experience.
             <strong>MM Regression (25%)</strong> blends historic seed-based upset rates with efficiency to capture March-specific pressure patterns.
             <strong>Seed History (default 0%)</strong> uses pure 40-year historical win rates by seed matchup — no team quality adjustment.
+            <strong>Round History (default 20%)</strong> applies per-round survival rates from 40 years of data: #1 seeds win 84% of R32 games, 72% of S16 games, 65% of E8 games, and only 47% of Final Four games — naturally compressing favorites in later rounds without randomness.
             Use the sliders below to shift the model toward any signal and see picks update in real time.
         </p>
     </div>
@@ -329,24 +330,29 @@
         <h3>⚙️ MODEL WEIGHTS — DRAG TO ADJUST PREDICTION MIX</h3>
         <div class="weight-grid">
             <div class="weight-row">
-                <label class="weight-label" for="w-kp">KenPom <span class="weight-pct" id="pct-kp">50%</span></label>
-                <input type="range" id="w-kp" min="0" max="100" value="50" class="weight-slider">
+                <label class="weight-label" for="w-kp">KenPom <span class="weight-pct" id="pct-kp">40%</span></label>
+                <input type="range" id="w-kp" min="0" max="100" value="40" class="weight-slider">
                 <div class="weight-desc">Adjusted efficiency margins — points per 100 possessions on offense &amp; defense</div>
             </div>
             <div class="weight-row">
-                <label class="weight-label" for="w-feat">Feature Combo <span class="weight-pct" id="pct-feat">25%</span></label>
-                <input type="range" id="w-feat" min="0" max="100" value="25" class="weight-slider">
+                <label class="weight-label" for="w-feat">Feature Combo <span class="weight-pct" id="pct-feat">20%</span></label>
+                <input type="range" id="w-feat" min="0" max="100" value="20" class="weight-slider">
                 <div class="weight-desc">Tempo mismatch, turnover rate, four-factor matchup (eFG%/ORB%/FTR), coach experience</div>
             </div>
             <div class="weight-row">
-                <label class="weight-label" for="w-mm">MM Regression <span class="weight-pct" id="pct-mm">25%</span></label>
-                <input type="range" id="w-mm" min="0" max="100" value="25" class="weight-slider">
+                <label class="weight-label" for="w-mm">MM Regression <span class="weight-pct" id="pct-mm">20%</span></label>
+                <input type="range" id="w-mm" min="0" max="100" value="20" class="weight-slider">
                 <div class="weight-desc">March-specific model: seed upset rates blended with efficiency for tournament context</div>
             </div>
             <div class="weight-row">
                 <label class="weight-label" for="w-seed">Seed History <span class="weight-pct" id="pct-seed">0%</span></label>
                 <input type="range" id="w-seed" min="0" max="100" value="0" class="weight-slider">
                 <div class="weight-desc">Pure 40-year historical win rates by seed matchup — ignores individual team quality</div>
+            </div>
+            <div class="weight-row">
+                <label class="weight-label" for="w-hist">Round History <span class="weight-pct" id="pct-hist">20%</span></label>
+                <input type="range" id="w-hist" min="0" max="100" value="20" class="weight-slider">
+                <div class="weight-desc">Per-round seed survival rates from 40 years of tournament data — #1 seeds win only 47% of Final Four games historically</div>
             </div>
         </div>
         <div class="weight-footer">
@@ -651,7 +657,7 @@ const BRACKET = {
 /* ─────────────────────────────────────────────────────────────────────
    MODEL WEIGHTS  (driven by sliders)
 ───────────────────────────────────────────────────────────────────── */
-let WEIGHTS = { kp: 50, feat: 25, mm: 25, seed: 0 };
+let WEIGHTS = { kp: 40, feat: 20, mm: 20, seed: 0, hist: 20 };
 
 /* ─────────────────────────────────────────────────────────────────────
    SIGNAL COMPUTATION
@@ -684,8 +690,32 @@ function seedBaseWin(s1, s2) {
     return s1 === lo ? rate : 1 - rate;
 }
 
-// Returns {kp, feat, mm, seed} win probabilities from t1's perspective (0–1).
-function computeSignals(n1, n2, s1, s2) {
+// Per-round historical game win rate for each seed (40-year NCAA tournament data).
+// Key = round (0=R64, 1=R32, 2=S16, 3=E8, 4=FF, 5=Champ),  value = seed → win %.
+// Source: cumulative win rates per seed per round since 1985 expansion.
+const ROUND_HIST_WIN = {
+    0: { 1:0.993, 2:0.940, 3:0.853, 4:0.791, 5:0.644, 6:0.619, 7:0.607, 8:0.484,
+         9:0.516, 10:0.391, 11:0.389, 12:0.362, 13:0.208, 14:0.137, 15:0.060, 16:0.013 },
+    1: { 1:0.842, 2:0.684, 3:0.563, 4:0.551, 5:0.441, 6:0.431, 7:0.422, 8:0.410,
+         9:0.380, 10:0.370, 11:0.469, 12:0.410, 13:0.240, 14:0.175, 15:0.100, 16:0.080 },
+    2: { 1:0.720, 2:0.551, 3:0.465, 4:0.408, 5:0.367, 6:0.367, 7:0.348, 8:0.330,
+         9:0.280, 10:0.298, 11:0.423, 12:0.382, 13:0.250, 14:0.180 },
+    3: { 1:0.648, 2:0.479, 3:0.384, 4:0.322, 5:0.355, 6:0.334, 7:0.354, 8:0.351,
+         9:0.280, 10:0.280, 11:0.455, 12:0.402 },
+    4: { 1:0.470, 2:0.400, 3:0.300, 4:0.300, 5:0.330, 6:0.300, 7:0.330, 8:0.350,
+         9:0.250, 10:0.250, 11:0.500 },
+    5: { 1:0.500, 2:0.420, 3:0.340, 4:0.310, 5:0.330, 6:0.310, 7:0.330, 8:0.380 },
+};
+function histRoundProb(s1, s2, rnd) {
+    const tbl = ROUND_HIST_WIN[Math.min(rnd, 5)] || ROUND_HIST_WIN[4];
+    const r1 = tbl[s1] !== undefined ? tbl[s1] : 0.35;
+    const r2 = tbl[s2] !== undefined ? tbl[s2] : 0.35;
+    return r1 / (r1 + r2);
+}
+
+// Returns {kp, feat, mm, seed, hist} win probabilities from t1's perspective (0–1).
+// rnd: 0=R64, 1=R32, 2=S16, 3=E8, 4=FF, 5=Championship
+function computeSignals(n1, n2, s1, s2, rnd = 0) {
     const d1 = T[n1] || null, d2 = T[n2] || null;
 
     // Signal 1 — KenPom rank differential → logistic probability
@@ -708,17 +738,23 @@ function computeSignals(n1, n2, s1, s2) {
         mm = Math.min(0.99, Math.max(0.01, mm * 0.70 + kpP * 0.30));
     }
 
-    // Signal 4 — Pure historical seed win rates
+    // Signal 4 — Pure historical seed win rates (seed matchup, round-agnostic)
     const seed = seedBaseWin(s1, s2);
 
-    return { kp, feat, mm, seed };
+    // Signal 5 — Round History: per-round historical seed survival rates.
+    // Critically, #1 seeds only win 65% of E8 games and 47% of FF games historically,
+    // so this signal compresses favorites in later rounds grounded in real data.
+    const hist = histRoundProb(s1, s2, rnd);
+
+    return { kp, feat, mm, seed, hist };
 }
 
 function blendedProb(signals, W) {
-    const tot = W.kp + W.feat + W.mm + W.seed;
+    const tot = W.kp + W.feat + W.mm + W.seed + (W.hist || 0);
     if (!tot) return 0.5;
     return (signals.kp * W.kp + signals.feat * W.feat +
-            signals.mm * W.mm  + signals.seed * W.seed) / tot;
+            signals.mm * W.mm  + signals.seed * W.seed +
+            (signals.hist !== undefined ? signals.hist : 0.5) * (W.hist || 0)) / tot;
 }
 
 function initSignals() {
@@ -736,10 +772,10 @@ function gameWinner(game) {
         ? { name: game.t1[1], seed: game.t1[0] }
         : { name: game.t2[1], seed: game.t2[0] };
 }
-function makeGame(t1, t2, compress = 1.0) {
-    const signals = computeSignals(t1.name, t2.name, t1.seed, t2.seed);
-    // Compress each signal toward 50/50 to reflect increased parity in later rounds.
-    // compress=1.0 = no change; compress=0.3 = probabilities nearly even.
+function makeGame(t1, t2, compress = 1.0, rnd = 0) {
+    const signals = computeSignals(t1.name, t2.name, t1.seed, t2.seed, rnd);
+    // Compress quality signals (kp/feat/mm/seed) toward 50/50 for later rounds.
+    // hist is NOT compressed — it is already calibrated per round from historical data.
     if (compress < 1.0) {
         ['kp', 'feat', 'mm', 'seed'].forEach(k => {
             signals[k] = 0.5 + (signals[k] - 0.5) * compress;
@@ -762,24 +798,25 @@ function runSimulation() {
     const simRegions = BRACKET.regions.map(region => {
         // Round of 64 winners
         const r64W = region.r64.map(gameWinner);
-        // Round of 32: slight compression — quality teams, upsets possible
-        const r32  = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1], 0.72));
+        // Round of 32 (rnd=1): slight compression — 8/9-seed survivors vs 1-seeds etc.
+        const r32  = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1], 0.72, 1));
         const r32W = r32.map(gameWinner);
-        // Sweet 16: moderate compression — all remaining teams are good
-        const s16  = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1], 0.55));
+        // Sweet 16 (rnd=2): moderate compression — all survivors are legitimate
+        const s16  = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1], 0.55, 2));
         const s16W = s16.map(gameWinner);
-        // Elite 8: heavy compression — very competitive
-        const e8   = makeGame(s16W[0], s16W[1], 0.40);
+        // Elite 8 (rnd=3): heavy compression — historically #1 seeds win only 65%
+        const e8   = makeGame(s16W[0], s16W[1], 0.40, 3);
         const e8W  = gameWinner(e8);
         return { ...region, r32, s16, e8, e8W };
     });
-    // Final Four: East(0) vs Midwest(2), West(1) vs South(3) — maximum parity
-    const ff1  = makeGame(simRegions[0].e8W, simRegions[2].e8W, 0.32);
-    const ff2  = makeGame(simRegions[1].e8W, simRegions[3].e8W, 0.32);
+    // Final Four (rnd=4): East(0) vs Midwest(2), West(1) vs South(3)
+    // Historically #1 seeds win only 47% of FF games — near coin-flip territory
+    const ff1  = makeGame(simRegions[0].e8W, simRegions[2].e8W, 0.32, 4);
+    const ff2  = makeGame(simRegions[1].e8W, simRegions[3].e8W, 0.32, 4);
     const ff1W = gameWinner(ff1);
     const ff2W = gameWinner(ff2);
-    // Championship — nearly anyone can win
-    const champ  = makeGame(ff1W, ff2W, 0.28);
+    // Championship (rnd=5)
+    const champ  = makeGame(ff1W, ff2W, 0.28, 5);
     const champW = gameWinner(champ);
     SIM = { regions: simRegions, finalFour: [ff1, ff2], championship: champ, champion: champW };
 }
@@ -995,14 +1032,14 @@ function renderAll() {
 initSignals();
 
 function updateWeightPcts() {
-    const tot = WEIGHTS.kp + WEIGHTS.feat + WEIGHTS.mm + WEIGHTS.seed || 1;
-    ['kp', 'feat', 'mm', 'seed'].forEach(k => {
+    const tot = WEIGHTS.kp + WEIGHTS.feat + WEIGHTS.mm + WEIGHTS.seed + (WEIGHTS.hist || 0) || 1;
+    ['kp', 'feat', 'mm', 'seed', 'hist'].forEach(k => {
         document.getElementById('pct-' + k).textContent =
-            Math.round(WEIGHTS[k] / tot * 100) + '%';
+            Math.round((WEIGHTS[k] || 0) / tot * 100) + '%';
     });
 }
 
-['kp', 'feat', 'mm', 'seed'].forEach(k => {
+['kp', 'feat', 'mm', 'seed', 'hist'].forEach(k => {
     document.getElementById('w-' + k).addEventListener('input', function () {
         WEIGHTS[k] = +this.value;
         updateWeightPcts();
@@ -1011,8 +1048,8 @@ function updateWeightPcts() {
 });
 
 document.getElementById('weight-reset').addEventListener('click', function () {
-    WEIGHTS = { kp: 50, feat: 25, mm: 25, seed: 0 };
-    ['kp', 'feat', 'mm', 'seed'].forEach(k => {
+    WEIGHTS = { kp: 40, feat: 20, mm: 20, seed: 0, hist: 20 };
+    ['kp', 'feat', 'mm', 'seed', 'hist'].forEach(k => {
         document.getElementById('w-' + k).value = WEIGHTS[k];
     });
     updateWeightPcts();
