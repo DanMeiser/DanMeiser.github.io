@@ -736,8 +736,15 @@ function gameWinner(game) {
         ? { name: game.t1[1], seed: game.t1[0] }
         : { name: game.t2[1], seed: game.t2[0] };
 }
-function makeGame(t1, t2) {
+function makeGame(t1, t2, compress = 1.0) {
     const signals = computeSignals(t1.name, t2.name, t1.seed, t2.seed);
+    // Compress each signal toward 50/50 to reflect increased parity in later rounds.
+    // compress=1.0 = no change; compress=0.3 = probabilities nearly even.
+    if (compress < 1.0) {
+        ['kp', 'feat', 'mm', 'seed'].forEach(k => {
+            signals[k] = 0.5 + (signals[k] - 0.5) * compress;
+        });
+    }
     return { t1: [t1.seed, t1.name], t2: [t2.seed, t2.name], signals, reason: null };
 }
 function autoReason(g) {
@@ -755,24 +762,24 @@ function runSimulation() {
     const simRegions = BRACKET.regions.map(region => {
         // Round of 64 winners
         const r64W = region.r64.map(gameWinner);
-        // Round of 32: pair [0v1, 2v3, 4v5, 6v7]
-        const r32  = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1]));
+        // Round of 32: slight compression — quality teams, upsets possible
+        const r32  = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1], 0.72));
         const r32W = r32.map(gameWinner);
-        // Sweet 16: pair [0v1, 2v3]
-        const s16  = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1]));
+        // Sweet 16: moderate compression — all remaining teams are good
+        const s16  = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1], 0.55));
         const s16W = s16.map(gameWinner);
-        // Elite 8
-        const e8   = makeGame(s16W[0], s16W[1]);
+        // Elite 8: heavy compression — very competitive
+        const e8   = makeGame(s16W[0], s16W[1], 0.40);
         const e8W  = gameWinner(e8);
         return { ...region, r32, s16, e8, e8W };
     });
-    // Final Four: East(0) vs Midwest(2), West(1) vs South(3)
-    const ff1  = makeGame(simRegions[0].e8W, simRegions[2].e8W);
-    const ff2  = makeGame(simRegions[1].e8W, simRegions[3].e8W);
+    // Final Four: East(0) vs Midwest(2), West(1) vs South(3) — maximum parity
+    const ff1  = makeGame(simRegions[0].e8W, simRegions[2].e8W, 0.32);
+    const ff2  = makeGame(simRegions[1].e8W, simRegions[3].e8W, 0.32);
     const ff1W = gameWinner(ff1);
     const ff2W = gameWinner(ff2);
-    // Championship
-    const champ  = makeGame(ff1W, ff2W);
+    // Championship — nearly anyone can win
+    const champ  = makeGame(ff1W, ff2W, 0.28);
     const champW = gameWinner(champ);
     SIM = { regions: simRegions, finalFour: [ff1, ff2], championship: champ, champion: champW };
 }
