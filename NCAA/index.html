@@ -247,6 +247,11 @@
         .weight-panel {
             background: rgba(199,125,255,0.05); border: 1px solid rgba(199,125,255,0.2);
             border-radius: 14px; padding: 1.1rem 1.3rem 1rem; margin-bottom: 1.75rem;
+            transition: opacity 0.2s, pointer-events 0.2s;
+        }
+        .weight-panel.disabled {
+            opacity: 0.4;
+            pointer-events: none;
         }
         .weight-panel h3 {
             font-family: 'Orbitron', sans-serif; font-size: 0.78rem;
@@ -272,12 +277,23 @@
             height: 5px; border-radius: 3px; background: rgba(199,125,255,0.25);
             outline: none; cursor: pointer; width: 100%;
         }
+        .weight-slider:disabled {
+            background: rgba(199,125,255,0.08);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
         .weight-slider::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none;
             width: 16px; height: 16px; border-radius: 50%; background: #c77dff; cursor: pointer;
         }
+        .weight-slider:disabled::-webkit-slider-thumb {
+            background: rgba(199,125,255,0.4); cursor: not-allowed;
+        }
         .weight-slider::-moz-range-thumb {
             width: 16px; height: 16px; border-radius: 50%; background: #c77dff; cursor: pointer; border: none;
+        }
+        .weight-slider:disabled::-moz-range-thumb {
+            background: rgba(199,125,255,0.4); cursor: not-allowed;
         }
         .weight-desc {
             grid-column: 1 / -1; font-size: 0.71rem;
@@ -296,6 +312,66 @@
             text-transform: uppercase; padding: 0.28rem 0.8rem; cursor: pointer; transition: background 0.2s;
         }
         #weight-reset:hover { background: rgba(199,125,255,0.22); }
+        /* ── Pool Strategy Mode ── */
+        .pool-panel {
+            background: rgba(255,190,30,0.06); border: 1px solid rgba(255,190,30,0.22);
+            border-radius: 12px; padding: 1rem 1.2rem; margin: 1rem 0;
+        }
+        .pool-header { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .pool-toggle-label {
+            display: flex; align-items: center; gap: 0.65rem; cursor: pointer;
+            font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700;
+            letter-spacing: 0.06em; text-transform: uppercase; color: #ffd700; user-select: none;
+        }
+        .pool-toggle-label input[type=checkbox] { display: none; }
+        .pool-toggle-track {
+            width: 40px; height: 22px; background: rgba(255,255,255,0.1);
+            border-radius: 12px; position: relative; transition: background 0.2s;
+            border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0;
+        }
+        .pool-toggle-label input:checked ~ .pool-toggle-track { background: rgba(255,190,30,0.45); border-color: #ffd700; }
+        .pool-toggle-thumb {
+            position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+            border-radius: 50%; background: rgba(255,255,255,0.5); transition: left 0.2s, background 0.2s;
+        }
+        .pool-toggle-label input:checked ~ .pool-toggle-track .pool-toggle-thumb { left: 20px; background: #ffd700; }
+        .pool-badge {
+            background: rgba(255,190,30,0.15); border: 1px solid rgba(255,190,30,0.3);
+            border-radius: 6px; font-size: 0.68rem; font-family: monospace;
+            color: rgba(255,210,80,0.7); padding: 0.15rem 0.5rem; letter-spacing: 0.05em;
+        }
+        .pool-desc { font-size: 0.8rem; color: rgba(200,200,200,0.6); line-height: 1.55; }
+        .pool-summary {
+            background: rgba(255,190,30,0.08); border: 1px solid rgba(255,190,30,0.25);
+            border-radius: 10px; padding: 1rem 1.2rem; margin: 0.75rem 0;
+        }
+        .pool-summary h3 {
+            font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase; color: #ffd700; margin: 0 0 0.75rem;
+        }
+        .pool-strat-item {
+            font-size: 0.82rem; color: rgba(220,220,220,0.85); line-height: 1.6;
+            padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .pool-strat-item:last-child { border-bottom: none; }
+        .pool-diff-tag {
+            display: inline-block; background: rgba(255,190,30,0.2); color: #ffd700;
+            font-size: 0.64rem; font-family: monospace; font-weight: 700;
+            padding: 0.1rem 0.45rem; border-radius: 4px; margin-right: 0.45rem;
+            vertical-align: middle; letter-spacing: 0.04em;
+        }
+        .pool-models {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;
+            margin: 1rem 0 0; padding: 0.75rem 0;
+        }
+        .pool-model-option {
+            display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
+        }
+        .pool-model-option input[type=radio] { margin-top: 0.25rem; cursor: pointer; }
+        .pool-model-option label { cursor: pointer; font-size: 0.9rem; }
+        .model-label { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.85rem;
+            letter-spacing: 0.05em; text-transform: uppercase; color: #ffd700; margin-bottom: 0.25rem; }
+        .model-desc { font-size: 0.75rem; color: rgba(220,220,220,0.65); line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -360,6 +436,55 @@
             <button id="weight-reset">&#8635; Reset to Default</button>
         </div>
     </div>
+
+    <!-- Pool Strategy Mode Toggle -->
+    <div class="pool-panel">
+        <div class="pool-header">
+            <label class="pool-toggle-label">
+                <input type="checkbox" id="pool-mode-toggle">
+                <span class="pool-toggle-track"><span class="pool-toggle-thumb"></span></span>
+                🏆 Pool Strategy Mode
+            </label>
+            <span class="pool-badge">Beat your bracket pool</span>
+        </div>
+        <div class="pool-desc">
+            Optimizes your bracket to finish ahead of the field using strategic leverage &mdash; not randomness.
+            Applies historically-grounded upset limits, creates region asymmetry (chalk / chaos / balanced / fade),
+            and fades the consensus championship favorite in favor of a high-value alternative pick.
+        </div>
+        <div class="pool-models">
+            <div class="pool-model-option">
+                <input type="radio" id="model-0" name="pool-model" value="0" checked>
+                <div>
+                    <div class="model-label">Baseline</div>
+                    <div class="model-desc">East chalk, West chaos, Midwest balanced, South fade</div>
+                </div>
+            </div>
+            <div class="pool-model-option">
+                <input type="radio" id="model-1" name="pool-model" value="1">
+                <div>
+                    <div class="model-label">Rotated 1</div>
+                    <div class="model-desc">East chaos, West balanced, Midwest fade, South chalk</div>
+                </div>
+            </div>
+            <div class="pool-model-option">
+                <input type="radio" id="model-2" name="pool-model" value="2">
+                <div>
+                    <div class="model-label">Rotated 2</div>
+                    <div class="model-desc">East balanced, West fade, Midwest chalk, South chaos</div>
+                </div>
+            </div>
+            <div class="pool-model-option">
+                <input type="radio" id="model-3" name="pool-model" value="3">
+                <div>
+                    <div class="model-label">Rotated 3</div>
+                    <div class="model-desc">East fade, West chalk, Midwest chaos, South balanced</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pool strategy analysis panel (shown when pool mode is on) -->
+    <div id="pool-summary" style="display:none;"></div>
 
     <!-- Summary stats rendered by JS -->
     <div class="summary-bar" id="summary-bar"></div>
@@ -658,6 +783,18 @@ const BRACKET = {
    MODEL WEIGHTS  (driven by sliders)
 ───────────────────────────────────────────────────────────────────── */
 let WEIGHTS = { kp: 40, feat: 20, mm: 20, seed: 0, hist: 20 };
+let POOL_MODE = false;
+let POOL_MODEL = 0;
+const POOL_MODELS = [
+    // Model 0: Baseline
+    ['chalk', 'chaos', 'balanced', 'fade'],
+    // Model 1: Rotated 1
+    ['chaos', 'balanced', 'fade', 'chalk'],
+    // Model 2: Rotated 2
+    ['balanced', 'fade', 'chalk', 'chaos'],
+    // Model 3: Rotated 3
+    ['fade', 'chalk', 'chaos', 'balanced'],
+];
 
 /* ─────────────────────────────────────────────────────────────────────
    SIGNAL COMPUTATION
@@ -793,31 +930,94 @@ function autoReason(g) {
         return `${winner.name} (KP #${dW.kp}, Off #${dW.adjO}, Def #${dW.adjD}) over ${loser.name} (KP #${dL.kp}) — ~${pct}% blended model`;
     return `${winner.name} advances on blended model edge (~${pct}%)`;
 }
+// Pool strategy: enforce seed caps per round and tag games where the cap overrides the model's natural pick.
+function poolPickWinner(game, maxSeed) {
+    const bp  = blendedProb(game.signals, WEIGHTS);
+    const nat = bp >= 0.5 ? { name: game.t1[1], seed: game.t1[0] } : { name: game.t2[1], seed: game.t2[0] };
+    const oth = bp >= 0.5 ? { name: game.t2[1], seed: game.t2[0] } : { name: game.t1[1], seed: game.t1[0] };
+    if (nat.seed > maxSeed) {
+        game._poolWinner = oth.name; // tag so renderLaterCard shows the correct winner
+        return oth;
+    }
+    return nat;
+}
+
 let SIM = null;
 function runSimulation() {
-    const simRegions = BRACKET.regions.map(region => {
-        // Round of 64 winners
+    // Pool mode region styles: select from one of 4 models
+    //   [0] East, [1] West, [2] Midwest, [3] South
+    const STYLES = POOL_MODE ? POOL_MODELS[POOL_MODEL] : ['none', 'none', 'none', 'none'];
+    let s16DoubleDigits = 0; // global cap: at most 1 double-digit seed (10+) in Sweet 16
+
+    const simRegions = BRACKET.regions.map((region, idx) => {
+        const style = POOL_MODE ? STYLES[idx] : 'none';
+
+        // R64 — no pool caps, model decides
         const r64W = region.r64.map(gameWinner);
-        // Round of 32 (rnd=1): slight compression — 8/9-seed survivors vs 1-seeds etc.
-        const r32  = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1], 0.72, 1));
-        const r32W = r32.map(gameWinner);
-        // Sweet 16 (rnd=2): moderate compression — all survivors are legitimate
-        const s16  = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1], 0.55, 2));
-        const s16W = s16.map(gameWinner);
-        // Elite 8 (rnd=3): heavy compression — historically #1 seeds win only 65%
-        const e8   = makeGame(s16W[0], s16W[1], 0.40, 3);
-        const e8W  = gameWinner(e8);
+
+        // R32 — chaos allows 12-seeds; chalk caps at 6; others cap at 11
+        const r32 = [0, 2, 4, 6].map(i => makeGame(r64W[i], r64W[i + 1], 0.72, 1));
+        const r32W = r32.map(g => {
+            if (!POOL_MODE) return gameWinner(g);
+            const cap = style === 'chalk' ? 6 : style === 'chaos' ? 12 : 11;
+            return poolPickWinner(g, cap);
+        });
+
+        // S16 — chalk cap=5; chaos allows 11; balanced cap=8; global max 1 double-digit
+        const s16 = [0, 2].map(i => makeGame(r32W[i], r32W[i + 1], 0.55, 2));
+        const s16W = s16.map(g => {
+            if (!POOL_MODE) return gameWinner(g);
+            let cap = style === 'chalk' ? 5 : style === 'chaos' ? 11 : 8;
+            if (s16DoubleDigits >= 1) cap = Math.min(cap, 9); // enforce global dd cap
+            const w = poolPickWinner(g, cap);
+            if (w.seed >= 10) s16DoubleDigits++;
+            return w;
+        });
+
+        // E8 — chalk always a top-3 seed; fade knocks out the #1 seed; others cap=6
+        const e8 = makeGame(s16W[0], s16W[1], 0.40, 3);
+        let e8W;
+        if (!POOL_MODE) {
+            e8W = gameWinner(e8);
+        } else if (style === 'fade') {
+            // Strategic fade: force the #1 seed out in the E8 — high-leverage divergence from field
+            const bp  = blendedProb(e8.signals, WEIGHTS);
+            const nat = bp >= 0.5 ? { name: e8.t1[1], seed: e8.t1[0] } : { name: e8.t2[1], seed: e8.t2[0] };
+            const oth = bp >= 0.5 ? { name: e8.t2[1], seed: e8.t2[0] } : { name: e8.t1[1], seed: e8.t1[0] };
+            const has1 = e8.t1[0] === 1 || e8.t2[0] === 1;
+            if (has1 && nat.seed === 1) { e8._poolWinner = oth.name; e8W = oth; }
+            else { e8W = poolPickWinner(e8, 6); }
+        } else if (style === 'chalk') {
+            e8W = poolPickWinner(e8, 3);
+        } else {
+            e8W = poolPickWinner(e8, 6);
+        }
+
         return { ...region, r32, s16, e8, e8W };
     });
-    // Final Four (rnd=4): East(0) vs Midwest(2), West(1) vs South(3)
-    // Historically #1 seeds win only 47% of FF games — near coin-flip territory
+
+    // Final Four: East(0) vs Midwest(2), West(1) vs South(3)
+    // Pool mode: no seed > 5 in FF (historically grounded, avoids chaotic long-shots)
     const ff1  = makeGame(simRegions[0].e8W, simRegions[2].e8W, 0.32, 4);
     const ff2  = makeGame(simRegions[1].e8W, simRegions[3].e8W, 0.32, 4);
-    const ff1W = gameWinner(ff1);
-    const ff2W = gameWinner(ff2);
-    // Championship (rnd=5)
-    const champ  = makeGame(ff1W, ff2W, 0.28, 5);
-    const champW = gameWinner(champ);
+    const ff1W = POOL_MODE ? poolPickWinner(ff1, 5) : gameWinner(ff1);
+    const ff2W = POOL_MODE ? poolPickWinner(ff2, 5) : gameWinner(ff2);
+
+    // Championship
+    const champ = makeGame(ff1W, ff2W, 0.28, 5);
+    let champW;
+    if (POOL_MODE) {
+        // Leverage: if the natural winner is KP #1 (the most-owned consensus pick),
+        // take the other finalist instead — maximum differentiation where it pays most
+        const bp  = blendedProb(champ.signals, WEIGHTS);
+        const nat = bp >= 0.5 ? { name: champ.t1[1], seed: champ.t1[0] } : { name: champ.t2[1], seed: champ.t2[0] };
+        const oth = bp >= 0.5 ? { name: champ.t2[1], seed: champ.t2[0] } : { name: champ.t1[1], seed: champ.t1[0] };
+        if (T[nat.name] && T[nat.name].kp === 1) { champ._poolWinner = oth.name; champW = oth; }
+        else champW = nat;
+    } else {
+        champW = gameWinner(champ);
+    }
+
     SIM = { regions: simRegions, finalFour: [ff1, ff2], championship: champ, champion: champW };
 }
 
@@ -900,7 +1100,8 @@ function renderR64Card(g) {
 function renderLaterCard(g, showSeeds) {
     const bp        = blendedProb(g.signals, WEIGHTS);
     const [s1, n1]  = g.t1, [s2, n2] = g.t2;
-    const isPickT1  = bp >= 0.5;
+    // If pool mode forced a seed-cap override, show that winner rather than the raw model pick
+    const isPickT1  = (POOL_MODE && g._poolWinner) ? (g._poolWinner === n1) : (bp >= 0.5);
     const dynPick   = isPickT1 ? n1 : n2;
     const wSeed     = isPickT1 ? s1 : s2;
     const lSeed     = isPickT1 ? s2 : s1;
@@ -977,6 +1178,96 @@ function computeStats() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────
+   POOL STRATEGY SUMMARY
+───────────────────────────────────────────────────────────────────── */
+function renderPoolSummary() {
+    const consensusChamp = Object.keys(T).find(n => T[n].kp === 1) || 'Duke';
+    const ourChamp  = SIM.champion.name;
+    const ffTeams   = SIM.regions.map(r => r.e8W);
+    const items     = [];
+
+    // 1. Champion pick
+    const cKP = T[ourChamp] ? `KP #${T[ourChamp].kp}` : `#${SIM.champion.seed} seed`;
+    if (ourChamp !== consensusChamp) {
+        const consKP = T[consensusChamp] ? `KP #${T[consensusChamp].kp}` : '';
+        items.push({ tag: 'CHAMPION LEVERAGE',
+            text: `Picking <strong>${ourChamp}</strong> (${cKP}) over consensus favorite
+                   <strong>${consensusChamp}</strong> (${consKP}).
+                   <strong>${consensusChamp}</strong> will appear in most public entries; your differentiated pick
+                   pays maximum championship points if they fall short.` });
+    } else {
+        items.push({ tag: 'CHALK CHAMPION',
+            text: `<strong>${ourChamp}</strong> (${cKP}) — efficiency margin too dominant to fade.
+                   Consensus here; differentiation applied elsewhere.` });
+    }
+
+    // 2. Non-#1 seed Final Four teams (high-leverage divergences)
+    const ffNonOne = ffTeams.filter(t => t.seed !== 1);
+    ffNonOne.forEach(t => {
+        const reg  = SIM.regions.find(r => r.e8W.name === t.name);
+        const rname = reg ? reg.name : '';
+        const kp   = T[t.name] ? `KP #${T[t.name].kp}` : '';
+        const d    = T[t.name];
+        const stats = d ? ` — Off #${d.adjO}, Def #${d.adjD}` : '';
+        items.push({ tag: 'FF LEVERAGE',
+            text: `<strong>#${t.seed} ${t.name}</strong> (${kp}${stats}) from the ${rname} region in the Final Four.
+                   Most public brackets will have the #1 ${rname} seed here — a key point-of-difference in the
+                   highest-value round.` });
+    });
+
+    // 3. Fade region: #1 seed knocked out in E8
+    const fadeRegion = SIM.regions[3];
+    const fade1Name  = fadeRegion.seed1;
+    const fade1InFF  = fadeRegion.e8W.name === fade1Name;
+    if (!fade1InFF) {
+        const fKP = T[fade1Name] ? `KP #${T[fade1Name].kp}` : '';
+        const adv = fadeRegion.e8W;
+        const advKP = T[adv.name] ? `KP #${T[adv.name].kp}` : '';
+        items.push({ tag: 'STRATEGIC FADE',
+            text: `<strong>${fade1Name}</strong> (#1 ${fadeRegion.name}, ${fKP}) eliminated in the Elite Eight by
+                   <strong>#${adv.seed} ${adv.name}</strong> (${advKP}).
+                   This is the highest-leverage divergence from consensus — the majority of the field
+                   carries ${fade1Name} to the Final Four.` });
+    }
+
+    // 4. Upset summary across R32/S16/E8
+    const upsets = [];
+    SIM.regions.forEach(r => [...r.r32, ...r.s16, r.e8].forEach(g => {
+        const wName = (POOL_MODE && g._poolWinner) ? g._poolWinner
+                    : (blendedProb(g.signals, WEIGHTS) >= 0.5 ? g.t1[1] : g.t2[1]);
+        const wSeed = wName === g.t1[1] ? g.t1[0] : g.t2[0];
+        const lSeed = wName === g.t1[1] ? g.t2[0] : g.t1[0];
+        const lName = wName === g.t1[1] ? g.t2[1] : g.t1[1];
+        if (wSeed > lSeed + 1) upsets.push({ wName, wSeed, lName, lSeed, g });
+    }));
+    if (upsets.length) {
+        const uList = upsets.map(u => {
+            const wKP = T[u.wName] ? ` (KP #${T[u.wName].kp})` : '';
+            return `#${u.wSeed}&nbsp;${u.wName}${wKP} over #${u.lSeed}&nbsp;${u.lName}`;
+        }).join(' &bull; ');
+        items.push({ tag: 'UPSET PICKS', text: uList });
+    }
+
+    // 5. Why this bracket can win the pool
+    const diffCount = (ourChamp !== consensusChamp ? 1 : 0) + ffNonOne.length + (!fade1InFF ? 1 : 0);
+    const diffSpots = [
+        ourChamp !== consensusChamp ? `champion pick (${ourChamp})` : '',
+        ffNonOne.length ? `Final Four (${ffNonOne.map(t => t.name).join(', ')})` : '',
+        !fade1InFF ? `${fade1Name} fade in E8` : ''
+    ].filter(Boolean).join('; ');
+    items.push({ tag: 'WHY IT WINS',
+        text: `Differs from consensus in <strong>${diffCount} high-leverage spot${diffCount !== 1 ? 's' : ''}</strong>:
+               ${diffSpots}. Early rounds are chalk-heavy to stay in contention across all scenarios.
+               All differentiation is concentrated in the Final Four and Championship — where pool
+               prizes are largest and the most brackets will be wrong.` });
+
+    return `<div class="pool-summary">
+        <h3>🎯 Pool Strategy Analysis — Why This Bracket Can Win</h3>
+        ${items.map(i => `<div class="pool-strat-item"><span class="pool-diff-tag">${i.tag}</span>${i.text}</div>`).join('')}
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
    MAIN RENDER
 ───────────────────────────────────────────────────────────────────── */
 function renderAll() {
@@ -1026,6 +1317,16 @@ function renderAll() {
             <div class="champ-why">${autoReason(SIM.championship)}</div>
         </div>
     </div>`;
+
+    // Show or hide Pool Strategy summary
+    const poolEl = document.getElementById('pool-summary');
+    if (POOL_MODE) {
+        poolEl.style.display = '';
+        poolEl.innerHTML = renderPoolSummary();
+    } else {
+        poolEl.style.display = 'none';
+        poolEl.innerHTML = '';
+    }
 }
 
 // ── Initialize & wire up sliders ──────────────────────────────────────
@@ -1043,6 +1344,24 @@ function updateWeightPcts() {
     document.getElementById('w-' + k).addEventListener('input', function () {
         WEIGHTS[k] = +this.value;
         updateWeightPcts();
+        renderAll();
+    });
+});
+
+document.getElementById('pool-mode-toggle').addEventListener('change', function () {
+    POOL_MODE = this.checked;
+    const weightPanel = document.querySelector('.weight-panel');
+    if (POOL_MODE) {
+        weightPanel.classList.add('disabled');
+    } else {
+        weightPanel.classList.remove('disabled');
+    }
+    renderAll();
+});
+
+document.querySelectorAll('input[name="pool-model"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        POOL_MODEL = parseInt(this.value);
         renderAll();
     });
 });
