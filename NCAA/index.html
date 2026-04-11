@@ -41,6 +41,20 @@
             color: rgba(220,200,255,0.6); font-size: 1rem;
             letter-spacing: 0.05em; margin-bottom: 2rem;
         }
+        .top-note-link {
+            display: inline-block;
+            margin: -1.2rem 0 1.5rem;
+            font-size: 0.84rem;
+            color: rgba(199, 125, 255, 0.78);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(199, 125, 255, 0.45);
+            letter-spacing: 0.03em;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .top-note-link:hover {
+            color: #dbbcff;
+            border-color: rgba(219, 188, 255, 0.8);
+        }
 
         /* ── Legend ── */
         .legend {
@@ -235,6 +249,60 @@
         .champ-card .champ-seed { font-size:0.85rem; color:rgba(255,215,0,0.55); margin-top:0.3rem; }
         .champ-card .champ-why { font-size:0.83rem; color:rgba(255,215,0,0.65); margin-top:0.5rem; line-height:1.45; }
 
+        /* ── Recap ── */
+        .recap-section {
+            margin-top: 2.5rem;
+            padding: 1.3rem 1.35rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+        }
+        .recap-section h2 {
+            font-family:'Orbitron',sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.12em;
+            color: #dbbcff;
+            margin-bottom: 0.95rem;
+        }
+        .recap-grade {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.45rem;
+            margin-bottom: 0.8rem;
+        }
+        .recap-grade .label {
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+        }
+        .recap-grade .value {
+            font-family:'Orbitron',sans-serif;
+            font-size: 1.2rem;
+            color: #ffd700;
+        }
+        .recap-text {
+            color: rgba(230,220,255,0.78);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 0.75rem;
+        }
+        .recap-list {
+            list-style: none;
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.55rem;
+        }
+        .recap-list li {
+            font-size: 0.86rem;
+            color: rgba(215,205,245,0.78);
+            line-height: 1.55;
+            padding: 0.5rem 0.6rem;
+            border-radius: 8px;
+            background: rgba(199,125,255,0.06);
+            border: 1px solid rgba(199,125,255,0.15);
+        }
+
         /* ── Source note ── */
         .source-note {
             margin-top:2.5rem; font-size:0.78rem;
@@ -379,6 +447,7 @@
     <a href="../" class="back-link">← Back to Meiser's Market</a>
     <h1>2026 NCAA Bracket</h1>
     <p class="subtitle">Blended Model Picks &mdash; KenPom 50% &bull; Feature Combo 25% &bull; MM Regression 25% &bull; Adjust weights below</p>
+    <a href="#recap" class="top-note-link">Jump to recap at the bottom ↓</a>
 
     <!-- Legend -->
     <div class="legend">
@@ -491,6 +560,25 @@
 
     <!-- Bracket rendered by JS -->
     <div id="bracket-root"></div>
+
+    <section class="recap-section" id="recap">
+        <h2>MODEL RECAP (2026)</h2>
+        <div class="recap-grade">
+            <span class="label">Self Grade</span>
+            <span class="value">B+</span>
+        </div>
+        <p class="recap-text">
+            The model did a good job balancing chalk stability with upset leverage, and the round-by-round structure kept the path realistic.
+            It earns a <strong>B+</strong> because the bracket is coherent and analytically grounded, but it is still slightly aggressive in a few mid-tier upset chains.
+        </p>
+        <p class="recap-text">Where I can improve next version:</p>
+        <ul class="recap-list">
+            <li><strong>Calibrate upset volume by round</strong> so risky picks are concentrated where they maximize pool edge and not stacked too early.</li>
+            <li><strong>Add injury/availability weighting</strong> so late-season rotation changes materially shift probabilities.</li>
+            <li><strong>Include opponent-style volatility flags</strong> (press resistance, 3PA dependency, foul profile) to better detect fragile favorites.</li>
+            <li><strong>Run Monte Carlo bracket simulations</strong> to score expected pool value, not just single-game win probability.</li>
+        </ul>
+    </section>
 
     <div class="source-note">
         Analytics data sourced from <a href="https://kenpom.com" target="_blank">KenPom.com</a> ·
